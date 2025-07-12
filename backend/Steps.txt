@@ -1,0 +1,28 @@
+10/07/2025
+// npm init
+// Download Nodemon by (npm install nodemon)
+// npm install cross-env --save-dev -> to change env 
+// then added into package.json 
+"scripts": {
+    "start": "node server.js",
+    "dev": "env-cmd -f .env nodemon server.js"
+  },
+
+Added .gitignore file and added the exception files.
+Created jwt_secret file to create jwt secret when needed.
+Created .env file and added PORT 
+Created server.js file.
+Installed dotenv
+Created app.js file 
+Then installed pkgs npm i express path cors morgan helmet cookiet-parser 
+Made some code into app.js file 
+
+Created appError and catchAsync file into utils folder.
+Created clientRoutes into routes folder.
+Created clientController into controllers folder.
+Created clientModel file and installed mongoose.
+Created mongo into DB.
+Created the MONGO_URI into env file.
+used npm install express-validator
+Created validators/clientValidator.js file
+Created middlewares/validateResult.js file 

@@ -1,0 +1,42 @@
+05/07/2025
+After creating the Project files then 
+npm install 
+to test the Project for the First Time npm run dev
+
+
+Tailwind Setup
+npm install tailwindcss @tailwindcss/vite
+Add these below lines into vite.config.js
+import tailwindcss from '@tailwindcss/vite'
+tailwindcss() into Plugin
+
+Add this line into index.css 
+@import "tailwindcss";
+
+
+First made the Layout of the Application -> Header,Sidebar Files
+
+npm install lucide-react 
+
+Created the Context of AppContext and AuthContext
+
+Created the Pages Accounting,ClientPortal,Clients,Dashboard,Documents,Reports, Risk,Schedule,Staff,Tasks
+
+06/07/2025
+Working on the Dashboard Page Now
+
+
+10/07/2025
+Added the Link to backend.
+
+Now adding the pkgs npm i react-redux redux  @reduxjs/toolkit axios
+
+Made the Redux into Components Folder
+then the Store.js and slice pf clients.js 
+Provided the Store main.jsx file 
+
+Working on the CRUD Operation of Client Page.
+
+// for Adding the Toast
+npm install react-hot-toast
+
