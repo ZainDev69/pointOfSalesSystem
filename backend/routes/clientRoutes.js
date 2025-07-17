@@ -5,9 +5,15 @@ const validate = require('../middlewares/validateResult');
 
 const router = express.Router();
 
+
+router.get('/check-id', clientController.checkClientId);
+
 router.route('/')
     .get(clientController.getClients)
     .post(validateClient, validate, clientController.createClient);
+
+
+
 
 router.route('/:id')
     .get(clientController.getClient)
@@ -21,6 +27,5 @@ router
     .route('/:id/unarchive')
     .patch(clientController.unarchiveClient);
 
-router.get('/check-id', clientController.checkClientId);
 
 module.exports = router;

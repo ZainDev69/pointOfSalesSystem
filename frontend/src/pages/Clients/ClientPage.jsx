@@ -82,52 +82,15 @@ export default function Clients() {
   };
 
   const handleEditClient = (client) => {
-    const normalizedClient = {
-      _id: client._id,
+    setSelectedClient({
+      ...client,
       clientId: client.ClientID,
-      fullName: client.FullName,
-      preferredName: client.PreferredName,
-      dateOfBirth: client.DateOfBirth,
-      gender: client.Gender,
-      pronouns: client.Pronouns,
-      address: client.Address,
-      phoneNumber: client.PhoneNumber,
-      emailAddress: client.EmailAddress,
-      nhsNumber: client.NHSNumber,
-      ethnicity: client.Ethnicity,
-      religion: client.Religion,
-      relationshipStatus: client.RelationshipStatus,
-      sexualOrientation: client.SexualOrientation,
-      serviceStatus: client.ServiceStatus,
-      startDate: client.StartDate,
-      notes: client.Notes,
-      createdAt: client.CreatedAt,
-      updatedAt: client.UpdatedAt,
-    };
-    setSelectedClient(normalizedClient);
+    });
     setView("form");
   };
 
   const handleViewClient = (client) => {
-    setSelectedClient({
-      ClientID: client.ClientID,
-      FullName: client.FullName,
-      PreferredName: client.PreferredName,
-      DateOfBirth: client.DateOfBirth,
-      Gender: client.Gender,
-      Address: client.Address,
-      PhoneNumber: client.PhoneNumber,
-      EmailAddress: client.EmailAddress,
-      NHSNumber: client.NHSNumber,
-      Ethnicity: client.Ethnicity,
-      Religion: client.Religion,
-      RelationshipStatus: client.RelationshipStatus,
-      SexualOrientation: client.SexualOrientation,
-      ServiceStatus: client.ServiceStatus,
-      StartDate: client.StartDate,
-      Notes: client.Notes,
-    });
-
+    setSelectedClient(client);
     setView("details");
   };
 
@@ -137,43 +100,36 @@ export default function Clients() {
   };
 
   const handleSaveClient = async (formData) => {
-    const clientData = {
+    // Ensure ClientID is set at the top level for backend
+    const payload = {
+      ...formData,
       ClientID: formData.clientId,
-      FullName: formData.fullName,
-      PreferredName: formData.preferredName,
-      DateOfBirth: formData.dateOfBirth,
-      Gender: formData.gender,
-      Pronouns: formData.pronouns,
-      Address: formData.address,
-      PhoneNumber: formData.phoneNumber,
-      EmailAddress: formData.email,
-      NHSNumber: formData.nhsNumber,
-      Ethnicity: formData.ethnicity,
-      Religion: formData.religion,
-      RelationshipStatus: formData.relationshipStatus,
-      SexualOrientation: formData.sexualOrientation,
-      ServiceStatus: formData.serviceStatus,
-      StartDate: formData.startDate,
-      Notes: formData.notes,
     };
+    delete payload.clientId;
 
-    // Check if ClientID exists before saving (if not editing)
-    if (!selectedClient?._id && formData.clientId) {
-      const result = await dispatch(checkClientId(formData.clientId));
+    if (!selectedClient?._id && payload.ClientID) {
+      const result = await dispatch(checkClientId(payload.ClientID));
       if (result.payload && result.payload.length > 0) {
         toast.error("This Client ID already exists!");
         return;
       }
     }
-
     try {
       if (selectedClient?._id) {
         await dispatch(
-          updateClient({ clientId: selectedClient._id, clientData })
+          updateClient({ clientId: selectedClient._id, clientData: payload })
         );
         toast.success("Client updated successfully");
       } else {
-        await dispatch(createClient(clientData));
+        const result = await dispatch(createClient(payload));
+
+        if (createClient.rejected.match(result)) {
+          // result.payload will have an array of validation errors
+          result.payload.forEach((error) => {
+            toast.error(`${error.path || "Error"}: ${error.msg}`);
+          });
+          return;
+        }
         toast.success("Client created successfully");
       }
       dispatch(clientList());
@@ -388,7 +344,7 @@ export default function Clients() {
                         <div className="flex-1">
                           <div className="flex items-center space-x-3">
                             <h3 className="text-lg font-medium text-gray-900">
-                              {client.FullName}
+                              {client.personalDetails?.fullName}
                             </h3>
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
@@ -408,13 +364,16 @@ export default function Clients() {
                               <strong>ClientID:</strong> {client.ClientID}
                             </span>
                             <span>
-                              <strong>Contact:</strong> {client.PhoneNumber}
+                              <strong>Contact:</strong>{" "}
+                              {client.contactInformation?.primaryPhone}
                             </span>
                             <span>
-                              <strong>Email:</strong> {client.EmailAddress}
+                              <strong>Email:</strong>{" "}
+                              {client.contactInformation?.email}
                             </span>
                             <span>
-                              <strong>NHS:</strong> {client.NHSNumber}
+                              <strong>NHS:</strong>{" "}
+                              {client.personalDetails?.nhsNumber}
                             </span>
                           </div>
                         </div>

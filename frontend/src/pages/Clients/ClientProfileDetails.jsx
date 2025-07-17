@@ -17,6 +17,10 @@ import {
   MessageSquare,
   Edit3,
   MoreVertical,
+  Pill,
+  Brain,
+  ShieldCheck,
+  FileQuestion,
 } from "lucide-react";
 import { RiskAssessmentManager } from "./RiskAssessmentManager";
 import { CarePlanManager } from "./CarePlanManager";
@@ -218,17 +222,17 @@ export function ClientProfileDetails({ client, onBack }) {
           </button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              {client.FullName}
+              {client.personalDetails.fullName}
             </h1>
             <p className="text-gray-600 mt-1">
-              NHS: {client.NHSNumber} • Age:{" "}
-              {client.DateOfBirth
+              NHS: {client.personalDetails.nhsNumber} • Age:{" "}
+              {client.personalDetails.dateOfBirth
                 ? Math.floor(
                     (new Date().getTime() -
-                      new Date(client.DateOfBirth).getTime()) /
+                      new Date(client.personalDetails.dateOfBirth).getTime()) /
                       (365.25 * 24 * 60 * 60 * 1000)
                   )
-                : 78}
+                : "-"}
             </p>
           </div>
         </div>
@@ -275,7 +279,9 @@ export function ClientProfileDetails({ client, onBack }) {
                       <p className="text-sm font-medium text-gray-500">
                         Full Name
                       </p>
-                      <p className="text-gray-900">{client.FullName}</p>
+                      <p className="text-gray-900">
+                        {client.personalDetails.fullName}
+                      </p>
                     </div>
                   </div>
 
@@ -286,8 +292,10 @@ export function ClientProfileDetails({ client, onBack }) {
                         Date of Birth
                       </p>
                       <p className="text-gray-900">
-                        {client.DateOfBirth
-                          ? new Date(client.DateOfBirth).toLocaleDateString()
+                        {client.personalDetails.dateOfBirth
+                          ? new Date(
+                              client.personalDetails.dateOfBirth
+                            ).toLocaleDateString()
                           : "Not specified"}
                       </p>
                     </div>
@@ -298,7 +306,8 @@ export function ClientProfileDetails({ client, onBack }) {
                     <div>
                       <p className="text-sm font-medium text-gray-500">Phone</p>
                       <p className="text-gray-900">
-                        {client.PhoneNumber || "Not specified"}
+                        {client.contactInformation.primaryPhone ||
+                          "Not specified"}
                       </p>
                     </div>
                   </div>
@@ -312,10 +321,10 @@ export function ClientProfileDetails({ client, onBack }) {
                         Address
                       </p>
                       <p className="text-gray-900">
-                        {client.Address || "123 Oak Street"}
+                        {client.addressInformation.address || "Not Specified"}
                         <br />
-                        {client.City || "London"}{" "}
-                        {client.PostCode || "SW1A 1AA"}
+                        {client.addressInformation.city}{" "}
+                        {client.addressInformation.postCode}
                       </p>
                     </div>
                   </div>
@@ -325,7 +334,7 @@ export function ClientProfileDetails({ client, onBack }) {
                     <div>
                       <p className="text-sm font-medium text-gray-500">Email</p>
                       <p className="text-gray-900">
-                        {client.EmailAddress || "Not specified"}
+                        {client.contactInformation.email || "Not specified"}
                       </p>
                     </div>
                   </div>
@@ -368,7 +377,6 @@ export function ClientProfileDetails({ client, onBack }) {
             </div>
           </div>
 
-          {/* This needs to be updated */}
           {/* Side Panel */}
           <div className="space-y-6">
             {/* Next of Kin */}
@@ -381,7 +389,7 @@ export function ClientProfileDetails({ client, onBack }) {
                 <div>
                   <p className="text-sm font-medium text-gray-500">Name</p>
                   <p className="text-gray-900">
-                    {client.personalDetails?.nextOfKin?.name || "John Thompson"}
+                    {client.nextOfKin.name || "Not Specified"}
                   </p>
                 </div>
 
@@ -390,25 +398,24 @@ export function ClientProfileDetails({ client, onBack }) {
                     Relationship
                   </p>
                   <p className="text-gray-900">
-                    {client.personalDetails?.nextOfKin?.relationship || "Son"}
+                    {client.nextOfKin.relationship || "Not Specified"}
                   </p>
                 </div>
 
                 <div>
                   <p className="text-sm font-medium text-gray-500">Phone</p>
                   <p className="text-gray-900">
-                    {client.personalDetails?.nextOfKin?.phone ||
-                      "+44 20 7123 4568"}
+                    {client.nextOfKin.phone || "Not Specified"}
                   </p>
                 </div>
 
                 <div className="flex items-center space-x-4 pt-2">
-                  {client.personalDetails?.nextOfKin?.hasLegalAuthority && (
+                  {client.nextOfKin.hasLegalAuthority && (
                     <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                       Legal Authority
                     </span>
                   )}
-                  {client.personalDetails?.nextOfKin?.powerOfAttorney && (
+                  {client.nextOfKin.powerOfAttorney && (
                     <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
                       Power of Attorney
                     </span>
@@ -417,7 +424,6 @@ export function ClientProfileDetails({ client, onBack }) {
               </div>
             </div>
 
-            {/* This needs to be updated */}
             {/* GP Information */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -428,7 +434,7 @@ export function ClientProfileDetails({ client, onBack }) {
                 <div>
                   <p className="text-sm font-medium text-gray-500">GP Name</p>
                   <p className="text-gray-900">
-                    {client.healthcareContacts?.gp?.name || "Dr. Sarah Wilson"}
+                    {client.healthcareContacts.gp.name || "Not Specified"}
                   </p>
                 </div>
 
@@ -436,14 +442,14 @@ export function ClientProfileDetails({ client, onBack }) {
                   <p className="text-sm font-medium text-gray-500">Practice</p>
                   <p className="text-gray-900">
                     {client.healthcareContacts?.gp?.organization ||
-                      "Oakwood Medical Centre"}
+                      "Not Specified"}
                   </p>
                 </div>
 
                 <div>
                   <p className="text-sm font-medium text-gray-500">Phone</p>
                   <p className="text-gray-900">
-                    {client.healthcareContacts?.gp?.phone || "+44 20 7123 9999"}
+                    {client.healthcareContacts?.gp?.phone || "Not Specified"}
                   </p>
                 </div>
               </div>
@@ -474,265 +480,498 @@ export function ClientProfileDetails({ client, onBack }) {
         </div>
       )}
 
-      {/* I have to set it again. */}
       {activeTab === "personal" && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Personal Information
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="space-y-4">
-              <InfoBlock label="Full Name">{client.FullName}</InfoBlock>
-              <InfoBlock label="Preferred Name">
-                {client.PreferredName}
-              </InfoBlock>
-
-              <InfoBlock label="Date of Birth">
-                {client.DateOfBirth
-                  ? new Date(client.DateOfBirth).toLocaleDateString()
-                  : "Not specified"}
-              </InfoBlock>
+        <div>
+          {/* Personal Information Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Personal Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="space-y-4">
+                <InfoBlock label="Full Name">
+                  {client.personalDetails?.fullName || "Not specified"}
+                </InfoBlock>
+                <InfoBlock label="Preferred Name">
+                  {client.personalDetails?.preferredName || "Not specified"}
+                </InfoBlock>
+                <InfoBlock label="Date of Birth">
+                  {client.personalDetails?.dateOfBirth
+                    ? new Date(
+                        client.personalDetails.dateOfBirth
+                      ).toLocaleDateString()
+                    : "Not specified"}
+                </InfoBlock>
+              </div>
+              <div className="space-y-4">
+                <InfoBlock label="Gender">
+                  {client.personalDetails?.gender || "Not specified"}
+                </InfoBlock>
+                <InfoBlock label="Ethnicity">
+                  {client.personalDetails?.ethnicity || "Not specified"}
+                </InfoBlock>
+              </div>
+              <div className="space-y-4">
+                <InfoBlock label="Relationship Status">
+                  {client.personalDetails?.relationshipStatus ||
+                    "Not specified"}
+                </InfoBlock>
+              </div>
             </div>
+          </div>
 
-            <div className="space-y-4">
-              <InfoBlock label="Gender">{client.Gender}</InfoBlock>
-              <InfoBlock label="Pronouns">{client.Pronouns}</InfoBlock>
-              <InfoBlock label="Ethnicity">{client.Ethnicity}</InfoBlock>
+          {/* Address Information Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Address Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-4">
+                <InfoBlock label="Address">
+                  {client.addressInformation?.address || "Not specified"}
+                </InfoBlock>
+                <InfoBlock label="City">
+                  {client.addressInformation?.city || "Not specified"}
+                </InfoBlock>
+              </div>
+              <div className="space-y-4">
+                <InfoBlock label="Post Code">
+                  {client.addressInformation?.postCode || "Not specified"}
+                </InfoBlock>
+                <InfoBlock label="Country">
+                  {client.addressInformation?.country || "Not specified"}
+                </InfoBlock>
+              </div>
             </div>
-            <div className="space-y-4">
-              <InfoBlock label="Religion">{client.Religion}</InfoBlock>
-              <InfoBlock label="Relationship Status">
-                {client.RelationshipStatus}
-              </InfoBlock>
-              <InfoBlock label="Sexual Orientation">
-                {client.SexualOrientation}
-              </InfoBlock>
+          </div>
+
+          {/* Contact Information Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Contact Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-4">
+                <InfoBlock label="Primary Phone">
+                  {client.contactInformation?.primaryPhone || "Not specified"}
+                </InfoBlock>
+                <InfoBlock label="Secondary Phone">
+                  {client.contactInformation?.secondaryPhone || "Not specified"}
+                </InfoBlock>
+              </div>
+              <div className="space-y-4">
+                <InfoBlock label="Email">
+                  {client.contactInformation?.email || "Not specified"}
+                </InfoBlock>
+                <InfoBlock label="Best Time to Contact">
+                  {client.contactInformation?.bestTimeToContact ||
+                    "Not specified"}
+                </InfoBlock>
+              </div>
+              <div className="space-y-4">
+                <InfoBlock label="Preferred Contact Method">
+                  {client.contactInformation?.preferredContactMethod ||
+                    "Not specified"}
+                </InfoBlock>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {activeTab === "overview" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Personal Summary */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Personal Information
+      {activeTab === "medical" && (
+        <div>
+          {/* Medical Conditions Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex items-center mb-4 space-x-2">
+              <Heart className="w-5 h-5 text-red-500" />
+              <h3 className="text-lg font-semibold text-gray-900">
+                Medical Conditions
               </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <User className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Full Name
-                      </p>
-                      <p className="text-gray-900">
-                        {client.personalDetails?.title}{" "}
-                        {client.personalDetails?.firstName}{" "}
-                        {client.personalDetails?.lastName}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <Calendar className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Date of Birth
-                      </p>
-                      <p className="text-gray-900">
-                        {client.personalDetails?.dateOfBirth
-                          ? new Date(
-                              client.personalDetails.dateOfBirth
-                            ).toLocaleDateString()
-                          : "Not specified"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <Phone className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Phone</p>
-                      <p className="text-gray-900">
-                        {client.personalDetails?.contactInformation
-                          ?.primaryPhone || "Not specified"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Address
-                      </p>
-                      <p className="text-gray-900">
-                        {client.personalDetails?.address?.line1 ||
-                          "123 Oak Street"}
-                        <br />
-                        {client.personalDetails?.address?.city || "London"}{" "}
-                        {client.personalDetails?.address?.postcode ||
-                          "SW1A 1AA"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <Mail className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Email</p>
-                      <p className="text-gray-900">
-                        {client.personalDetails?.contactInformation?.email ||
-                          "Not specified"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex items-center space-x-3">
-                  <Users className="w-8 h-8 text-blue-600" />
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {contactStats.total}
-                    </p>
-                    <p className="text-sm text-gray-600">Contacts</p>
-                  </div>
+            <div>
+              {client.medicalInformation?.conditions?.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Condition
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Severity
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Status
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Diagnosed
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Notes
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {client.medicalInformation.conditions.map((cond, idx) => (
+                        <tr key={idx} className="border-b last:border-b-0">
+                          <td className="px-3 py-2 font-semibold text-gray-900">
+                            {cond.condition}
+                          </td>
+                          <td className="px-3 py-2">
+                            {cond.severity && (
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  cond.severity === "severe"
+                                    ? "bg-red-100 text-red-800"
+                                    : cond.severity === "moderate"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-green-100 text-green-800"
+                                }`}
+                              >
+                                {cond.severity}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2">
+                            {cond.status && (
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  cond.status === "active"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : cond.status === "resolved"
+                                    ? "bg-gray-100 text-gray-800"
+                                    : "bg-purple-100 text-purple-800"
+                                }`}
+                              >
+                                {cond.status}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-2 py-2">
+                            {cond.diagnosisDate || "-"}
+                          </td>
+                          <td className="px-3 py-2">{cond.notes || "-"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              </div>
-
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex items-center space-x-3">
-                  <Calendar className="w-8 h-8 text-green-600" />
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">12</p>
-                    <p className="text-sm text-gray-600">Visits This Month</p>
-                  </div>
+              ) : (
+                <div className="flex flex-col items-center py-8">
+                  <Heart className="w-10 h-10 text-gray-200 mb-2" />
+                  <p className="text-gray-500">
+                    No medical conditions recorded.
+                  </p>
                 </div>
-              </div>
-
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex items-center space-x-3">
-                  <FileText className="w-8 h-8 text-purple-600" />
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">8</p>
-                    <p className="text-sm text-gray-600">Documents</p>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
-          {/* Side Panel */}
-          <div className="space-y-6">
-            {/* Next of Kin */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Next of Kin
-              </h3>
-
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Name</p>
-                  <p className="text-gray-900">
-                    {client.personalDetails?.nextOfKin?.name || "John Thompson"}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Relationship
-                  </p>
-                  <p className="text-gray-900">
-                    {client.personalDetails?.nextOfKin?.relationship || "Son"}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Phone</p>
-                  <p className="text-gray-900">
-                    {client.personalDetails?.nextOfKin?.phone ||
-                      "+44 20 7123 4568"}
-                  </p>
-                </div>
-
-                <div className="flex items-center space-x-4 pt-2">
-                  {client.personalDetails?.nextOfKin?.hasLegalAuthority && (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                      Legal Authority
-                    </span>
-                  )}
-                  {client.personalDetails?.nextOfKin?.powerOfAttorney && (
-                    <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                      Power of Attorney
-                    </span>
-                  )}
-                </div>
-              </div>
+          {/* Allergies Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex items-center mb-4 space-x-2">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              <h3 className="text-lg font-semibold text-gray-900">Allergies</h3>
             </div>
-
-            {/* GP Information */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                GP Information
-              </h3>
-
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">GP Name</p>
-                  <p className="text-gray-900">
-                    {client.healthcareContacts?.gp?.name || "Dr. Sarah Wilson"}
-                  </p>
+            <div>
+              {client.medicalInformation?.allergies?.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Allergen
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Reaction
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Severity
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Treatment
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Notes
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {client.medicalInformation.allergies.map(
+                        (allergy, idx) => (
+                          <tr key={idx} className="border-b last:border-b-0">
+                            <td className="px-3 py-2 font-semibold text-gray-900">
+                              {allergy.allergen}
+                            </td>
+                            <td className="px-3 py-2">
+                              {allergy.reaction || "-"}
+                            </td>
+                            <td className="px-3 py-2">
+                              {allergy.severity && (
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    allergy.severity === "severe"
+                                      ? "bg-red-100 text-red-800"
+                                      : allergy.severity === "moderate"
+                                      ? "bg-yellow-100 text-yellow-800"
+                                      : "bg-green-100 text-green-800"
+                                  }`}
+                                >
+                                  {allergy.severity}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-3 py-2">
+                              {allergy.treatment || "-"}
+                            </td>
+                            <td className="px-3 py-2">
+                              {allergy.notes || "-"}
+                            </td>
+                          </tr>
+                        )
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Practice</p>
-                  <p className="text-gray-900">
-                    {client.healthcareContacts?.gp?.organization ||
-                      "Oakwood Medical Centre"}
-                  </p>
+              ) : (
+                <div className="flex flex-col items-center py-8">
+                  <AlertTriangle className="w-10 h-10 text-gray-200 mb-2" />
+                  <p className="text-gray-500">No allergies recorded.</p>
                 </div>
-
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Phone</p>
-                  <p className="text-gray-900">
-                    {client.healthcareContacts?.gp?.phone || "+44 20 7123 9999"}
-                  </p>
-                </div>
-              </div>
+              )}
             </div>
+          </div>
 
-            {/* Quick Actions */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Quick Actions
+          {/* Medications Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex items-center mb-4 space-x-2">
+              <Pill className="w-5 h-5 text-purple-500" />
+              <h3 className="text-lg font-semibold text-gray-900">
+                Medications
               </h3>
+            </div>
+            <div>
+              {client.medicalInformation?.medications?.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Name
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Dosage
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Frequency
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Route
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Prescribed By
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Start Date
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Indication
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {client.medicalInformation.medications.map((med, idx) => (
+                        <tr key={idx} className="border-b last:border-b-0">
+                          <td className="px-3 py-2 font-semibold text-gray-900">
+                            {med.name}
+                          </td>
+                          <td className="px-3 py-2">{med.dosage || "-"}</td>
+                          <td className="px-3 py-2">{med.frequency || "-"}</td>
+                          <td className="px-3 py-2">{med.route || "-"}</td>
+                          <td className="px-3 py-2">
+                            {med.prescribedBy || "-"}
+                          </td>
+                          <td className="px-3 py-2">{med.startDate || "-"}</td>
+                          <td className="px-3 py-2">{med.indication || "-"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center py-8">
+                  <Pill className="w-10 h-10 text-gray-200 mb-2" />
+                  <p className="text-gray-500">No medications recorded.</p>
+                </div>
+              )}
+            </div>
+          </div>
 
-              <div className="space-y-3">
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition-colors">
-                  Schedule Visit
-                </button>
-                <button className="w-full bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg transition-colors">
-                  Update Care Plan
-                </button>
-                <button className="w-full bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-lg transition-colors">
-                  Generate Report
-                </button>
-                <button className="w-full bg-gray-600 hover:bg-gray-700 text-white p-3 rounded-lg transition-colors">
-                  Contact Family
-                </button>
-              </div>
+          {/* Mental Capacity Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex items-center mb-4 space-x-2">
+              <Brain className="w-5 h-5 text-blue-500" />
+              <h3 className="text-lg font-semibold text-gray-900">
+                Mental Capacity
+              </h3>
+            </div>
+            <div>
+              {client.medicalInformation?.mentalCapacity ? (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm mb-4">
+                      <thead>
+                        <tr className="bg-gray-50">
+                          <th className="px-3 py-2 text-left font-medium text-gray-700">
+                            Has Capacity
+                          </th>
+                          <th className="px-3 py-2 text-left font-medium text-gray-700">
+                            Assessment Date
+                          </th>
+                          <th className="px-3 py-2 text-left font-medium text-gray-700">
+                            Assessed By
+                          </th>
+                          <th className="px-3 py-2 text-left font-medium text-gray-700">
+                            Review Date
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b last:border-b-0">
+                          <td className="px-3 py-2">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                client.medicalInformation.mentalCapacity
+                                  .hasCapacity
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {client.medicalInformation.mentalCapacity
+                                .hasCapacity
+                                ? "Yes"
+                                : "No"}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2">
+                            {client.medicalInformation.mentalCapacity
+                              .assessmentDate || "-"}
+                          </td>
+                          <td className="px-3 py-2">
+                            {client.medicalInformation.mentalCapacity
+                              .assessedBy || "-"}
+                          </td>
+                          <td className="px-3 py-2">
+                            {client.medicalInformation.mentalCapacity
+                              .reviewDate || "-"}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  {client.medicalInformation.mentalCapacity.notes && (
+                    <div className="mt-2">
+                      <span className="font-medium">Notes:</span>{" "}
+                      {client.medicalInformation.mentalCapacity.notes}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex flex-col items-center py-8">
+                  <Brain className="w-10 h-10 text-gray-200 mb-2" />
+                  <p className="text-gray-500">
+                    No mental capacity assessment recorded.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* DNR Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex items-center mb-4 space-x-2">
+              <ShieldCheck className="w-5 h-5 text-gray-700" />
+              <h3 className="text-lg font-semibold text-gray-900">
+                DNR (Do Not Resuscitate)
+              </h3>
+            </div>
+            <div>
+              {client.medicalInformation?.dnr ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm mb-4">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Has DNR
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Date Issued
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Issued By
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Location
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Family Aware
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b last:border-b-0">
+                        <td className="px-3 py-2">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              client.medicalInformation.dnr.hasDNR
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {client.medicalInformation.dnr.hasDNR
+                              ? "Yes"
+                              : "No"}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2">
+                          {client.medicalInformation.dnr.dateIssued || "-"}
+                        </td>
+                        <td className="px-3 py-2">
+                          {client.medicalInformation.dnr.issuedBy || "-"}
+                        </td>
+                        <td className="px-3 py-2">
+                          {client.medicalInformation.dnr.location || "-"}
+                        </td>
+                        <td className="px-3 py-2">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              client.medicalInformation.dnr.familyAware
+                                ? "bg-green-100 text-green-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {client.medicalInformation.dnr.familyAware
+                              ? "Yes"
+                              : "No"}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  {client.medicalInformation.dnr.notes && (
+                    <div className="mt-2">
+                      <span className="font-medium">Notes:</span>{" "}
+                      {client.medicalInformation.dnr.notes}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center py-8">
+                  <ShieldCheck className="w-10 h-10 text-gray-200 mb-2" />
+                  <p className="text-gray-500">No DNR status recorded.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1078,6 +1317,8 @@ export function ClientProfileDetails({ client, onBack }) {
 
       {![
         "overview",
+        "personal",
+        "medical",
         "contacts",
         "risk-assessments",
         "care-plan",

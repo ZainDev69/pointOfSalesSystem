@@ -16,8 +16,10 @@ export const createClient = createAsyncThunk(
             console.log("The Client is Saved into DB")
             return response.data.data;
         } catch (error) {
-            console.error("Error while saving client:", error?.response?.data || error.message);
-            return rejectWithValue(error?.response?.data?.message || "Unknown error");
+            if (error.response?.status === 400) {
+                return rejectWithValue(error.response.data.errors); // <-- pass validation errors
+            }
+            return rejectWithValue([{ msg: 'Unknown error' }]);
         }
     }
 );

@@ -1,70 +1,178 @@
 const mongoose = require('mongoose');
 
 const clientSchema = new mongoose.Schema({
-    ClientID: {
-        type: String,
-        required: [true, 'Client ID is required'],
-        unique: true
+    ClientID: { type: String, required: true, unique: true },
+    personalDetails: {
+        fullName: { type: String, required: true },
+        preferredName: String,
+        dateOfBirth: { type: Date, required: true },
+        gender: { type: String, required: true },
+        nhsNumber: { type: String, required: true },
+        relationshipStatus: String,
+        ethnicity: String,
+        status: String,
     },
-    FullName: {
-        type: String,
-        required: [true, 'Full name is required']
+    addressInformation: {
+        address: { type: String, required: true },
+        city: { type: String, required: true },
+        county: String,
+        postCode: String,
+        country: String,
+        accessInstructions: String,
     },
-    PreferredName: {
-        type: String
+    contactInformation: {
+        primaryPhone: { type: String, required: true },
+        secondaryPhone: String,
+        email: String,
+        preferredContactMethod: String,
+        bestTimeToContact: String,
     },
-    DateOfBirth: {
-        type: Date,
-        required: [true, 'Date of birth is required']
+    nextOfKin: {
+        name: { type: String, required: true },
+        relationship: { type: String, required: true },
+        phone: { type: String, required: true },
+        email: String,
+        hasLegalAuthority: Boolean,
+        powerOfAttorney: Boolean,
     },
-    Gender: {
-        type: String,
-        enum: ['Male', 'Female', 'Non-Binary', 'Other', 'Prefer not to say'],
-        required: true
+    consent: {
+        photoConsent: Boolean,
+        dataProcessingConsent: Boolean,
     },
-
-    Address: {
-        type: String
+    healthcareContacts: {
+        gp: {
+            id: String,
+            name: String,
+            role: String,
+            organization: String,
+            phone: String,
+            email: String,
+        },
+        practice: {
+            name: String,
+            phone: String,
+            email: String,
+            outOfHoursNumber: String,
+            address: {
+                line1: String,
+                line2: String,
+                city: String,
+                county: String,
+                postcode: String,
+                country: String,
+            },
+        },
     },
-    PhoneNumber: {
-        type: String
+    medicalInformation: {
+        conditions: [
+            {
+                id: String,
+                condition: String,
+                diagnosisDate: String,
+                severity: String,
+                status: String,
+                notes: String,
+            },
+        ],
+        allergies: [
+            {
+                id: String,
+                allergen: String,
+                reaction: String,
+                severity: String,
+                treatment: String,
+                notes: String,
+            },
+        ],
+        medications: [
+            {
+                id: String,
+                name: String,
+                dosage: String,
+                frequency: String,
+                route: String,
+                prescribedBy: String,
+                startDate: String,
+                indication: String,
+                status: String,
+            },
+        ],
+        mentalCapacity: {
+            hasCapacity: Boolean,
+            assessmentDate: String,
+            assessedBy: String,
+            specificDecisions: [String],
+            supportNeeds: [String],
+            reviewDate: String,
+            notes: String,
+        },
+        dnr: {
+            hasDNR: Boolean,
+            dateIssued: String,
+            issuedBy: String,
+            reviewDate: String,
+            location: String,
+            familyAware: Boolean,
+            notes: String,
+        },
     },
-    EmailAddress: {
-        type: String,
-        lowercase: true
+    preferences: {
+        cultural: {
+            background: String,
+            traditions: [String],
+            importantDates: [String],
+            languagePreferences: [String],
+            culturalNeeds: [String],
+        },
+        religious: {
+            religion: String,
+            denomination: String,
+            practiceLevel: String,
+            religiousNeeds: [String],
+            prayerRequirements: String,
+            dietaryRestrictions: [String],
+            holyDays: [String],
+            spiritualSupport: Boolean,
+        },
+        dietary: {
+            dietType: [String],
+            allergies: [String],
+            dislikes: [String],
+            preferences: [String],
+            textureModification: Boolean,
+            fluidThickening: Boolean,
+            assistanceLevel: String,
+            specialEquipment: [String],
+            nutritionalSupplements: [String],
+            feedingTimes: [String],
+        },
+        personal: {
+            wakeUpTime: String,
+            bedTime: String,
+            bathingPreferences: {
+                frequency: String,
+                timeOfDay: String,
+                bathOrShower: String,
+                temperature: String,
+                privacy: String,
+                assistance: String,
+                products: [String],
+            },
+            dressingPreferences: {
+                assistance: String,
+                clothing: [String],
+                footwear: [String],
+                accessories: [String],
+                adaptations: [String],
+            },
+            mobilityAids: [String],
+            comfortItems: [String],
+            routines: [String],
+            hobbies: [String],
+            interests: [String],
+        },
     },
-    NHSNumber: {
-        type: String
-    },
-    Ethnicity: {
-        type: String
-    },
-    Religion: {
-        type: String
-    },
-    RelationshipStatus: {
-        type: String
-    },
-    SexualOrientation: {
-        type: String
-    },
-    ServiceStatus: {
-        type: String,
-        enum: ['Active', 'Inactive', 'Hospitalized', 'Care Home'],
-        default: 'Active'
-    },
-    StartDate: {
-        type: Date,
-        default: Date.now
-    },
-    Notes: {
-        type: String
-    },
-    Archived: {
-        type: Boolean,
-        default: false
-    }
-
+    Archived: { type: Boolean, default: false },
 });
 
 const Client = mongoose.model('Client', clientSchema);

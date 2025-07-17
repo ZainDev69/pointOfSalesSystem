@@ -23,31 +23,32 @@ export function ClientProfileForm({ client, onBack, onSave }) {
   const toInputDate = (val) => (val ? val.slice(0, 10) : "");
 
   const [formData, setFormData] = useState({
+    clientId: client?.clientId || "",
     personalDetails: {
-      clientId: client?.clientId || "",
-      fullName: client?.fullName || "",
-      preferredName: client?.preferredName || "",
-      dateOfBirth: toInputDate(client?.dateOfBirth),
-      gender: client?.gender || "",
-      nhsNumber: client?.nhsNumber || "",
-      relationshipStatus: client?.relationshipStatus || "",
-      ethnicity: client?.ethnicity || "",
-      status: client?.status || "",
+      fullName: client?.personalDetails.fullName || "",
+      preferredName: client?.personalDetails.preferredName || "",
+      dateOfBirth: toInputDate(client?.personalDetails.dateOfBirth),
+      gender: client?.personalDetails.gender || "",
+      nhsNumber: client?.personalDetails.nhsNumber || "",
+      relationshipStatus: client?.personalDetails.relationshipStatus || "",
+      ethnicity: client?.personalDetails.ethnicity || "",
+      status: client?.personalDetails.status || "",
     },
     addressInformation: {
-      address: client?.address || "",
-      city: client?.city || "",
-      county: client?.county || "",
-      postCode: client?.postCode || "",
-      country: client?.country || "United Kingdom",
-      accessInstructions: client?.accessInstructions || "",
+      address: client?.addressInformation.address || "",
+      city: client?.addressInformation.city || "",
+      county: client?.addressInformation.county || "",
+      postCode: client?.addressInformation.postCode || "",
+      country: client?.addressInformation.country || "United Kingdom",
+      accessInstructions: client?.addressInformation.accessInstructions || "",
     },
     contactInformation: {
-      primaryPhone: client?.primaryPhone || "",
-      secondaryPhone: client?.secondaryPhone || "",
-      email: client?.email || "",
-      preferredContactMethod: client?.preferredContactMethod || "",
-      bestTimeToContact: client?.bestTimeToContact || "",
+      primaryPhone: client?.contactInformation.primaryPhone || "",
+      secondaryPhone: client?.contactInformation.secondaryPhone || "",
+      email: client?.contactInformation.email || "",
+      preferredContactMethod:
+        client?.contactInformation.preferredContactMethod || "",
+      bestTimeToContact: client?.contactInformation.bestTimeToContact || "",
     },
     nextOfKin: {
       name: client?.nextOfKin?.name || "",
@@ -58,8 +59,8 @@ export function ClientProfileForm({ client, onBack, onSave }) {
       powerOfAttorney: client?.nextOfKin?.powerOfAttorney || false,
     },
     consent: {
-      photoConsent: client?.photoConsent || false,
-      dataProcessingConsent: client?.dataProcessingConsent || false,
+      photoConsent: client?.consent.photoConsent || false,
+      dataProcessingConsent: client?.consent.dataProcessingConsent || false,
     },
     healthcareContacts: {
       gp: {
@@ -203,7 +204,7 @@ export function ClientProfileForm({ client, onBack, onSave }) {
 
   // Real-time check for Client ID existence
   useEffect(() => {
-    const id = formData.personalDetails.clientId;
+    const id = formData.clientId;
     if (!id) {
       setClientIdExists(false);
       return;
@@ -212,28 +213,24 @@ export function ClientProfileForm({ client, onBack, onSave }) {
     fetch(`${import.meta.env.VITE_BACKEND_URL}/clients?clientId=${id}`)
       .then((res) => res.json())
       .then((data) => {
-        // Assume API returns an array of clients
         setClientIdExists(
           Array.isArray(data.data) && data.data.some((c) => c.ClientID === id)
         );
         setCheckingClientId(false);
       })
       .catch(() => setCheckingClientId(false));
-  }, [formData.personalDetails.clientId]);
+  }, [formData.clientId]);
 
   // Handle checkbox toggle
   const handlePvtToggle = (checked) => {
     setIsPvt(checked);
     setFormData((prev) => ({
       ...prev,
-      personalDetails: {
-        ...prev.personalDetails,
-        clientId: checked
-          ? prev.personalDetails.clientId.startsWith("PVT")
-            ? prev.personalDetails.clientId
-            : "PVT"
-          : prev.personalDetails.clientId.replace(/^PVT/, ""),
-      },
+      clientId: checked
+        ? prev.clientId.startsWith("PVT")
+          ? prev.clientId
+          : "PVT"
+        : prev.clientId.replace(/^PVT/, ""),
     }));
   };
 
@@ -256,20 +253,9 @@ export function ClientProfileForm({ client, onBack, onSave }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const clientData = {
-      ...formData.personalDetails,
-      ...formData.contactInformation,
-      ...formData.additionalInformation,
-      ...formData.serviceInformation,
-      updatedAt: new Date().toISOString(),
-      createdBy: client?.createdBy || "Current User",
-      nextReviewDate:
-        client?.nextReviewDate ||
-        new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-    };
-
-    onSave(clientData);
+    // Send the entire formData object to the backend
+    console.log(formData);
+    onSave(formData);
   };
 
   const handleNestedChange = (section, subsection, field, value) => {
@@ -487,7 +473,7 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                 <div className="flex flex-col space-y-4">
                   <Input
                     label="Client ID"
-                    value={formData.personalDetails.clientId}
+                    value={formData.clientId}
                     required
                     placeholder="Leave blank to auto-generate ID"
                     onChange={(val) => {
@@ -496,7 +482,7 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                         newVal = "PVT" + val.replace(/^PVT/, "");
                       if (!isPvt && newVal.startsWith("PVT"))
                         newVal = newVal.replace(/^PVT/, "");
-                      handleChange("personalDetails", "clientId", newVal);
+                      setFormData((prev) => ({ ...prev, clientId: newVal }));
                     }}
                   />
                   {checkingClientId && (
@@ -700,7 +686,7 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                   }
                 />
                 <Input
-                  label="SEmail"
+                  label="Email"
                   type="email"
                   value={formData.contactInformation.email}
                   onChange={(val) =>
