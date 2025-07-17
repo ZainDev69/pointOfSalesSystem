@@ -15,4 +15,11 @@ router.route('/:id')
     .patch(clientController.updateClient)
     .delete(clientController.deleteClient);
 
+router
+    .route('/:id/archive')
+    .patch(clientController.archiveClient);
+router
+    .route('/:id/unarchive')
+    .patch(clientController.unarchiveClient);
+
 module.exports = router;

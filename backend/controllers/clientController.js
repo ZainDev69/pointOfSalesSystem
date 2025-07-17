@@ -63,6 +63,40 @@ exports.deleteClient = catchAsync(async (req, res, next) => {
 })
 
 
+exports.archiveClient = catchAsync(async (req, res, next) => {
+    const { id } = req.params;
+    const client = await Client.findByIdAndUpdate(
+        id,
+        { Archived: true },
+        { new: true, runValidators: true }
+    );
+
+    if (!client) return next(new AppError('No Client found with that ID', 404));
+
+    res.status(200).json({
+        status: 'Success',
+        data: client
+    });
+});
+
+
+exports.unarchiveClient = catchAsync(async (req, res, next) => {
+    const { id } = req.params;
+    const client = await Client.findByIdAndUpdate(
+        id,
+        { Archived: false },
+        { new: true, runValidators: true }
+    );
+
+    if (!client) return next(new AppError('No Client found with that ID', 404));
+
+    res.status(200).json({
+        status: 'Success',
+        data: client
+    });
+});
+
+
 
 
 

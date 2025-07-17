@@ -78,6 +78,39 @@ export const updateClient = createAsyncThunk(
     }
 )
 
+export const archiveClient = createAsyncThunk(
+    "clients/archiveClient",
+    async (clientId, { rejectWithValue }) => {
+        try {
+            const response = await axios.patch(
+                `${import.meta.env.VITE_BACKEND_URL}/clients/${clientId}/archive`,
+                {},
+                { withCredentials: true }
+            );
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data.message);
+        }
+    }
+);
+
+export const unarchiveClient = createAsyncThunk(
+    "clients/unarchiveClient",
+    async (clientId, { rejectWithValue }) => {
+        try {
+            const response = await axios.patch(
+                `${import.meta.env.VITE_BACKEND_URL}/clients/${clientId}/unarchive`,
+                {},
+                { withCredentials: true }
+            );
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Error unarchiving client");
+        }
+    }
+);
+
+
 
 const initialState = {
     clients: [],
@@ -132,7 +165,6 @@ const clientSlice = createSlice({
             })
 
 
-
             // Updating the Client
             .addCase(updateClient.pending, (state) => {
                 state.loading = true;
@@ -163,6 +195,41 @@ const clientSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+            // Archiving the Clients 
+            .addCase(archiveClient.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(archiveClient.fulfilled, (state, action) => {
+                state.loading = false;
+                const updatedClient = action.payload;
+                const index = state.clients.findIndex((client) => client._id === updatedClient._id);
+                if (index !== -1) {
+                    state.clients[index] = updatedClient;
+                }
+            })
+            .addCase(archiveClient.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Unarchiving the Clients
+            .addCase(unarchiveClient.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(unarchiveClient.fulfilled, (state, action) => {
+                state.loading = false;
+                const updatedClient = action.payload;
+                const index = state.clients.findIndex((c) => c._id === updatedClient._id);
+                if (index !== -1) {
+                    state.clients[index] = updatedClient;
+                }
+            })
+            .addCase(unarchiveClient.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
+
+
     }
 })
 

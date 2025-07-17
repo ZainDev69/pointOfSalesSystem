@@ -22,10 +22,7 @@ const clientSchema = new mongoose.Schema({
         enum: ['Male', 'Female', 'Non-Binary', 'Other', 'Prefer not to say'],
         required: true
     },
-    Pronouns: {
-        type: String,
-        enum: ['He/Him', 'She/Her', 'They/Them', 'Other'],
-    },
+
     Address: {
         type: String
     },
@@ -62,7 +59,12 @@ const clientSchema = new mongoose.Schema({
     },
     Notes: {
         type: String
+    },
+    Archived: {
+        type: Boolean,
+        default: false
     }
+
 });
 
 const Client = mongoose.model('Client', clientSchema);

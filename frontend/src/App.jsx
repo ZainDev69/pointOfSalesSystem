@@ -50,7 +50,6 @@ function App() {
 
       <div className="lg:ml-72">
         <Header />
-
         <main className="p-4 lg:p-6">{renderSection()}</main>
       </div>
     </div>
