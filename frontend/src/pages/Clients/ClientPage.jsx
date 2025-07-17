@@ -29,6 +29,8 @@ export default function Clients() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [showArchived, setShowArchived] = useState(false);
+  const [sortField, setSortField] = useState("name");
+  const [sortDirection, setSortDirection] = useState("asc");
 
   const [currentPage, setCurrentPage] = useState(1);
   const clientsPerPage = 10;
@@ -39,16 +41,16 @@ export default function Clients() {
 
   const totalClients = clientData.length;
   const activeClients = clientData.filter(
-    (c) => c.ServiceStatus?.toLowerCase() === "active"
+    (c) => c.personalDetails.status.toLowerCase() === "active"
   ).length;
   const inactiveClients = clientData.filter(
-    (c) => c.ServiceStatus?.toLowerCase() === "inactive"
+    (c) => c.personalDetails.status.toLowerCase() === "inactive"
   ).length;
   const hospitalizedClients = clientData.filter(
-    (c) => c.ServiceStatus?.toLowerCase() === "hospitalized"
+    (c) => c.personalDetails.status.toLowerCase() === "hospitalized"
   ).length;
   const careHomeClients = clientData.filter(
-    (c) => c.ServiceStatus?.toLowerCase() === "care home"
+    (c) => c.personalDetails.status.toLowerCase() === "care home"
   ).length;
 
   const confirmAction = ({ title, message, onConfirm }) => {
@@ -147,18 +149,34 @@ export default function Clients() {
 
     const search = searchTerm.toLowerCase();
     const matchesSearch =
-      client.FullName?.toLowerCase().includes(search) ||
+      client.personalDetails.fullName?.toLowerCase().includes(search) ||
       client.ClientID?.toLowerCase().includes(search) ||
-      client.PhoneNumber?.toLowerCase().includes(search) ||
-      client.EmailAddress?.toLowerCase().includes(search) ||
-      client.NHSNumber?.toLowerCase().includes(search);
+      client.contactInformation.primaryPhone?.toLowerCase().includes(search) ||
+      client.contactInformation.email?.toLowerCase().includes(search) ||
+      client.personalDetails.nhsNumber?.toLowerCase().includes(search);
 
     const matchesArchive = showArchived ? true : !client.Archived;
     return matchesStatus && matchesSearch && matchesArchive;
   });
 
-  const totalPages = Math.ceil(filteredClients.length / clientsPerPage);
-  const paginatedClients = filteredClients.slice(
+  // Sorting logic
+  const sortedClients = [...filteredClients].sort((a, b) => {
+    let aValue, bValue;
+    if (sortField === "name") {
+      aValue = a?.personalDetails?.fullName?.toLowerCase() || "";
+      bValue = b?.personalDetails?.fullName?.toLowerCase() || "";
+    } else if (sortField === "date") {
+      // Use createdAt or dateAdded; fallback to a very old date if not present
+      aValue = new Date(a?.createdAt || a?.dateAdded || "1970-01-01");
+      bValue = new Date(b?.createdAt || b?.dateAdded || "1970-01-01");
+    }
+    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  const totalPages = Math.ceil(sortedClients.length / clientsPerPage);
+  const paginatedClients = sortedClients.slice(
     (currentPage - 1) * clientsPerPage,
     currentPage * clientsPerPage
   );
@@ -274,7 +292,7 @@ export default function Clients() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder="Search clients..."
+              placeholder="Search clients by Name,ClientID,phone,email or NHS Number..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
@@ -293,6 +311,30 @@ export default function Clients() {
               <option value="hospitalized">Hospitalized</option>
               <option value="care home">Care Home</option>
             </select>
+          </div>
+          {/* Sorting Controls */}
+          <div className="flex items-center space-x-2">
+            <label className="text-sm text-gray-700">Sort by:</label>
+            <select
+              value={sortField}
+              onChange={(e) => setSortField(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2"
+            >
+              <option value="name">Name</option>
+              <option value="date">Date Added</option>
+            </select>
+            <button
+              onClick={() =>
+                setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+              }
+              className="border border-gray-300 rounded-lg px-2 py-2"
+              title={`Sort ${
+                sortDirection === "asc" ? "Descending" : "Ascending"
+              }`}
+              type="button"
+            >
+              {sortDirection === "asc" ? "↑" : "↓"}
+            </button>
           </div>
         </div>
       </div>
@@ -333,7 +375,7 @@ export default function Clients() {
                   <div
                     key={index}
                     className={`p-6 hover:bg-gray-50 transition-colors ${getBorderColor(
-                      client.ServiceStatus
+                      client.personalDetails.status
                     )} ${client.Archived ? "opacity-50" : ""}`}
                   >
                     <div className="flex items-center justify-between">
@@ -348,10 +390,10 @@ export default function Clients() {
                             </h3>
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
-                                client.ServiceStatus
+                                client.personalDetails.status
                               )}`}
                             >
-                              {client.ServiceStatus}
+                              {client.personalDetails.status}
                             </span>
                             {client.Archived && (
                               <span className="ml-2 px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700">

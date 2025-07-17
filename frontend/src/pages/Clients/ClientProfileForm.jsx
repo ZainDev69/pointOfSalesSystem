@@ -25,6 +25,7 @@ export function ClientProfileForm({ client, onBack, onSave }) {
   const [formData, setFormData] = useState({
     clientId: client?.clientId || "",
     personalDetails: {
+      title: client?.personalDetails.title || "",
       fullName: client?.personalDetails.fullName || "",
       preferredName: client?.personalDetails.preferredName || "",
       dateOfBirth: toInputDate(client?.personalDetails.dateOfBirth),
@@ -496,6 +497,14 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                     </span>
                   )}
                 </div>
+                <Select
+                  label="Title"
+                  value={formData.personalDetails.title}
+                  onChange={(val) =>
+                    handleChange("personalDetails", "title", val)
+                  }
+                  options={["Mr", "Mrs", "Miss", "Ms", "Dr", "Prof", "Rev"]}
+                />
                 <Input
                   label="Full Name"
                   value={formData.personalDetails.fullName}
