@@ -23,8 +23,16 @@ app.use(helmet());
 
 
 const clientRouter = require('./routes/clientRoutes');
+const contactRoutes = require("./routes/contactRoutes");
+
+app.use((req, res, next) => {
+    console.log(`[${req.method}] ${req.originalUrl}`);
+    next();
+});
 
 app.use('/clients', clientRouter);
+app.use("/api/clients", contactRoutes);
+
 
 
 

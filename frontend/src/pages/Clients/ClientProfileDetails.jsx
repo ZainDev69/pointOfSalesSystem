@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
   User,
@@ -21,13 +21,24 @@ import {
   Brain,
   ShieldCheck,
   FileQuestion,
+  Trash,
 } from "lucide-react";
+import toast from "react-hot-toast";
+
 import { RiskAssessmentManager } from "./RiskAssessmentManager";
 import { CarePlanManager } from "./CarePlanManager";
 import { ContactForm } from "./ContactForm";
 import { VisitScheduleManager } from "./VisitScheduleManager";
 import { DocumentationManager } from "./DocumentationManager";
 import { ComplianceTracker } from "./ComplianceTracker";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchContacts,
+  addContact,
+  editContact,
+  deleteContact,
+} from "../../components/redux/slice/contacts";
+import Spinner from "../../components/layout/Spinner";
 
 export function ClientProfileDetails({ client, onBack }) {
   console.log("The Client Data is", client);
@@ -35,77 +46,19 @@ export function ClientProfileDetails({ client, onBack }) {
   const [contactView, setContactView] = useState("list");
   const [selectedContact, setSelectedContact] = useState(null);
   const [contactFilter, setContactFilter] = useState("all");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [contactToDelete, setContactToDelete] = useState(null);
 
-  const mockContacts = [
-    {
-      id: "1",
-      name: "John Thompson",
-      relationship: "Son",
-      contactType: "family",
-      phone: "+44 20 7123 4568",
-      email: "john.thompson@email.com",
-      isRegularVisitor: true,
-      visitFrequency: "weekly",
-      consentToContact: true,
-      canReceiveUpdates: true,
-      canMakeDecisions: true,
-      hasKeyAccess: true,
-      status: "active",
-      addedDate: "2024-01-15",
-      lastContactDate: "2024-01-10",
-    },
-    {
-      id: "2",
-      name: "Sarah Thompson",
-      relationship: "Daughter",
-      contactType: "family",
-      phone: "+44 20 7123 4569",
-      alternativePhone: "+44 7123 456789",
-      email: "sarah.thompson@email.com",
-      isRegularVisitor: true,
-      visitFrequency: "fortnightly",
-      consentToContact: true,
-      canReceiveUpdates: true,
-      canMakeDecisions: false,
-      hasKeyAccess: false,
-      status: "active",
-      addedDate: "2024-01-15",
-    },
-    {
-      id: "3",
-      name: "Mary Johnson",
-      relationship: "Best Friend",
-      contactType: "friend",
-      phone: "+44 20 7123 4570",
-      email: "mary.johnson@email.com",
-      isRegularVisitor: true,
-      visitFrequency: "weekly",
-      preferredContactTime: "Weekday afternoons",
-      consentToContact: true,
-      canReceiveUpdates: false,
-      canMakeDecisions: false,
-      hasKeyAccess: false,
-      status: "active",
-      addedDate: "2024-01-20",
-    },
-    {
-      id: "4",
-      name: "Robert Smith",
-      relationship: "Next Door Neighbor",
-      contactType: "neighbor",
-      phone: "+44 20 7123 4571",
-      isRegularVisitor: false,
-      consentToContact: true,
-      canReceiveUpdates: false,
-      canMakeDecisions: false,
-      hasKeyAccess: true,
-      specialInstructions: "Emergency contact only - has spare key",
-      status: "active",
-      addedDate: "2024-01-25",
-    },
-  ];
+  const dispatch = useDispatch();
 
-  const [contacts, setContacts] = useState(mockContacts);
+  const contacts = useSelector((state) => state.contacts.items) || [];
+  const loadingContacts = useSelector((state) => state.contacts.loading);
+
+  useEffect(() => {
+    if (client && client._id) {
+      dispatch(fetchContacts(client._id));
+    }
+  }, [client._id]);
 
   const handleAddContact = () => {
     setSelectedContact(null);
@@ -117,22 +70,55 @@ export function ClientProfileDetails({ client, onBack }) {
     setContactView("form");
   };
 
-  const handleSaveContact = (contactData) => {
-    if ("id" in contactData) {
-      // Update existing contact
-      setContacts((prev) =>
-        prev.map((c) => (c.id === contactData.id ? contactData : c))
-      );
-    } else {
-      // Add new contact
-      const newContact = {
-        ...contactData,
-        id: Date.now().toString(),
-      };
-      setContacts((prev) => [...prev, newContact]);
+  const handleSaveContact = async (contactData) => {
+    try {
+      if (contactData._id) {
+        await dispatch(
+          editContact({
+            clientId: client._id,
+            contactId: contactData._id,
+            contactData,
+          })
+        ).unwrap();
+        toast.success("Contact updated successfully");
+      } else {
+        await dispatch(
+          addContact({
+            clientId: client._id,
+            contactData,
+          })
+        ).unwrap();
+        toast.success("Contact added successfully");
+      }
+      setContactView("list");
+      setSelectedContact(null);
+    } catch (error) {
+      toast.error("Something went wrong while saving the contact");
     }
-    setContactView("list");
-    setSelectedContact(null);
+  };
+
+  const handleDeleteContact = (contactId) => {
+    setContactToDelete(contactId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteContact = async () => {
+    try {
+      await dispatch(
+        deleteContact({ clientId: client._id, contactId: contactToDelete })
+      ).unwrap();
+      toast.success("Contact deleted");
+    } catch (err) {
+      toast.error("Failed to delete contact");
+    } finally {
+      setShowDeleteModal(false);
+      setContactToDelete(null);
+    }
+  };
+
+  const cancelDeleteContact = () => {
+    setShowDeleteModal(false);
+    setContactToDelete(null);
   };
 
   const handleBackToContactList = () => {
@@ -140,17 +126,15 @@ export function ClientProfileDetails({ client, onBack }) {
     setSelectedContact(null);
   };
 
-  const getContactTypeIcon = (type) => {
-    switch (type) {
-      case "family":
-        return Heart;
-      case "friend":
-        return Users;
-      case "neighbor":
-        return Home;
-      default:
-        return User;
-    }
+  const contactTypeIconMap = {
+    family: { icon: Heart, bg: "bg-red-100", text: "text-red-600" },
+    friend: { icon: Users, bg: "bg-blue-100", text: "text-blue-600" },
+    neighbor: { icon: Home, bg: "bg-green-100", text: "text-green-600" },
+    other: { icon: User, bg: "bg-gray-100", text: "text-gray-600" },
+  };
+
+  const getContactTypeIconStyles = (type) => {
+    return contactTypeIconMap[type] || contactTypeIconMap["other"];
   };
 
   const getStatusColor = (status) => {
@@ -207,6 +191,34 @@ export function ClientProfileDetails({ client, onBack }) {
     <div>
       <p className="text-sm font-medium text-gray-500">{label}</p>
       <p className="text-gray-900">{children}</p>
+    </div>
+  );
+
+  const DeleteContactModal = () => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          Delete Contact?
+        </h2>
+        <p className="text-gray-700 mb-4">
+          Are you sure you want to delete this contact? This action cannot be
+          undone.
+        </p>
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={cancelDeleteContact}
+            className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirmDeleteContact}
+            className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
     </div>
   );
 
@@ -280,7 +292,7 @@ export function ClientProfileDetails({ client, onBack }) {
                         Full Name
                       </p>
                       <p className="text-gray-900">
-                        {client.personalDetails.fullName}
+                        {client.personalDetails.fullName || "Not Specified"}
                       </p>
                     </div>
                   </div>
@@ -977,293 +989,292 @@ export function ClientProfileDetails({ client, onBack }) {
         </div>
       )}
 
-      {activeTab === "contacts" && (
-        <div className="space-y-6">
-          {/* Contact Statistics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-gray-900">
-                  {contactStats.total}
-                </p>
-                <p className="text-sm text-gray-600">Total Contacts</p>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-red-600">
-                  {contactStats.family}
-                </p>
-                <p className="text-sm text-gray-600">Family</p>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-blue-600">
-                  {contactStats.friends}
-                </p>
-                <p className="text-sm text-gray-600">Friends</p>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-green-600">
-                  {contactStats.neighbors}
-                </p>
-                <p className="text-sm text-gray-600">Neighbors</p>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-purple-600">
-                  {contactStats.regularVisitors}
-                </p>
-                <p className="text-sm text-gray-600">Regular Visitors</p>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-yellow-600">
-                  {contactStats.keyHolders}
-                </p>
-                <p className="text-sm text-gray-600">Key Holders</p>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-indigo-600">
-                  {contactStats.decisionMakers}
-                </p>
-                <p className="text-sm text-gray-600">Decision Makers</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Contact Management */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Family & Friends Contacts
-                  </h3>
-                  <div className="flex items-center space-x-2">
-                    <select
-                      value={contactFilter}
-                      onChange={(e) => setContactFilter(e.target.value)}
-                      className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="all">All Contacts</option>
-                      <option value="family">Family</option>
-                      <option value="friend">Friends</option>
-                      <option value="neighbor">Neighbors</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
+      {activeTab === "contacts" && loadingContacts ? (
+        <Spinner />
+      ) : (
+        activeTab === "contacts" && (
+          <div className="space-y-6">
+            {/* Contact Statistics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-gray-900">
+                    {contactStats.total}
+                  </p>
+                  <p className="text-sm text-gray-600">Total Contacts</p>
                 </div>
+              </div>
 
-                <button
-                  onClick={handleAddContact}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Contact</span>
-                </button>
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-red-600">
+                    {contactStats.family}
+                  </p>
+                  <p className="text-sm text-gray-600">Family</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-blue-600">
+                    {contactStats.friends}
+                  </p>
+                  <p className="text-sm text-gray-600">Friends</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">
+                    {contactStats.neighbors}
+                  </p>
+                  <p className="text-sm text-gray-600">Neighbors</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-purple-600">
+                    {contactStats.regularVisitors}
+                  </p>
+                  <p className="text-sm text-gray-600">Regular Visitors</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {contactStats.keyHolders}
+                  </p>
+                  <p className="text-sm text-gray-600">Key Holders</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-indigo-600">
+                    {contactStats.decisionMakers}
+                  </p>
+                  <p className="text-sm text-gray-600">Decision Makers</p>
+                </div>
               </div>
             </div>
 
-            <div className="divide-y divide-gray-200">
-              {filteredContacts.map((contact) => {
-                const ContactTypeIcon = getContactTypeIcon(contact.contactType);
-                return (
-                  <div
-                    key={contact.id}
-                    className="p-6 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                            contact.contactType === "family"
-                              ? "bg-red-100"
-                              : contact.contactType === "friend"
-                              ? "bg-blue-100"
-                              : contact.contactType === "neighbor"
-                              ? "bg-green-100"
-                              : "bg-gray-100"
-                          }`}
-                        >
-                          <ContactTypeIcon
-                            className={`w-6 h-6 ${
-                              contact.contactType === "family"
-                                ? "text-red-600"
-                                : contact.contactType === "friend"
-                                ? "text-blue-600"
-                                : contact.contactType === "neighbor"
-                                ? "text-green-600"
-                                : "text-gray-600"
-                            }`}
-                          />
-                        </div>
+            {/* Contact Management */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Family & Friends Contacts
+                    </h3>
+                    <div className="flex items-center space-x-2">
+                      <select
+                        value={contactFilter}
+                        onChange={(e) => setContactFilter(e.target.value)}
+                        className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="all">All Contacts</option>
+                        <option value="family">Family</option>
+                        <option value="friend">Friends</option>
+                        <option value="neighbor">Neighbors</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
 
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3">
-                            <h4 className="text-lg font-medium text-gray-900">
-                              {contact.name}
-                            </h4>
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                                contact.status
-                              )}`}
-                            >
-                              {contact.status}
-                            </span>
-                            {contact.isRegularVisitor && (
-                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                Regular Visitor
-                              </span>
-                            )}
-                            {contact.hasKeyAccess && (
-                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                Key Holder
-                              </span>
-                            )}
-                            {contact.canMakeDecisions && (
-                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                Decision Maker
-                              </span>
-                            )}
+                  <button
+                    onClick={handleAddContact}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Contact</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="divide-y divide-gray-200">
+                {filteredContacts.map((contact) => {
+                  const {
+                    icon: ContactTypeIcon,
+                    bg,
+                    text,
+                  } = getContactTypeIconStyles(contact.contactType);
+
+                  return (
+                    <div
+                      key={contact._id}
+                      className="p-6 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div
+                            className={`w-12 h-12 rounded-full flex items-center justify-center ${bg}`}
+                          >
+                            <ContactTypeIcon className={`w-6 h-6 ${text}`} />
                           </div>
 
-                          <p className="text-sm text-gray-600 mt-1">
-                            {contact.relationship} •{" "}
-                            {contact.contactType.charAt(0).toUpperCase() +
-                              contact.contactType.slice(1)}
-                          </p>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3">
+                              <h4 className="text-lg font-medium text-gray-900">
+                                {contact.name}
+                              </h4>
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                  contact.status
+                                )}`}
+                              >
+                                {contact.status}
+                              </span>
+                              {contact.isRegularVisitor && (
+                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                  Regular Visitor
+                                </span>
+                              )}
+                              {contact.hasKeyAccess && (
+                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                  Key Holder
+                                </span>
+                              )}
+                              {contact.canMakeDecisions && (
+                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                  Decision Maker
+                                </span>
+                              )}
+                            </div>
 
-                          <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-600">
-                            {contact.phone && (
-                              <div className="flex items-center">
-                                <Phone className="w-4 h-4 mr-1" />
-                                <span>{contact.phone}</span>
-                              </div>
-                            )}
+                            <p className="text-sm text-gray-600 mt-1">
+                              {contact.relationship} •{" "}
+                              {contact.contactType.charAt(0).toUpperCase() +
+                                contact.contactType.slice(1)}
+                            </p>
 
-                            {contact.email && (
-                              <div className="flex items-center">
-                                <Mail className="w-4 h-4 mr-1" />
-                                <span>{contact.email}</span>
-                              </div>
-                            )}
-
-                            {contact.isRegularVisitor &&
-                              contact.visitFrequency && (
+                            <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-600">
+                              {contact.phone && (
                                 <div className="flex items-center">
-                                  <Calendar className="w-4 h-4 mr-1" />
-                                  <span>Visits {contact.visitFrequency}</span>
+                                  <Phone className="w-4 h-4 mr-1" />
+                                  <span>{contact.phone}</span>
                                 </div>
                               )}
 
-                            {contact.lastContactDate && (
-                              <div className="flex items-center">
-                                <Clock className="w-4 h-4 mr-1" />
-                                <span>
-                                  Last contact:{" "}
-                                  {new Date(
-                                    contact.lastContactDate
-                                  ).toLocaleDateString()}
-                                </span>
+                              {contact.email && (
+                                <div className="flex items-center">
+                                  <Mail className="w-4 h-4 mr-1" />
+                                  <span>{contact.email}</span>
+                                </div>
+                              )}
+
+                              {contact.isRegularVisitor &&
+                                contact.visitFrequency && (
+                                  <div className="flex items-center">
+                                    <Calendar className="w-4 h-4 mr-1" />
+                                    <span>Visits {contact.visitFrequency}</span>
+                                  </div>
+                                )}
+
+                              {contact.lastContactDate && (
+                                <div className="flex items-center">
+                                  <Clock className="w-4 h-4 mr-1" />
+                                  <span>
+                                    Last contact:{" "}
+                                    {new Date(
+                                      contact.lastContactDate
+                                    ).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            {contact.specialInstructions && (
+                              <div className="mt-2">
+                                <p className="text-sm text-gray-700 italic">
+                                  "{contact.specialInstructions}"
+                                </p>
                               </div>
                             )}
                           </div>
+                        </div>
 
-                          {contact.specialInstructions && (
-                            <div className="mt-2">
-                              <p className="text-sm text-gray-700 italic">
-                                "{contact.specialInstructions}"
-                              </p>
-                            </div>
+                        <div className="flex items-center space-x-2">
+                          {contact.phone && (
+                            <button
+                              className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                              title="Call"
+                            >
+                              <Phone className="w-4 h-4" />
+                            </button>
                           )}
+
+                          {contact.email && (
+                            <button
+                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Email"
+                            >
+                              <Mail className="w-4 h-4" />
+                            </button>
+                          )}
+
+                          <button
+                            className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                            title="Log Contact"
+                          >
+                            <MessageSquare className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            onClick={() => handleEditContact(contact)}
+                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Edit Contact"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteContact(contact._id)}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete Contact"
+                          >
+                            <Trash className="w-4 h-4" />
+                          </button>
+
+                          <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
-
-                      <div className="flex items-center space-x-2">
-                        {contact.phone && (
-                          <button
-                            className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Call"
-                          >
-                            <Phone className="w-4 h-4" />
-                          </button>
-                        )}
-
-                        {contact.email && (
-                          <button
-                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Email"
-                          >
-                            <Mail className="w-4 h-4" />
-                          </button>
-                        )}
-
-                        <button
-                          className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                          title="Log Contact"
-                        >
-                          <MessageSquare className="w-4 h-4" />
-                        </button>
-
-                        <button
-                          onClick={() => handleEditContact(contact)}
-                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Edit Contact"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-
-                        <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
 
-              {filteredContacts.length === 0 && (
-                <div className="p-8 text-center">
-                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No contacts found
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    {contactFilter === "all"
-                      ? "No family or friends contacts have been added yet."
-                      : `No ${contactFilter} contacts found.`}
-                  </p>
-                  <button
-                    onClick={handleAddContact}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mx-auto transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Add First Contact</span>
-                  </button>
-                </div>
-              )}
+                {filteredContacts.length === 0 && (
+                  <div className="p-8 text-center">
+                    <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No contacts found
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      {contactFilter === "all"
+                        ? "No family or friends contacts have been added yet."
+                        : `No ${contactFilter} contacts found.`}
+                    </p>
+                    <button
+                      onClick={handleAddContact}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mx-auto transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Add First Contact</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )
       )}
 
       {activeTab === "risk-assessments" && (
         <RiskAssessmentManager
-          clientId={client.id}
+          clientId={client._id}
           assessments={client.riskAssessments || []}
           onAddAssessment={(assessment) =>
             console.log("Add assessment:", assessment)
@@ -1276,7 +1287,7 @@ export function ClientProfileDetails({ client, onBack }) {
 
       {activeTab === "care-plan" && (
         <CarePlanManager
-          clientId={client.id}
+          clientId={client._id}
           carePlan={client.carePlan}
           onUpdateCarePlan={(carePlan) =>
             console.log("Update care plan:", carePlan)
@@ -1286,7 +1297,7 @@ export function ClientProfileDetails({ client, onBack }) {
 
       {activeTab === "visits" && (
         <VisitScheduleManager
-          clientId={client.id}
+          clientId={client._id}
           schedule={client.visitSchedule}
           onUpdateSchedule={(schedule) =>
             console.log("Update schedule:", schedule)
@@ -1296,7 +1307,7 @@ export function ClientProfileDetails({ client, onBack }) {
 
       {activeTab === "documents" && (
         <DocumentationManager
-          clientId={client.id}
+          clientId={client._id}
           documents={client.documentation}
           onAddDocument={(document) => console.log("Add document:", document)}
           onUpdateDocument={(id, document) =>
@@ -1307,13 +1318,15 @@ export function ClientProfileDetails({ client, onBack }) {
 
       {activeTab === "compliance" && (
         <ComplianceTracker
-          clientId={client.id}
+          clientId={client._id}
           compliance={client.compliance}
           onUpdateCompliance={(compliance) =>
             console.log("Update compliance:", compliance)
           }
         />
       )}
+
+      {showDeleteModal && <DeleteContactModal />}
 
       {![
         "overview",

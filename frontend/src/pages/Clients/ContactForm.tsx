@@ -17,6 +17,7 @@ export function ContactForm({ contact, onBack, onSave }) {
   const isEditing = !!contact;
 
   const [formData, setFormData] = useState({
+    _id: contact?._id || undefined,
     name: contact?.name || "",
     relationship: contact?.relationship || "",
     contactType: contact?.contactType || "family",
@@ -53,7 +54,7 @@ export function ContactForm({ contact, onBack, onSave }) {
     };
 
     if (isEditing && contact) {
-      onSave({ ...contactData, id: contact.id });
+      onSave(formData);
     } else {
       onSave(contactData);
     }
