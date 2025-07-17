@@ -96,6 +96,15 @@ exports.unarchiveClient = catchAsync(async (req, res, next) => {
     });
 });
 
+exports.checkClientId = catchAsync(async (req, res, next) => {
+    const { clientId } = req.query;
+    if (!clientId) {
+        return res.status(400).json({ status: 'Fail', message: 'clientId query param required' });
+    }
+    const clients = await Client.find({ ClientID: clientId });
+    res.status(200).json({ status: 'Success', data: clients });
+});
+
 
 
 

@@ -21,4 +21,6 @@ router
     .route('/:id/unarchive')
     .patch(clientController.unarchiveClient);
 
+router.get('/check-id', clientController.checkClientId);
+
 module.exports = router;

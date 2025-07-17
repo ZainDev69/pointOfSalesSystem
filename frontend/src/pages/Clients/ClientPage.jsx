@@ -16,6 +16,7 @@ import {
   deleteClient,
   archiveClient,
   unarchiveClient,
+  checkClientId,
 } from "../../components/redux/slice/clients";
 import { ClientProfileForm } from "./ClientProfileForm";
 import { ClientProfileDetails } from "./ClientProfileDetails";
@@ -155,6 +156,15 @@ export default function Clients() {
       StartDate: formData.startDate,
       Notes: formData.notes,
     };
+
+    // Check if ClientID exists before saving (if not editing)
+    if (!selectedClient?._id && formData.clientId) {
+      const result = await dispatch(checkClientId(formData.clientId));
+      if (result.payload && result.payload.length > 0) {
+        toast.error("This Client ID already exists!");
+        return;
+      }
+    }
 
     try {
       if (selectedClient?._id) {

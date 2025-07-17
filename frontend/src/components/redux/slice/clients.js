@@ -109,7 +109,17 @@ export const unarchiveClient = createAsyncThunk(
         }
     }
 );
-
+export const checkClientId = createAsyncThunk(
+    "clients/checkClientId",
+    async (clientId, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/clients/check-id?clientId=${clientId}`, { withCredentials: true });
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Unknown error");
+        }
+    }
+);
 
 
 const initialState = {

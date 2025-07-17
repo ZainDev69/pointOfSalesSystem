@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Save,
@@ -16,6 +16,9 @@ import {
 export function ClientProfileForm({ client, onBack, onSave }) {
   const [activeTab, setActiveTab] = useState("personal");
   const isEditing = !!client;
+  const [isPvt, setIsPvt] = useState(false);
+  const [clientIdExists, setClientIdExists] = useState(false);
+  const [checkingClientId, setCheckingClientId] = useState(false);
 
   const toInputDate = (val) => (val ? val.slice(0, 10) : "");
 
@@ -197,6 +200,42 @@ export function ClientProfileForm({ client, onBack, onSave }) {
       },
     },
   });
+
+  // Real-time check for Client ID existence
+  useEffect(() => {
+    const id = formData.personalDetails.clientId;
+    if (!id) {
+      setClientIdExists(false);
+      return;
+    }
+    setCheckingClientId(true);
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/clients?clientId=${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        // Assume API returns an array of clients
+        setClientIdExists(
+          Array.isArray(data.data) && data.data.some((c) => c.ClientID === id)
+        );
+        setCheckingClientId(false);
+      })
+      .catch(() => setCheckingClientId(false));
+  }, [formData.personalDetails.clientId]);
+
+  // Handle checkbox toggle
+  const handlePvtToggle = (checked) => {
+    setIsPvt(checked);
+    setFormData((prev) => ({
+      ...prev,
+      personalDetails: {
+        ...prev.personalDetails,
+        clientId: checked
+          ? prev.personalDetails.clientId.startsWith("PVT")
+            ? prev.personalDetails.clientId
+            : "PVT"
+          : prev.personalDetails.clientId.replace(/^PVT/, ""),
+      },
+    }));
+  };
 
   const tabs = [
     { id: "personal", label: "Personal Details", icon: User },
@@ -430,15 +469,47 @@ export function ClientProfileForm({ client, onBack, onSave }) {
               icon={<User className="w-5 h-5 text-gray-400" />}
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Input
-                  label="Client ID"
-                  value={formData.personalDetails.clientId}
-                  required
-                  placeholder="Leave blank to auto-generate ID"
-                  onChange={(val) =>
-                    handleChange("personalDetails", "clientId", val)
-                  }
-                />
+                <div className="md:col-span-3 flex items-center mb-2">
+                  <input
+                    type="checkbox"
+                    id="pvt-checkbox"
+                    checked={isPvt}
+                    onChange={(e) => handlePvtToggle(e.target.checked)}
+                    className="mr-2"
+                  />
+                  <label
+                    htmlFor="pvt-checkbox"
+                    className="text-sm text-gray-700"
+                  >
+                    Prefix Client ID with PVT
+                  </label>
+                </div>
+                <div className="flex flex-col space-y-4">
+                  <Input
+                    label="Client ID"
+                    value={formData.personalDetails.clientId}
+                    required
+                    placeholder="Leave blank to auto-generate ID"
+                    onChange={(val) => {
+                      let newVal = val;
+                      if (isPvt && !val.startsWith("PVT"))
+                        newVal = "PVT" + val.replace(/^PVT/, "");
+                      if (!isPvt && newVal.startsWith("PVT"))
+                        newVal = newVal.replace(/^PVT/, "");
+                      handleChange("personalDetails", "clientId", newVal);
+                    }}
+                  />
+                  {checkingClientId && (
+                    <span className="text-xs text-blue-500">
+                      Checking Client ID...
+                    </span>
+                  )}
+                  {clientIdExists && (
+                    <span className="text-xs text-red-500">
+                      This Client ID already exists!
+                    </span>
+                  )}
+                </div>
                 <Input
                   label="Full Name"
                   value={formData.personalDetails.fullName}
