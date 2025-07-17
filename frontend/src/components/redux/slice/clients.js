@@ -52,7 +52,7 @@ export const getClient = createAsyncThunk(
 
 
 export const deleteClient = createAsyncThunk(
-    "users/deleteClient",
+    "clients/deleteClient",
     async (clientId, { rejectWithValue }) => {
         try {
             await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/clients/${clientId}`, { withCredentials: true });
@@ -65,7 +65,7 @@ export const deleteClient = createAsyncThunk(
 
 
 export const updateClient = createAsyncThunk(
-    "users/updateClient",
+    "clients/updateClient",
     async ({ clientId, clientData }, { rejectWithValue }) => {
         try {
             console.log("Calling the updateClient")

@@ -55,7 +55,7 @@ exports.updateClient = catchAsync(async (req, res, next) => {
 
 exports.deleteClient = catchAsync(async (req, res, next) => {
     const client = await Client.findByIdAndDelete(req.params.id);
-    if (!client) return next(new AppError(`No user found with that ID`, 404));
+    if (!client) return next(new AppError(`No client found with that ID`, 404));
     res.status(204).json({
         status: 'Success',
         data: 'Client deleted Successfully'
