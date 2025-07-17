@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Menu, Bell, Settings, LogOut, Moon } from "lucide-react";
 import { useAuth } from "../Context/AuthContext";
 import { useApp } from "../Context/AppContext";
@@ -6,6 +6,27 @@ import { useApp } from "../Context/AppContext";
 export function Header() {
   const { user, logout } = useAuth();
   const { setSidebarOpen } = useApp();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  function formatDateTime(date) {
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    };
+    return date.toLocaleString("en-US", options);
+  }
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
@@ -22,7 +43,7 @@ export function Header() {
           <div className="hidden md:flex items-center space-x-4">
             <div className="relative">
               <p>Welcome Back Malik Zain</p>
-              <p>Saturday, July 05, 2025 - 6:28 PM</p>
+              <p>{formatDateTime(currentTime)}</p>
             </div>
           </div>
         </div>

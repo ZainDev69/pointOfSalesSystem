@@ -590,6 +590,9 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                 <Input
                   label="Access Instructions"
                   type="text"
+                  placeholder={
+                    "Special instructions for accessing the Property"
+                  }
                   value={formData.addressInformation.accessInstructions}
                   onChange={(val) =>
                     handleChange(
