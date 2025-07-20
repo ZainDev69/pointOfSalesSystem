@@ -41,6 +41,8 @@ import {
   editContact,
   deleteContact,
 } from "../../components/redux/slice/contacts";
+import { clearCarePlans } from "../../components/redux/slice/carePlans";
+import { clearOutcomes } from "../../components/redux/slice/outcomes";
 import Spinner from "../../components/layout/Spinner";
 
 export function ClientProfileDetails({ client, onBack }) {
@@ -61,7 +63,13 @@ export function ClientProfileDetails({ client, onBack }) {
     if (client && client._id) {
       dispatch(fetchContacts(client._id));
     }
-  }, [client._id]);
+
+    // Cleanup function to clear care plans and outcomes when component unmounts
+    return () => {
+      dispatch(clearCarePlans());
+      dispatch(clearOutcomes());
+    };
+  }, [client._id, dispatch]);
 
   const handleAddContact = () => {
     setSelectedContact(null);
@@ -95,7 +103,7 @@ export function ClientProfileDetails({ client, onBack }) {
       }
       setContactView("list");
       setSelectedContact(null);
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong while saving the contact");
     }
   };
@@ -111,7 +119,7 @@ export function ClientProfileDetails({ client, onBack }) {
         deleteContact({ clientId: client._id, contactId: contactToDelete })
       ).unwrap();
       toast.success("Contact deleted");
-    } catch (err) {
+    } catch {
       toast.error("Failed to delete contact");
     } finally {
       setShowDeleteModal(false);
@@ -1372,15 +1380,7 @@ export function ClientProfileDetails({ client, onBack }) {
         />
       )}
 
-      {activeTab === "care-plan" && (
-        <CarePlanManager
-          clientId={client._id}
-          carePlan={client.carePlan}
-          onUpdateCarePlan={(carePlan) =>
-            console.log("Update care plan:", carePlan)
-          }
-        />
-      )}
+      {activeTab === "care-plan" && <CarePlanManager clientId={client._id} />}
 
       {activeTab === "visits" && (
         <VisitScheduleManager

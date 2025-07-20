@@ -15,13 +15,22 @@ export function CarePlanForm({ carePlan, onBack, onSave }) {
   const isEditing = !!carePlan;
   const [activeTab, setActiveTab] = useState("overview");
 
+  // Helper function to format date for input
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return new Date().toISOString().split("T")[0];
+    try {
+      return new Date(dateString).toISOString().split("T")[0];
+    } catch {
+      return new Date().toISOString().split("T")[0];
+    }
+  };
+
   const [formData, setFormData] = useState({
-    assessmentDate:
-      carePlan?.assessmentDate || new Date().toISOString().split("T")[0],
+    assessmentDate: formatDateForInput(carePlan?.assessmentDate),
     assessedBy: carePlan?.assessedBy || "",
     approvedBy: carePlan?.approvedBy || "",
-    startDate: carePlan?.startDate || new Date().toISOString().split("T")[0],
-    reviewDate: carePlan?.reviewDate || "",
+    startDate: formatDateForInput(carePlan?.startDate),
+    reviewDate: formatDateForInput(carePlan?.reviewDate),
     status: carePlan?.status || "draft",
     personalCare: {
       washing: {
