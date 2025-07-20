@@ -233,7 +233,13 @@ export default function Clients() {
 
   if (view === "details" && selectedClient) {
     return (
-      <ClientProfileDetails client={selectedClient} onBack={handleBackToList} />
+      <ClientProfileDetails
+        client={selectedClient}
+        onBack={handleBackToList}
+        onClientUpdate={(updatedClient) => {
+          setSelectedClient(updatedClient);
+        }}
+      />
     );
   }
 

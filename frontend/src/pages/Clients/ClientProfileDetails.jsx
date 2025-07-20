@@ -34,6 +34,8 @@ import { ContactForm } from "./ContactForm";
 import { VisitScheduleManager } from "./VisitScheduleManager";
 import { DocumentationManager } from "./DocumentationManager";
 import { ComplianceTracker } from "./ComplianceTracker";
+import { MedicalInfoEditModal } from "./MedicalInfoEditModal";
+import { PersonalDetailsEditModal } from "./PersonalDetailsEditModal";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchContacts,
@@ -41,11 +43,12 @@ import {
   editContact,
   deleteContact,
 } from "../../components/redux/slice/contacts";
+import { updateClient } from "../../components/redux/slice/clients";
 import { clearCarePlans } from "../../components/redux/slice/carePlans";
 import { clearOutcomes } from "../../components/redux/slice/outcomes";
 import Spinner from "../../components/layout/Spinner";
 
-export function ClientProfileDetails({ client, onBack }) {
+export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
   console.log("The Client Data is", client);
   const [activeTab, setActiveTab] = useState("overview");
   const [contactView, setContactView] = useState("list");
@@ -53,6 +56,10 @@ export function ClientProfileDetails({ client, onBack }) {
   const [contactFilter, setContactFilter] = useState("all");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [contactToDelete, setContactToDelete] = useState(null);
+  const [showMedicalEditModal, setShowMedicalEditModal] = useState(false);
+  const [savingMedicalInfo, setSavingMedicalInfo] = useState(false);
+  const [showPersonalEditModal, setShowPersonalEditModal] = useState(false);
+  const [savingPersonalInfo, setSavingPersonalInfo] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -135,6 +142,99 @@ export function ClientProfileDetails({ client, onBack }) {
   const handleBackToContactList = () => {
     setContactView("list");
     setSelectedContact(null);
+  };
+
+  const handleEditMedicalInfo = () => {
+    setShowMedicalEditModal(true);
+  };
+
+  const handleSaveMedicalInfo = async (medicalData) => {
+    setSavingMedicalInfo(true);
+    try {
+      // Update the client's medical information
+      const updatedClient = {
+        ...client,
+        medicalInformation: medicalData,
+      };
+
+      const result = await dispatch(
+        updateClient({
+          clientId: client._id,
+          clientData: updatedClient,
+        })
+      ).unwrap();
+
+      if (result && result.data && result.data.client) {
+        toast.success("Medical information updated successfully");
+        setShowMedicalEditModal(false);
+
+        // Notify parent component about the update
+        if (onClientUpdate) {
+          onClientUpdate(result.data.client);
+        }
+      } else if (result) {
+        // Fallback if the response structure is different
+        toast.success("Medical information updated successfully");
+        setShowMedicalEditModal(false);
+
+        if (onClientUpdate) {
+          onClientUpdate(result);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating medical information:", error);
+      toast.error("Failed to update medical information");
+    } finally {
+      setSavingMedicalInfo(false);
+    }
+  };
+
+  const handleEditPersonalInfo = () => {
+    setShowPersonalEditModal(true);
+  };
+
+  const handleSavePersonalInfo = async (personalData) => {
+    setSavingPersonalInfo(true);
+    try {
+      // Update the client's personal information
+      const updatedClient = {
+        ...client,
+        personalDetails: personalData.personalDetails,
+        addressInformation: personalData.addressInformation,
+        contactInformation: personalData.contactInformation,
+        consent: personalData.consent,
+      };
+
+      const result = await dispatch(
+        updateClient({
+          clientId: client._id,
+          clientData: updatedClient,
+        })
+      ).unwrap();
+
+      if (result && result.data && result.data.client) {
+        toast.success("Personal information updated successfully");
+        setShowPersonalEditModal(false);
+
+        // Notify parent component about the update
+        if (onClientUpdate) {
+          onClientUpdate(result.data.client);
+        }
+      } else if (result) {
+        // Fallback if the response structure is different
+        toast.success("Personal information updated successfully");
+        setShowPersonalEditModal(false);
+
+        if (onClientUpdate) {
+          onClientUpdate(result);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating personal information:", error);
+      toast.error("Failed to update personal information");
+    } finally {
+      setSavingPersonalInfo(false);
+    }
   };
 
   const contactTypeIconMap = {
@@ -511,145 +611,161 @@ export function ClientProfileDetails({ client, onBack }) {
       )}
 
       {activeTab === "personal" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Personal Details */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div>
+          {/* Header with Edit Button */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">
               Personal Details
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="space-y-4">
-                <InfoBlock label="Title">
-                  {client.personalDetails?.title || "Not specified"}
-                </InfoBlock>
-                <InfoBlock label="Gender">
-                  {client.personalDetails?.gender || "Not specified"}
-                </InfoBlock>
-                <InfoBlock label="Ethnicity">
-                  {client.personalDetails?.ethnicity || "Not specified"}
-                </InfoBlock>
-                <InfoBlock label="Languages">
-                  {Array.isArray(
-                    client?.preferences?.cultural?.languagePreferences
-                  ) ? (
-                    client.preferences.cultural.languagePreferences.length >
-                    0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {client.preferences.cultural.languagePreferences.map(
-                          (lang, idx) => (
-                            <span
-                              key={idx}
-                              className="mt-2 px-3 py-1 rounded-md border border-blue-500 bg-green-50 text-blue-500 text-sm font-medium"
-                            >
-                              {lang}
-                            </span>
-                          )
-                        )}
-                      </div>
+            </h2>
+            <button
+              onClick={handleEditPersonalInfo}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            >
+              <Edit3 className="w-4 h-4" />
+              <span>Edit Personal Info</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Personal Details */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Personal Details
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-4">
+                  <InfoBlock label="Title">
+                    {client.personalDetails?.title || "Not specified"}
+                  </InfoBlock>
+                  <InfoBlock label="Gender">
+                    {client.personalDetails?.gender || "Not specified"}
+                  </InfoBlock>
+                  <InfoBlock label="Ethnicity">
+                    {client.personalDetails?.ethnicity || "Not specified"}
+                  </InfoBlock>
+                  <InfoBlock label="Languages">
+                    {Array.isArray(
+                      client?.preferences?.cultural?.languagePreferences
+                    ) ? (
+                      client.preferences.cultural.languagePreferences.length >
+                      0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {client.preferences.cultural.languagePreferences.map(
+                            (lang, idx) => (
+                              <span
+                                key={idx}
+                                className="mt-2 px-3 py-1 rounded-md border border-blue-500 bg-green-50 text-blue-500 text-sm font-medium"
+                              >
+                                {lang}
+                              </span>
+                            )
+                          )}
+                        </div>
+                      ) : (
+                        "Not specified"
+                      )
                     ) : (
+                      client?.preferences?.cultural?.languagePreferences ||
                       "Not specified"
-                    )
-                  ) : (
-                    client?.preferences?.cultural?.languagePreferences ||
-                    "Not specified"
-                  )}
-                </InfoBlock>
+                    )}
+                  </InfoBlock>
+                </div>
+                <div className="space-y-4">
+                  <InfoBlock label="Preferred Name">
+                    {client.personalDetails?.preferredName || "Not specified"}
+                  </InfoBlock>
+                  <InfoBlock label="Marital Status">
+                    {client.personalDetails?.relationshipStatus ||
+                      "Not specified"}
+                  </InfoBlock>
+                  <InfoBlock label="Nationality">
+                    {client.addressInformation?.country || "Not specified"}
+                  </InfoBlock>
+                </div>
               </div>
-              <div className="space-y-4">
-                <InfoBlock label="Preferred Name">
-                  {client.personalDetails?.preferredName || "Not specified"}
+            </div>
+
+            {/* Address & Access */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Address & Access
+              </h3>
+              <div className="grid grid-cols-1 gap-3">
+                <InfoBlock label="Full Address">
+                  {client.addressInformation?.address || "Not specified"}
+                  <br />
+                  {client.addressInformation?.city && (
+                    <>{client.addressInformation.city}, </>
+                  )}
+                  {client.addressInformation?.postCode && (
+                    <>
+                      {client.addressInformation.postCode}
+                      <br />
+                    </>
+                  )}
+                  {client.addressInformation?.country || ""}
                 </InfoBlock>
-                <InfoBlock label="Marital Status">
-                  {client.personalDetails?.relationshipStatus ||
+                <InfoBlock label="Access Instructions">
+                  {client.addressInformation?.accessInstructions ||
                     "Not specified"}
                 </InfoBlock>
-                <InfoBlock label="Nationality">
-                  {client.addressInformation?.country || "Not specified"}
+              </div>
+            </div>
+
+            {/* Contact Preferences */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Contact Preferences
+              </h3>
+              <div className="space-y-4">
+                <InfoBlock label="Preferred Contact Method">
+                  {client.contactInformation?.preferredContactMethod ||
+                    "Not specified"}
+                </InfoBlock>
+                <InfoBlock label="Best Time to Contact">
+                  {client.contactInformation?.bestTimeToContact ||
+                    "Not specified"}
+                </InfoBlock>
+                <InfoBlock label="Secondary Phone">
+                  {client.contactInformation?.secondaryPhone || "Not specified"}
                 </InfoBlock>
               </div>
             </div>
-          </div>
 
-          {/* Address & Access */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Address & Access
-            </h3>
-            <div className="grid grid-cols-1 gap-3">
-              <InfoBlock label="Full Address">
-                {client.addressInformation?.address || "Not specified"}
-                <br />
-                {client.addressInformation?.city && (
-                  <>{client.addressInformation.city}, </>
-                )}
-                {client.addressInformation?.postCode && (
-                  <>
-                    {client.addressInformation.postCode}
-                    <br />
-                  </>
-                )}
-                {client.addressInformation?.country || ""}
-              </InfoBlock>
-              <InfoBlock label="Access Instructions">
-                {client.addressInformation?.accessInstructions ||
-                  "Not specified"}
-              </InfoBlock>
-            </div>
-          </div>
-
-          {/* Contact Preferences */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Contact Preferences
-            </h3>
-            <div className="space-y-4">
-              <InfoBlock label="Preferred Contact Method">
-                {client.contactInformation?.preferredContactMethod ||
-                  "Not specified"}
-              </InfoBlock>
-              <InfoBlock label="Best Time to Contact">
-                {client.contactInformation?.bestTimeToContact ||
-                  "Not specified"}
-              </InfoBlock>
-              <InfoBlock label="Secondary Phone">
-                {client.contactInformation?.secondaryPhone || "Not specified"}
-              </InfoBlock>
-            </div>
-          </div>
-
-          {/* Consent & Permissions */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Consent & Permissions
-            </h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-500">
-                  Photo Consent
-                </span>
-                {client.consent?.photoConsent ? (
-                  <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-semibold">
-                    Granted
+            {/* Consent & Permissions */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Consent & Permissions
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-500">
+                    Photo Consent
                   </span>
-                ) : (
-                  <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-800 text-sm font-semibold">
-                    Not Granted
+                  {client.consent?.photoConsent ? (
+                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-semibold">
+                      Granted
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-800 text-sm font-semibold">
+                      Not Granted
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-500">
+                    Data Processing Consent
                   </span>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-500">
-                  Data Processing Consent
-                </span>
-                {client.consent?.dataProcessingConsent ? (
-                  <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-semibold">
-                    Granted
-                  </span>
-                ) : (
-                  <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-800 text-sm font-semibold">
-                    Not Granted
-                  </span>
-                )}
+                  {client.consent?.dataProcessingConsent ? (
+                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-semibold">
+                      Granted
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-800 text-sm font-semibold">
+                      Not Granted
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -658,6 +774,20 @@ export function ClientProfileDetails({ client, onBack }) {
 
       {activeTab === "medical" && (
         <div>
+          {/* Header with Edit Button */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">
+              Medical Information
+            </h2>
+            <button
+              onClick={handleEditMedicalInfo}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            >
+              <Edit3 className="w-4 h-4" />
+              <span>Edit Medical Info</span>
+            </button>
+          </div>
+
           {/* Medical Conditions Card */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <div className="flex items-center mb-4 space-x-2">
@@ -1414,6 +1544,31 @@ export function ClientProfileDetails({ client, onBack }) {
       )}
 
       {showDeleteModal && <DeleteContactModal />}
+
+      {/* Medical Information Edit Modal */}
+      {showMedicalEditModal && (
+        <MedicalInfoEditModal
+          isOpen={showMedicalEditModal}
+          onClose={() => setShowMedicalEditModal(false)}
+          medicalInfo={client.medicalInformation}
+          onSave={handleSaveMedicalInfo}
+          isLoading={savingMedicalInfo}
+        />
+      )}
+
+      {/* Personal Details Edit Modal */}
+      {showPersonalEditModal && (
+        <PersonalDetailsEditModal
+          isOpen={showPersonalEditModal}
+          onClose={() => setShowPersonalEditModal(false)}
+          personalDetails={client.personalDetails}
+          addressInformation={client.addressInformation}
+          contactInformation={client.contactInformation}
+          consent={client.consent}
+          onSave={handleSavePersonalInfo}
+          isLoading={savingPersonalInfo}
+        />
+      )}
 
       {![
         "overview",
