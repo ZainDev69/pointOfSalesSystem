@@ -49,17 +49,19 @@ export default function Clients() {
 
   const totalClients = clientData.length;
   const activeClients = clientData.filter(
-    (c) => c.personalDetails.status.toLowerCase() === "active" && !c.Archived
+    (c) => c.personalDetails?.status?.toLowerCase() === "active" && !c.Archived
   ).length;
   const inactiveClients = clientData.filter(
-    (c) => c.personalDetails.status.toLowerCase() === "inactive" && !c.Archived
+    (c) =>
+      c.personalDetails?.status?.toLowerCase() === "inactive" && !c.Archived
   ).length;
   const hospitalizedClients = clientData.filter(
     (c) =>
-      c.personalDetails.status.toLowerCase() === "hospitalized" && !c.Archived
+      c.personalDetails?.status?.toLowerCase() === "hospitalized" && !c.Archived
   ).length;
   const careHomeClients = clientData.filter(
-    (c) => c.personalDetails.status.toLowerCase() === "care home" && !c.Archived
+    (c) =>
+      c.personalDetails?.status?.toLowerCase() === "care home" && !c.Archived
   ).length;
 
   // Check if client is private (has PVT prefix)
@@ -165,7 +167,7 @@ export default function Clients() {
         ? true
         : filterStatus === "private"
         ? isPrivateClient(client)
-        : client.personalDetails.status.toLowerCase() === filterStatus;
+        : client.personalDetails?.status?.toLowerCase() === filterStatus;
 
     const search = searchTerm.toLowerCase();
     const matchesSearch =

@@ -300,10 +300,13 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
     );
   }
 
-  const InfoBlock = ({ label, children }) => (
-    <div>
-      <p className="text-sm font-medium text-gray-500">{label}</p>
-      <p className="text-gray-900">{children}</p>
+  const InfoBlock = ({ label, children, icon: Icon, color = "blue" }) => (
+    <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+      {Icon && <Icon className={`w-5 h-5 text-${color}-500`} />}
+      <div className="flex-1">
+        <p className="text-sm font-medium text-gray-500">{label}</p>
+        <p className="text-gray-900 font-medium">{children}</p>
+      </div>
     </div>
   );
 
@@ -337,28 +340,46 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={onBack}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              {client.personalDetails.fullName}
-            </h1>
-            <p className="text-gray-600 mt-1">
-              NHS: {client.personalDetails.nhsNumber} • Age:{" "}
-              {client.personalDetails.dateOfBirth
-                ? Math.floor(
-                    (new Date().getTime() -
-                      new Date(client.personalDetails.dateOfBirth).getTime()) /
-                      (365.25 * 24 * 60 * 60 * 1000)
-                  )
-                : "-"}
-            </p>
+      <div className="flex items-center space-x-4">
+        <button
+          onClick={onBack}
+          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <div className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <User className="w-8 h-8" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">
+                  {client.personalDetails.fullName || "Client Name"}
+                </h2>
+                <p className="text-blue-100">
+                  NHS: {client.personalDetails.nhsNumber} • Age:{" "}
+                  {client.personalDetails.dateOfBirth
+                    ? Math.floor(
+                        (new Date().getTime() -
+                          new Date(
+                            client.personalDetails.dateOfBirth
+                          ).getTime()) /
+                          (365.25 * 24 * 60 * 60 * 1000)
+                      )
+                    : "-"}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg border border-green-300 border-opacity-50 backdrop-blur-sm transform hover:scale-105 transition-all duration-200">
+                <div className="w-2.5 h-2.5 bg-white rounded-full mr-2 animate-pulse shadow-sm"></div>
+                <span className="text-white drop-shadow-sm">
+                  {client.personalDetails?.status.toUpperCase() || "No Status"}
+                </span>
+                <div className="ml-2 w-1 h-1 bg-white rounded-full opacity-60"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -388,222 +409,260 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
 
       {/* Tab Content */}
       {activeTab === "overview" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Personal Summary */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Personal Information
-              </h3>
+        <div className="space-y-6">
+          {/* Client Header Card */}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <User className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Full Name
-                      </p>
-                      <p className="text-gray-900">
-                        {client.personalDetails.fullName || "Not Specified"}
-                      </p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Personal Summary */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center space-x-2 mb-6">
+                  <User className="w-6 h-6 text-blue-600" />
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Personal Information
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <User className="w-5 h-5 text-blue-500" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">
+                          Full Name
+                        </p>
+                        <p className="text-gray-900 font-medium">
+                          {client.personalDetails.fullName || "Not Specified"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <Calendar className="w-5 h-5 text-green-500" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">
+                          Date of Birth
+                        </p>
+                        <p className="text-gray-900 font-medium">
+                          {client.personalDetails.dateOfBirth
+                            ? new Date(
+                                client.personalDetails.dateOfBirth
+                              ).toLocaleDateString()
+                            : "Not specified"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <Phone className="w-5 h-5 text-purple-500" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">
+                          Phone
+                        </p>
+                        <p className="text-gray-900 font-medium">
+                          {client.contactInformation.primaryPhone ||
+                            "Not specified"}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-3">
-                    <Calendar className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Date of Birth
-                      </p>
-                      <p className="text-gray-900">
-                        {client.personalDetails.dateOfBirth
-                          ? new Date(
-                              client.personalDetails.dateOfBirth
-                            ).toLocaleDateString()
-                          : "Not specified"}
-                      </p>
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <MapPin className="w-5 h-5 text-red-500 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">
+                          Address
+                        </p>
+                        <p className="text-gray-900 font-medium">
+                          {client.addressInformation.address || "Not Specified"}
+                          <br />
+                          {client.addressInformation.city}{" "}
+                          {client.addressInformation.postCode}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <Mail className="w-5 h-5 text-indigo-500" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">
+                          Email
+                        </p>
+                        <p className="text-gray-900 font-medium">
+                          {client.contactInformation.email || "Not specified"}
+                        </p>
+                      </div>
                     </div>
                   </div>
+                </div>
+              </div>
 
-                  <div className="flex items-center space-x-3">
-                    <Phone className="w-5 h-5 text-gray-400" />
+              {/* Enhanced Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 p-6 hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">Phone</p>
-                      <p className="text-gray-900">
-                        {client.contactInformation.primaryPhone ||
-                          "Not specified"}
+                      <p className="text-3xl font-bold text-blue-900">
+                        {contacts.length}
                       </p>
+                      <p className="text-sm text-blue-700 font-medium">
+                        Contacts
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <Users className="w-6 h-6 text-white" />
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 p-6 hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Address
+                      <p className="text-3xl font-bold text-green-900">
+                        {contacts.filter((c) => c.isRegularVisitor).length}
                       </p>
-                      <p className="text-gray-900">
-                        {client.addressInformation.address || "Not Specified"}
-                        <br />
-                        {client.addressInformation.city}{" "}
-                        {client.addressInformation.postCode}
+                      <p className="text-sm text-green-700 font-medium">
+                        Regular Visitors
                       </p>
                     </div>
+                    <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                      <Calendar className="w-6 h-6 text-white" />
+                    </div>
                   </div>
+                </div>
 
-                  <div className="flex items-center space-x-3">
-                    <Mail className="w-5 h-5 text-gray-400" />
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 p-6 hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">Email</p>
-                      <p className="text-gray-900">
-                        {client.contactInformation.email || "Not specified"}
+                      <p className="text-3xl font-bold text-purple-900">
+                        {contacts.filter((c) => c.canMakeDecisions).length}
                       </p>
+                      <p className="text-sm text-purple-700 font-medium">
+                        Decision Makers
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+                      <Shield className="w-6 h-6 text-white" />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex items-center space-x-3">
-                  <Users className="w-8 h-8 text-blue-600" />
+            {/* Side Panel */}
+            <div className="space-y-6">
+              {/* Next of Kin */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Heart className="w-5 h-5 text-red-500" />
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Next of Kin
+                  </h3>
+                </div>
+
+                <div className="space-y-3">
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {contacts.length}
+                    <p className="text-sm font-medium text-gray-500">Name</p>
+                    <p className="text-gray-900">
+                      {client.nextOfKin.name || "Not Specified"}
                     </p>
-                    <p className="text-sm text-gray-600">Contacts</p>
                   </div>
-                </div>
-              </div>
 
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex items-center space-x-3">
-                  <Calendar className="w-8 h-8 text-green-600" />
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {contacts.filter((c) => c.isRegularVisitor).length}
+                    <p className="text-sm font-medium text-gray-500">
+                      Relationship
                     </p>
-                    <p className="text-sm text-gray-600">Regular Visitors</p>
+                    <p className="text-gray-900">
+                      {client.nextOfKin.relationship || "Not Specified"}
+                    </p>
                   </div>
-                </div>
-              </div>
 
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex items-center space-x-3">
-                  <Shield className="w-8 h-8 text-purple-600" />
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {contacts.filter((c) => c.canMakeDecisions).length}
+                    <p className="text-sm font-medium text-gray-500">Phone</p>
+                    <p className="text-gray-900">
+                      {client.nextOfKin.phone || "Not Specified"}
                     </p>
-                    <p className="text-sm text-gray-600">Decision Makers</p>
+                  </div>
+
+                  <div className="flex items-center space-x-4 pt-2">
+                    {client.nextOfKin.hasLegalAuthority && (
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                        Legal Authority
+                      </span>
+                    )}
+                    {client.nextOfKin.powerOfAttorney && (
+                      <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                        Power of Attorney
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Side Panel */}
-          <div className="space-y-6">
-            {/* Next of Kin */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Next of Kin
-              </h3>
-
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Name</p>
-                  <p className="text-gray-900">
-                    {client.nextOfKin.name || "Not Specified"}
-                  </p>
+              {/* GP Information */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center space-x-2 mb-4">
+                  <User className="w-5 h-5 text-blue-500" />
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    GP Information
+                  </h3>
                 </div>
 
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Relationship
-                  </p>
-                  <p className="text-gray-900">
-                    {client.nextOfKin.relationship || "Not Specified"}
-                  </p>
-                </div>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">GP Name</p>
+                    <p className="text-gray-900">
+                      {client.healthcareContacts.gp.name || "Not Specified"}
+                    </p>
+                  </div>
 
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Phone</p>
-                  <p className="text-gray-900">
-                    {client.nextOfKin.phone || "Not Specified"}
-                  </p>
-                </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Practice
+                    </p>
+                    <p className="text-gray-900">
+                      {client.healthcareContacts?.gp?.organization ||
+                        "Not Specified"}
+                    </p>
+                  </div>
 
-                <div className="flex items-center space-x-4 pt-2">
-                  {client.nextOfKin.hasLegalAuthority && (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                      Legal Authority
-                    </span>
-                  )}
-                  {client.nextOfKin.powerOfAttorney && (
-                    <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                      Power of Attorney
-                    </span>
-                  )}
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Phone</p>
+                    <p className="text-gray-900">
+                      {client.healthcareContacts?.gp?.phone || "Not Specified"}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* GP Information */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                GP Information
-              </h3>
-
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">GP Name</p>
-                  <p className="text-gray-900">
-                    {client.healthcareContacts.gp.name || "Not Specified"}
-                  </p>
+              {/* Quick Actions */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center space-x-2 mb-4">
+                  <TrendingUp className="w-5 h-5 text-green-500" />
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Quick Actions
+                  </h3>
                 </div>
 
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Practice</p>
-                  <p className="text-gray-900">
-                    {client.healthcareContacts?.gp?.organization ||
-                      "Not Specified"}
-                  </p>
+                <div className="space-y-3">
+                  <button className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center space-x-2 hover:shadow-md">
+                    <Calendar className="w-4 h-4" />
+                    <span>Schedule Visit</span>
+                  </button>
+                  <button className="w-full bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center space-x-2 hover:shadow-md">
+                    <Shield className="w-4 h-4" />
+                    <span>Update Care Plan</span>
+                  </button>
+                  <button className="w-full bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center space-x-2 hover:shadow-md">
+                    <FileText className="w-4 h-4" />
+                    <span>Generate Report</span>
+                  </button>
+                  <button className="w-full bg-gray-600 hover:bg-gray-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center space-x-2 hover:shadow-md">
+                    <Users className="w-4 h-4" />
+                    <span>Contact Family</span>
+                  </button>
                 </div>
-
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Phone</p>
-                  <p className="text-gray-900">
-                    {client.healthcareContacts?.gp?.phone || "Not Specified"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Quick Actions
-              </h3>
-
-              <div className="space-y-3">
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition-colors">
-                  Schedule Visit
-                </button>
-                <button className="w-full bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg transition-colors">
-                  Update Care Plan
-                </button>
-                <button className="w-full bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-lg transition-colors">
-                  Generate Report
-                </button>
-                <button className="w-full bg-gray-600 hover:bg-gray-700 text-white p-3 rounded-lg transition-colors">
-                  Contact Family
-                </button>
               </div>
             </div>
           </div>
@@ -629,9 +688,12 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Personal Details */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Personal Details
-              </h3>
+              <div className="flex items-center space-x-2 mb-6">
+                <User className="w-6 h-6 text-blue-600" />
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Personal Details
+                </h3>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-4">
                   <InfoBlock label="Title">
@@ -790,9 +852,9 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
 
           {/* Medical Conditions Card */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <div className="flex items-center mb-4 space-x-2">
-              <Heart className="w-5 h-5 text-red-500" />
-              <h3 className="text-lg font-semibold text-gray-900">
+            <div className="flex items-center mb-6 space-x-2">
+              <Heart className="w-6 h-6 text-red-500" />
+              <h3 className="text-xl font-semibold text-gray-900">
                 Medical Conditions
               </h3>
             </div>
