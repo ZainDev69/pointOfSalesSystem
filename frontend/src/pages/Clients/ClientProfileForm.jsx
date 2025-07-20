@@ -206,7 +206,7 @@ export function ClientProfileForm({ client, onBack, onSave }) {
   // Real-time check for Client ID existence
   useEffect(() => {
     const id = formData.clientId;
-    if (!id) {
+    if (!id || isEditing) {
       setClientIdExists(false);
       return;
     }
@@ -220,7 +220,7 @@ export function ClientProfileForm({ client, onBack, onSave }) {
         setCheckingClientId(false);
       })
       .catch(() => setCheckingClientId(false));
-  }, [formData.clientId]);
+  }, [formData.clientId, isEditing]);
 
   // Handle checkbox toggle
   const handlePvtToggle = (checked) => {
@@ -461,14 +461,18 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                     type="checkbox"
                     id="pvt-checkbox"
                     checked={isPvt}
+                    disabled={isEditing}
                     onChange={(e) => handlePvtToggle(e.target.checked)}
                     className="mr-2"
                   />
                   <label
                     htmlFor="pvt-checkbox"
-                    className="text-sm text-gray-700"
+                    className={`text-sm ${
+                      isEditing ? "text-gray-500" : "text-gray-700"
+                    }`}
                   >
-                    Prefix Client ID with PVT
+                    Prefix Client ID with PVT{" "}
+                    {isEditing && "(cannot be changed when editing)"}
                   </label>
                 </div>
                 <div className="flex flex-col space-y-4">
@@ -476,8 +480,14 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                     label="Client ID"
                     value={formData.clientId}
                     required
-                    placeholder="Leave blank to auto-generate ID"
+                    disabled={isEditing}
+                    placeholder={
+                      isEditing
+                        ? "Client ID cannot be changed"
+                        : "Leave blank to auto-generate ID"
+                    }
                     onChange={(val) => {
+                      if (isEditing) return; // Prevent changes when editing
                       let newVal = val;
                       if (isPvt && !val.startsWith("PVT"))
                         newVal = "PVT" + val.replace(/^PVT/, "");
@@ -486,14 +496,19 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                       setFormData((prev) => ({ ...prev, clientId: newVal }));
                     }}
                   />
-                  {checkingClientId && (
+                  {checkingClientId && !isEditing && (
                     <span className="text-xs text-blue-500">
                       Checking Client ID...
                     </span>
                   )}
-                  {clientIdExists && (
+                  {clientIdExists && !isEditing && (
                     <span className="text-xs text-red-500">
                       This Client ID already exists!
+                    </span>
+                  )}
+                  {isEditing && (
+                    <span className="text-xs text-gray-500">
+                      Client ID cannot be modified when editing
                     </span>
                   )}
                 </div>
@@ -2091,6 +2106,7 @@ const Input = ({
   type = "text",
   required = false,
   full = false,
+  disabled = false,
 }) => (
   <div className={full ? "md:col-span-2" : ""}>
     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2102,7 +2118,10 @@ const Input = ({
       required={required}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+        disabled ? "bg-gray-200 text-gray-500" : ""
+      }`}
+      disabled={disabled}
     />
   </div>
 );

@@ -7,6 +7,14 @@ import {
   PowerOff,
   Stethoscope,
   Home,
+  Eye,
+  Edit3,
+  Trash,
+  Archive,
+  RotateCcw,
+  Lock,
+  TrendingUp,
+  Activity,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -41,16 +49,26 @@ export default function Clients() {
 
   const totalClients = clientData.length;
   const activeClients = clientData.filter(
-    (c) => c.personalDetails.status.toLowerCase() === "active"
+    (c) => c.personalDetails.status.toLowerCase() === "active" && !c.Archived
   ).length;
   const inactiveClients = clientData.filter(
-    (c) => c.personalDetails.status.toLowerCase() === "inactive"
+    (c) => c.personalDetails.status.toLowerCase() === "inactive" && !c.Archived
   ).length;
   const hospitalizedClients = clientData.filter(
-    (c) => c.personalDetails.status.toLowerCase() === "hospitalized"
+    (c) =>
+      c.personalDetails.status.toLowerCase() === "hospitalized" && !c.Archived
   ).length;
   const careHomeClients = clientData.filter(
-    (c) => c.personalDetails.status.toLowerCase() === "care home"
+    (c) => c.personalDetails.status.toLowerCase() === "care home" && !c.Archived
+  ).length;
+
+  // Check if client is private (has PVT prefix)
+  const isPrivateClient = (client) => {
+    return client.ClientID && client.ClientID.startsWith("PVT");
+  };
+
+  const privateClients = clientData.filter(
+    (c) => isPrivateClient(c) && !c.Archived
   ).length;
 
   const confirmAction = ({ title, message, onConfirm }) => {
@@ -145,7 +163,9 @@ export default function Clients() {
     const matchesStatus =
       filterStatus === "all"
         ? true
-        : client.ServiceStatus?.toLowerCase() === filterStatus;
+        : filterStatus === "private"
+        ? isPrivateClient(client)
+        : client.personalDetails.status.toLowerCase() === filterStatus;
 
     const search = searchTerm.toLowerCase();
     const matchesSearch =
@@ -155,7 +175,7 @@ export default function Clients() {
       client.contactInformation.email?.toLowerCase().includes(search) ||
       client.personalDetails.nhsNumber?.toLowerCase().includes(search);
 
-    const matchesArchive = showArchived ? true : !client.Archived;
+    const matchesArchive = showArchived ? client.Archived : !client.Archived;
     return matchesStatus && matchesSearch && matchesArchive;
   });
 
@@ -238,51 +258,156 @@ export default function Clients() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {[
-          {
-            icon: <Users className="w-8 h-8 text-blue-600" />,
-            value: totalClients,
-            label: "All Clients",
-          },
-          {
-            icon: (
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-green-600 rounded-full" />
-              </div>
-            ),
-            value: activeClients,
-            label: "Active",
-          },
-          {
-            icon: <PowerOff className="w-8 h-8 text-red-600" />,
-            value: inactiveClients,
-            label: "Inactive",
-          },
-          {
-            icon: <Stethoscope className="w-8 h-8 text-purple-600" />,
-            value: hospitalizedClients,
-            label: "Hospitalized",
-          },
-          {
-            icon: <Home className="w-8 h-8 text-purple-600" />,
-            value: careHomeClients,
-            label: "Care Home",
-          },
-        ].map((stat, i) => (
-          <div
-            key={i}
-            className="bg-white rounded-lg border border-gray-200 p-4"
-          >
-            <div className="flex items-center space-x-3">
-              {stat.icon}
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                <p className="text-sm text-gray-600">{stat.label}</p>
-              </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {/* Total Clients */}
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 p-4 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              {isLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-8 bg-blue-200 rounded w-16 mb-1"></div>
+                  <div className="h-4 bg-blue-200 rounded w-20"></div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-2xl font-bold text-blue-900">
+                    {totalClients}
+                  </p>
+                  <p className="text-sm text-blue-700 font-medium">
+                    Total Clients
+                  </p>
+                </>
+              )}
+            </div>
+            <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+              <Users className="w-5 h-5 text-white" />
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Active Clients */}
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 p-4 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              {isLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-8 bg-green-200 rounded w-12 mb-1"></div>
+                  <div className="h-4 bg-green-200 rounded w-16"></div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-2xl font-bold text-green-900">
+                    {activeClients}
+                  </p>
+                  <p className="text-sm text-green-700 font-medium">Active</p>
+                </>
+              )}
+            </div>
+            <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+              <Activity className="w-5 h-5 text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Inactive Clients */}
+        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl border border-red-200 p-4 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              {isLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-8 bg-red-200 rounded w-12 mb-1"></div>
+                  <div className="h-4 bg-red-200 rounded w-16"></div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-2xl font-bold text-red-900">
+                    {inactiveClients}
+                  </p>
+                  <p className="text-sm text-red-700 font-medium">Inactive</p>
+                </>
+              )}
+            </div>
+            <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
+              <PowerOff className="w-5 h-5 text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Hospitalized Clients */}
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 p-4 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              {isLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-8 bg-purple-200 rounded w-12 mb-1"></div>
+                  <div className="h-4 bg-purple-200 rounded w-20"></div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-2xl font-bold text-purple-900">
+                    {hospitalizedClients}
+                  </p>
+                  <p className="text-sm text-purple-700 font-medium">
+                    Hospitalized
+                  </p>
+                </>
+              )}
+            </div>
+            <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+              <Stethoscope className="w-5 h-5 text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Care Home Clients */}
+        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl border border-indigo-200 p-4 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              {isLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-8 bg-indigo-200 rounded w-12 mb-1"></div>
+                  <div className="h-4 bg-indigo-200 rounded w-20"></div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-2xl font-bold text-indigo-900">
+                    {careHomeClients}
+                  </p>
+                  <p className="text-sm text-indigo-700 font-medium">
+                    Care Home
+                  </p>
+                </>
+              )}
+            </div>
+            <div className="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center">
+              <Home className="w-5 h-5 text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Private Clients */}
+        <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200 p-4 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              {isLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-8 bg-amber-200 rounded w-12 mb-1"></div>
+                  <div className="h-4 bg-amber-200 rounded w-16"></div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-2xl font-bold text-amber-900">
+                    {privateClients}
+                  </p>
+                  <p className="text-sm text-amber-700 font-medium">Private</p>
+                </>
+              )}
+            </div>
+            <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center">
+              <Lock className="w-5 h-5 text-white" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Search + Filter */}
@@ -310,6 +435,7 @@ export default function Clients() {
               <option value="inactive">Inactive</option>
               <option value="hospitalized">Hospitalized</option>
               <option value="care home">Care Home</option>
+              <option value="private">Private</option>
             </select>
           </div>
           {/* Sorting Controls */}
@@ -368,7 +494,9 @@ export default function Clients() {
             <div className="divide-y divide-gray-200">
               {paginatedClients.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  No clients found.
+                  {showArchived
+                    ? "No archived clients found."
+                    : "No clients found."}
                 </div>
               ) : (
                 paginatedClients.map((client, index) => (
@@ -376,7 +504,7 @@ export default function Clients() {
                     key={index}
                     className={`p-6 hover:bg-gray-50 transition-colors ${getBorderColor(
                       client.personalDetails.status
-                    )} ${client.Archived ? "opacity-50" : ""}`}
+                    )} `}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
@@ -388,6 +516,14 @@ export default function Clients() {
                             <h3 className="text-lg font-medium text-gray-900">
                               {client.personalDetails?.fullName}
                             </h3>
+                            {isPrivateClient(client) && (
+                              <div
+                                className="flex items-center"
+                                title="Private Client"
+                              >
+                                <Lock className="w-4 h-4 text-amber-600" />
+                              </div>
+                            )}
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
                                 client.personalDetails.status
@@ -420,75 +556,65 @@ export default function Clients() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex space-x-2 mb-4">
-                        <div className="flex space-x-2 mb-4">
-                          <button
-                            onClick={() => handleViewClient(client)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm"
-                          >
-                            View
-                          </button>
-                          <button
-                            onClick={() => handleEditClient(client)}
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-sm"
-                          >
-                            Edit
-                          </button>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleViewClient(client)}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="View Client"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleEditClient(client)}
+                          className="p-2 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                          title="Edit Client"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            confirmAction({
+                              title: "Confirm Deletion",
+                              message:
+                                "Are you sure you want to delete this client?",
+                              onConfirm: () => {
+                                dispatch(deleteClient(client._id))
+                                  .then(() => toast.success("Client deleted"))
+                                  .catch(() => toast.error("Delete failed"));
+                              },
+                            });
+                          }}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete Client"
+                        >
+                          <Trash className="w-4 h-4" />
+                        </button>
+                        {!client.Archived && (
                           <button
                             onClick={() => {
-                              confirmAction({
-                                title: "Confirm Deletion",
-                                message:
-                                  "Are you sure you want to delete this client?",
-                                onConfirm: () => {
-                                  dispatch(deleteClient(client._id))
-                                    .then(() => toast.success("Client deleted"))
-                                    .catch(() => toast.error("Delete failed"));
-                                },
-                              });
+                              dispatch(archiveClient(client._id))
+                                .then(() => toast.success("Client archived"))
+                                .catch(() => toast.error("Archive failed"));
                             }}
-                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm"
+                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                            title="Archive Client"
                           >
-                            Delete
+                            <Archive className="w-4 h-4" />
                           </button>
-                          {!client.Archived && (
-                            <button
-                              onClick={() => {
-                                confirmAction({
-                                  title: "Archive Client",
-                                  message:
-                                    "Are you sure you want to archive this client?",
-                                  onConfirm: () => {
-                                    dispatch(archiveClient(client._id))
-                                      .then(() =>
-                                        toast.success("Client archived")
-                                      )
-                                      .catch(() =>
-                                        toast.error("Archive failed")
-                                      );
-                                  },
-                                });
-                              }}
-                              className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-lg text-sm"
-                            >
-                              Archive
-                            </button>
-                          )}
-                          {client.Archived && (
-                            <button
-                              onClick={() => {
-                                dispatch(unarchiveClient(client._id))
-                                  .then(() =>
-                                    toast.success("Client unarchived")
-                                  )
-                                  .catch(() => toast.error("Unarchive failed"));
-                              }}
-                              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm"
-                            >
-                              Unarchive
-                            </button>
-                          )}
-                        </div>
+                        )}
+                        {client.Archived && (
+                          <button
+                            onClick={() => {
+                              dispatch(unarchiveClient(client._id))
+                                .then(() => toast.success("Client unarchived"))
+                                .catch(() => toast.error("Unarchive failed"));
+                            }}
+                            className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Unarchive Client"
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

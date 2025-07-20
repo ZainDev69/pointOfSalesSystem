@@ -22,6 +22,9 @@ import {
   ShieldCheck,
   FileQuestion,
   Trash,
+  Bell,
+  TrendingUp,
+  CheckCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -163,6 +166,8 @@ export function ClientProfileDetails({ client, onBack }) {
     regularVisitors: contacts.filter((c) => c.isRegularVisitor).length,
     keyHolders: contacts.filter((c) => c.hasKeyAccess).length,
     decisionMakers: contacts.filter((c) => c.canMakeDecisions).length,
+    canReceiveUpdates: contacts.filter((c) => c.canReceiveUpdates).length,
+    hasConsent: contacts.filter((c) => c.consentToContact).length,
   };
 
   const tabs = [
@@ -354,14 +359,15 @@ export function ClientProfileDetails({ client, onBack }) {
               </div>
             </div>
 
-            {/* This needs to be updated */}
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white rounded-lg border border-gray-200 p-4">
                 <div className="flex items-center space-x-3">
                   <Users className="w-8 h-8 text-blue-600" />
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">4</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {contacts.length}
+                    </p>
                     <p className="text-sm text-gray-600">Contacts</p>
                   </div>
                 </div>
@@ -371,18 +377,22 @@ export function ClientProfileDetails({ client, onBack }) {
                 <div className="flex items-center space-x-3">
                   <Calendar className="w-8 h-8 text-green-600" />
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">12</p>
-                    <p className="text-sm text-gray-600">Visits This Month</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {contacts.filter((c) => c.isRegularVisitor).length}
+                    </p>
+                    <p className="text-sm text-gray-600">Regular Visitors</p>
                   </div>
                 </div>
               </div>
 
               <div className="bg-white rounded-lg border border-gray-200 p-4">
                 <div className="flex items-center space-x-3">
-                  <FileText className="w-8 h-8 text-purple-600" />
+                  <Shield className="w-8 h-8 text-purple-600" />
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">8</p>
-                    <p className="text-sm text-gray-600">Documents</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {contacts.filter((c) => c.canMakeDecisions).length}
+                    </p>
+                    <p className="text-sm text-gray-600">Decision Makers</p>
                   </div>
                 </div>
               </div>
@@ -1042,67 +1052,85 @@ export function ClientProfileDetails({ client, onBack }) {
         activeTab === "contacts" && (
           <div className="space-y-6">
             {/* Contact Statistics */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-gray-900">
-                    {contactStats.total}
-                  </p>
-                  <p className="text-sm text-gray-600">Total Contacts</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {/* Total Contacts */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-3 hover:shadow-md transition-all duration-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-lg font-bold text-blue-900">
+                      {contactStats.total}
+                    </p>
+                    <p className="text-xs text-blue-700 font-medium">Total</p>
+                  </div>
+                  <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                    <Users className="w-4 h-4 text-white" />
+                  </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-red-600">
-                    {contactStats.family}
-                  </p>
-                  <p className="text-sm text-gray-600">Family</p>
+              {/* Family */}
+              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg border border-red-200 p-3 hover:shadow-md transition-all duration-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-lg font-bold text-red-900">
+                      {contactStats.family}
+                    </p>
+                    <p className="text-xs text-red-700 font-medium">Family</p>
+                  </div>
+                  <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+                    <Heart className="w-4 h-4 text-white" />
+                  </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">
-                    {contactStats.friends}
-                  </p>
-                  <p className="text-sm text-gray-600">Friends</p>
+              {/* Friends */}
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200 p-3 hover:shadow-md transition-all duration-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-lg font-bold text-green-900">
+                      {contactStats.friends}
+                    </p>
+                    <p className="text-xs text-green-700 font-medium">
+                      Friends
+                    </p>
+                  </div>
+                  <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                    <Users className="w-4 h-4 text-white" />
+                  </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">
-                    {contactStats.neighbors}
-                  </p>
-                  <p className="text-sm text-gray-600">Neighbors</p>
+              {/* Can Receive Updates */}
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 p-3 hover:shadow-md transition-all duration-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-lg font-bold text-purple-900">
+                      {contactStats.canReceiveUpdates}
+                    </p>
+                    <p className="text-xs text-purple-700 font-medium">
+                      Updates
+                    </p>
+                  </div>
+                  <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                    <Bell className="w-4 h-4 text-white" />
+                  </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-purple-600">
-                    {contactStats.regularVisitors}
-                  </p>
-                  <p className="text-sm text-gray-600">Regular Visitors</p>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-yellow-600">
-                    {contactStats.keyHolders}
-                  </p>
-                  <p className="text-sm text-gray-600">Key Holders</p>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-indigo-600">
-                    {contactStats.decisionMakers}
-                  </p>
-                  <p className="text-sm text-gray-600">Decision Makers</p>
+              {/* Has Consent */}
+              <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200 p-3 hover:shadow-md transition-all duration-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-lg font-bold text-amber-900">
+                      {contactStats.hasConsent}
+                    </p>
+                    <p className="text-xs text-amber-700 font-medium">
+                      Consent
+                    </p>
+                  </div>
+                  <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
+                    <Shield className="w-4 h-4 text-white" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1186,6 +1214,18 @@ export function ClientProfileDetails({ client, onBack }) {
                               {contact.canMakeDecisions && (
                                 <span className="px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                   Decision Maker
+                                </span>
+                              )}
+                              {contact.canReceiveUpdates && (
+                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 flex items-center">
+                                  <Bell className="w-3 h-3 mr-1" />
+                                  Updates
+                                </span>
+                              )}
+                              {contact.consentToContact && (
+                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 flex items-center">
+                                  <Shield className="w-3 h-3 mr-1" />
+                                  Consent
                                 </span>
                               )}
                             </div>
