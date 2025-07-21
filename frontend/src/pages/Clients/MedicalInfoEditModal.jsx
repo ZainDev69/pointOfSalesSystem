@@ -25,65 +25,69 @@ export function MedicalInfoEditModal({
   isLoading = false,
 }) {
   const [formData, setFormData] = useState({
-    conditions: [],
-    allergies: [],
-    medications: [],
-    mentalCapacity: {
-      hasCapacity: true,
-      assessmentDate: "",
-      assessedBy: "",
-      specificDecisions: [],
-      supportNeeds: [],
-      reviewDate: "",
-      notes: "",
-    },
-    dnr: {
-      hasDNR: false,
-      dateIssued: "",
-      issuedBy: "",
-      reviewDate: "",
-      location: "",
-      familyAware: false,
-      notes: "",
+    medicalInformation: {
+      conditions: [],
+      allergies: [],
+      medications: [],
+      mentalCapacity: {
+        hasCapacity: true,
+        assessmentDate: "",
+        assessedBy: "",
+        specificDecisions: [],
+        supportNeeds: [],
+        reviewDate: "",
+        notes: "",
+      },
+      dnr: {
+        hasDNR: false,
+        dateIssued: "",
+        issuedBy: "",
+        reviewDate: "",
+        location: "",
+        familyAware: false,
+        notes: "",
+      },
     },
   });
 
   useEffect(() => {
     if (medicalInfo) {
       setFormData({
-        conditions: medicalInfo.conditions || [],
-        allergies: medicalInfo.allergies || [],
-        medications: medicalInfo.medications || [],
-        mentalCapacity: {
-          hasCapacity: medicalInfo.mentalCapacity?.hasCapacity ?? true,
-          assessmentDate: medicalInfo.mentalCapacity?.assessmentDate || "",
-          assessedBy: medicalInfo.mentalCapacity?.assessedBy || "",
-          specificDecisions:
-            medicalInfo.mentalCapacity?.specificDecisions || [],
-          supportNeeds: medicalInfo.mentalCapacity?.supportNeeds || [],
-          reviewDate: medicalInfo.mentalCapacity?.reviewDate || "",
-          notes: medicalInfo.mentalCapacity?.notes || "",
-        },
-        dnr: {
-          hasDNR: medicalInfo.dnr?.hasDNR ?? false,
-          dateIssued: medicalInfo.dnr?.dateIssued || "",
-          issuedBy: medicalInfo.dnr?.issuedBy || "",
-          reviewDate: medicalInfo.dnr?.reviewDate || "",
-          location: medicalInfo.dnr?.location || "",
-          familyAware: medicalInfo.dnr?.familyAware ?? false,
-          notes: medicalInfo.dnr?.notes || "",
+        medicalInformation: {
+          conditions: medicalInfo.conditions || [],
+          allergies: medicalInfo.allergies || [],
+          medications: medicalInfo.medications || [],
+          mentalCapacity: {
+            hasCapacity: medicalInfo.mentalCapacity?.hasCapacity ?? true,
+            assessmentDate: medicalInfo.mentalCapacity?.assessmentDate || "",
+            assessedBy: medicalInfo.mentalCapacity?.assessedBy || "",
+            specificDecisions:
+              medicalInfo.mentalCapacity?.specificDecisions || [],
+            supportNeeds: medicalInfo.mentalCapacity?.supportNeeds || [],
+            reviewDate: medicalInfo.mentalCapacity?.reviewDate || "",
+            notes: medicalInfo.mentalCapacity?.notes || "",
+          },
+          dnr: {
+            hasDNR: medicalInfo.dnr?.hasDNR ?? false,
+            dateIssued: medicalInfo.dnr?.dateIssued || "",
+            issuedBy: medicalInfo.dnr?.issuedBy || "",
+            reviewDate: medicalInfo.dnr?.reviewDate || "",
+            location: medicalInfo.dnr?.location || "",
+            familyAware: medicalInfo.dnr?.familyAware ?? false,
+            notes: medicalInfo.dnr?.notes || "",
+          },
         },
       });
     }
   }, [medicalInfo]);
 
-  const handleNestedChange = (section, subsection, field, value) => {
+  const handleNestedChange = (section, field, value) => {
     setFormData((prev) => ({
       ...prev,
-      [section]: {
-        ...prev[section],
-        [subsection]: {
-          ...prev[section][subsection],
+      medicalInformation: {
+        ...prev.medicalInformation,
+        [section]: {
+          ...prev.medicalInformation[section],
           [field]: value,
         },
       },
@@ -102,23 +106,34 @@ export function MedicalInfoEditModal({
     };
     setFormData((prev) => ({
       ...prev,
-      conditions: [...prev.conditions, newCondition],
+      medicalInformation: {
+        ...prev.medicalInformation,
+        conditions: [...prev.medicalInformation.conditions, newCondition],
+      },
     }));
   };
 
   const updateCondition = (index, field, value) => {
     setFormData((prev) => ({
       ...prev,
-      conditions: prev.conditions.map((condition, i) =>
-        i === index ? { ...condition, [field]: value } : condition
-      ),
+      medicalInformation: {
+        ...prev.medicalInformation,
+        conditions: prev.medicalInformation.conditions.map((condition, i) =>
+          i === index ? { ...condition, [field]: value } : condition
+        ),
+      },
     }));
   };
 
   const removeCondition = (index) => {
     setFormData((prev) => ({
       ...prev,
-      conditions: prev.conditions.filter((_, i) => i !== index),
+      medicalInformation: {
+        ...prev.medicalInformation,
+        conditions: prev.medicalInformation.conditions.filter(
+          (_, i) => i !== index
+        ),
+      },
     }));
   };
 
@@ -134,23 +149,34 @@ export function MedicalInfoEditModal({
     };
     setFormData((prev) => ({
       ...prev,
-      allergies: [...prev.allergies, newAllergy],
+      medicalInformation: {
+        ...prev.medicalInformation,
+        allergies: [...prev.medicalInformation.allergies, newAllergy],
+      },
     }));
   };
 
   const updateAllergy = (index, field, value) => {
     setFormData((prev) => ({
       ...prev,
-      allergies: prev.allergies.map((allergy, i) =>
-        i === index ? { ...allergy, [field]: value } : allergy
-      ),
+      medicalInformation: {
+        ...prev.medicalInformation,
+        allergies: prev.medicalInformation.allergies.map((allergy, i) =>
+          i === index ? { ...allergy, [field]: value } : allergy
+        ),
+      },
     }));
   };
 
   const removeAllergy = (index) => {
     setFormData((prev) => ({
       ...prev,
-      allergies: prev.allergies.filter((_, i) => i !== index),
+      medicalInformation: {
+        ...prev.medicalInformation,
+        allergies: prev.medicalInformation.allergies.filter(
+          (_, i) => i !== index
+        ),
+      },
     }));
   };
 
@@ -169,29 +195,40 @@ export function MedicalInfoEditModal({
     };
     setFormData((prev) => ({
       ...prev,
-      medications: [...prev.medications, newMedication],
+      medicalInformation: {
+        ...prev.medicalInformation,
+        medications: [...prev.medicalInformation.medications, newMedication],
+      },
     }));
   };
 
   const updateMedication = (index, field, value) => {
     setFormData((prev) => ({
       ...prev,
-      medications: prev.medications.map((medication, i) =>
-        i === index ? { ...medication, [field]: value } : medication
-      ),
+      medicalInformation: {
+        ...prev.medicalInformation,
+        medications: prev.medicalInformation.medications.map((medication, i) =>
+          i === index ? { ...medication, [field]: value } : medication
+        ),
+      },
     }));
   };
 
   const removeMedication = (index) => {
     setFormData((prev) => ({
       ...prev,
-      medications: prev.medications.filter((_, i) => i !== index),
+      medicalInformation: {
+        ...prev.medicalInformation,
+        medications: prev.medicalInformation.medications.filter(
+          (_, i) => i !== index
+        ),
+      },
     }));
   };
 
   const handleSave = async () => {
     if (isLoading) return;
-    await onSave(formData);
+    await onSave(formData.medicalInformation);
   };
 
   if (!isOpen) return null;
@@ -234,107 +271,109 @@ export function MedicalInfoEditModal({
             </div>
 
             <div className="space-y-4">
-              {formData.conditions.map((condition, index) => (
-                <div
-                  key={condition.id}
-                  className="bg-white border border-gray-200 rounded-lg p-4"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Condition
-                      </label>
-                      <input
-                        type="text"
-                        value={condition.condition}
-                        onChange={(e) =>
-                          updateCondition(index, "condition", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+              {formData.medicalInformation.conditions.map(
+                (condition, index) => (
+                  <div
+                    key={condition.id}
+                    className="bg-white border border-gray-200 rounded-lg p-4"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Condition
+                        </label>
+                        <input
+                          type="text"
+                          value={condition.condition}
+                          onChange={(e) =>
+                            updateCondition(index, "condition", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Severity
+                        </label>
+                        <select
+                          value={condition.severity}
+                          onChange={(e) =>
+                            updateCondition(index, "severity", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="mild">Mild</option>
+                          <option value="moderate">Moderate</option>
+                          <option value="severe">Severe</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Status
+                        </label>
+                        <select
+                          value={condition.status}
+                          onChange={(e) =>
+                            updateCondition(index, "status", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="active">Active</option>
+                          <option value="resolved">Resolved</option>
+                          <option value="monitoring">Monitoring</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Diagnosis Date
+                        </label>
+                        <input
+                          type="date"
+                          value={condition.diagnosisDate}
+                          onChange={(e) =>
+                            updateCondition(
+                              index,
+                              "diagnosisDate",
+                              e.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Notes
+                        </label>
+                        <input
+                          type="text"
+                          value={condition.notes}
+                          onChange={(e) =>
+                            updateCondition(index, "notes", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Severity
-                      </label>
-                      <select
-                        value={condition.severity}
-                        onChange={(e) =>
-                          updateCondition(index, "severity", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    <div className="flex justify-end mt-3">
+                      <button
+                        type="button"
+                        onClick={() => removeCondition(index)}
+                        className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center space-x-1"
                       >
-                        <option value="mild">Mild</option>
-                        <option value="moderate">Moderate</option>
-                        <option value="severe">Severe</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Status
-                      </label>
-                      <select
-                        value={condition.status}
-                        onChange={(e) =>
-                          updateCondition(index, "status", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="active">Active</option>
-                        <option value="resolved">Resolved</option>
-                        <option value="monitoring">Monitoring</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Diagnosis Date
-                      </label>
-                      <input
-                        type="date"
-                        value={condition.diagnosisDate}
-                        onChange={(e) =>
-                          updateCondition(
-                            index,
-                            "diagnosisDate",
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Notes
-                      </label>
-                      <input
-                        type="text"
-                        value={condition.notes}
-                        onChange={(e) =>
-                          updateCondition(index, "notes", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                        <Trash2 className="w-4 h-4" />
+                        <span>Remove</span>
+                      </button>
                     </div>
                   </div>
+                )
+              )}
 
-                  <div className="flex justify-end mt-3">
-                    <button
-                      type="button"
-                      onClick={() => removeCondition(index)}
-                      className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center space-x-1"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      <span>Remove</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              {formData.conditions.length === 0 && (
+              {formData.medicalInformation.conditions.length === 0 && (
                 <p className="text-gray-500 text-center py-4">
                   No medical conditions added yet. Click "Add Condition" to get
                   started.
@@ -363,7 +402,7 @@ export function MedicalInfoEditModal({
             </div>
 
             <div className="space-y-4">
-              {formData.allergies.map((allergy, index) => (
+              {formData.medicalInformation.allergies.map((allergy, index) => (
                 <div
                   key={allergy.id}
                   className="bg-white border border-gray-200 rounded-lg p-4"
@@ -456,7 +495,7 @@ export function MedicalInfoEditModal({
                 </div>
               ))}
 
-              {formData.allergies.length === 0 && (
+              {formData.medicalInformation.allergies.length === 0 && (
                 <p className="text-gray-500 text-center py-4">
                   No allergies added yet. Click "Add Allergy" to get started.
                 </p>
@@ -484,129 +523,135 @@ export function MedicalInfoEditModal({
             </div>
 
             <div className="space-y-4">
-              {formData.medications.map((medication, index) => (
-                <div
-                  key={medication.id}
-                  className="bg-white border border-gray-200 rounded-lg p-4"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Medication Name
-                      </label>
-                      <input
-                        type="text"
-                        value={medication.name}
-                        onChange={(e) =>
-                          updateMedication(index, "name", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+              {formData.medicalInformation.medications.map(
+                (medication, index) => (
+                  <div
+                    key={medication.id}
+                    className="bg-white border border-gray-200 rounded-lg p-4"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Medication Name
+                        </label>
+                        <input
+                          type="text"
+                          value={medication.name}
+                          onChange={(e) =>
+                            updateMedication(index, "name", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Dosage
+                        </label>
+                        <input
+                          type="text"
+                          value={medication.dosage}
+                          onChange={(e) =>
+                            updateMedication(index, "dosage", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Frequency
+                        </label>
+                        <input
+                          type="text"
+                          value={medication.frequency}
+                          onChange={(e) =>
+                            updateMedication(index, "frequency", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Route
+                        </label>
+                        <input
+                          type="text"
+                          value={medication.route}
+                          onChange={(e) =>
+                            updateMedication(index, "route", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Prescribed By
+                        </label>
+                        <input
+                          type="text"
+                          value={medication.prescribedBy}
+                          onChange={(e) =>
+                            updateMedication(
+                              index,
+                              "prescribedBy",
+                              e.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Start Date
+                        </label>
+                        <input
+                          type="date"
+                          value={medication.startDate}
+                          onChange={(e) =>
+                            updateMedication(index, "startDate", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div className="md:col-span-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Indication
+                        </label>
+                        <input
+                          type="text"
+                          value={medication.indication}
+                          onChange={(e) =>
+                            updateMedication(
+                              index,
+                              "indication",
+                              e.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Dosage
-                      </label>
-                      <input
-                        type="text"
-                        value={medication.dosage}
-                        onChange={(e) =>
-                          updateMedication(index, "dosage", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Frequency
-                      </label>
-                      <input
-                        type="text"
-                        value={medication.frequency}
-                        onChange={(e) =>
-                          updateMedication(index, "frequency", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Route
-                      </label>
-                      <input
-                        type="text"
-                        value={medication.route}
-                        onChange={(e) =>
-                          updateMedication(index, "route", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Prescribed By
-                      </label>
-                      <input
-                        type="text"
-                        value={medication.prescribedBy}
-                        onChange={(e) =>
-                          updateMedication(
-                            index,
-                            "prescribedBy",
-                            e.target.value
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Start Date
-                      </label>
-                      <input
-                        type="date"
-                        value={medication.startDate}
-                        onChange={(e) =>
-                          updateMedication(index, "startDate", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div className="md:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Indication
-                      </label>
-                      <input
-                        type="text"
-                        value={medication.indication}
-                        onChange={(e) =>
-                          updateMedication(index, "indication", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                    <div className="flex justify-end mt-3">
+                      <button
+                        type="button"
+                        onClick={() => removeMedication(index)}
+                        className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center space-x-1"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Remove</span>
+                      </button>
                     </div>
                   </div>
+                )
+              )}
 
-                  <div className="flex justify-end mt-3">
-                    <button
-                      type="button"
-                      onClick={() => removeMedication(index)}
-                      className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center space-x-1"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      <span>Remove</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              {formData.medications.length === 0 && (
+              {formData.medicalInformation.medications.length === 0 && (
                 <p className="text-gray-500 text-center py-4">
                   No medications added yet. Click "Add Medication" to get
                   started.
@@ -631,7 +676,9 @@ export function MedicalInfoEditModal({
                 </label>
                 <input
                   type="date"
-                  value={formData.mentalCapacity.assessmentDate}
+                  value={
+                    formData.medicalInformation.mentalCapacity.assessmentDate
+                  }
                   onChange={(e) =>
                     handleNestedChange(
                       "mentalCapacity",
@@ -649,7 +696,7 @@ export function MedicalInfoEditModal({
                 </label>
                 <input
                   type="text"
-                  value={formData.mentalCapacity.assessedBy}
+                  value={formData.medicalInformation.mentalCapacity.assessedBy}
                   onChange={(e) =>
                     handleNestedChange(
                       "mentalCapacity",
@@ -667,7 +714,7 @@ export function MedicalInfoEditModal({
                 </label>
                 <input
                   type="date"
-                  value={formData.mentalCapacity.reviewDate}
+                  value={formData.medicalInformation.mentalCapacity.reviewDate}
                   onChange={(e) =>
                     handleNestedChange(
                       "mentalCapacity",
@@ -683,7 +730,9 @@ export function MedicalInfoEditModal({
                 <input
                   type="checkbox"
                   id="hasCapacity"
-                  checked={formData.mentalCapacity.hasCapacity}
+                  checked={
+                    formData.medicalInformation.mentalCapacity.hasCapacity
+                  }
                   onChange={(e) =>
                     handleNestedChange(
                       "mentalCapacity",
@@ -706,7 +755,7 @@ export function MedicalInfoEditModal({
                   Notes
                 </label>
                 <textarea
-                  value={formData.mentalCapacity.notes}
+                  value={formData.medicalInformation.mentalCapacity.notes}
                   onChange={(e) =>
                     handleNestedChange(
                       "mentalCapacity",
@@ -734,7 +783,7 @@ export function MedicalInfoEditModal({
               <input
                 type="checkbox"
                 id="hasDNR"
-                checked={formData.dnr.hasDNR}
+                checked={formData.medicalInformation.dnr.hasDNR}
                 onChange={(e) =>
                   handleNestedChange("dnr", "hasDNR", e.target.checked)
                 }
@@ -748,7 +797,7 @@ export function MedicalInfoEditModal({
               </label>
             </div>
 
-            {formData.dnr.hasDNR && (
+            {formData.medicalInformation.dnr.hasDNR && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -756,7 +805,9 @@ export function MedicalInfoEditModal({
                   </label>
                   <input
                     type="date"
-                    value={toInputDate(formData.dnr.dateIssued)}
+                    value={toInputDate(
+                      formData.medicalInformation.dnr.dateIssued
+                    )}
                     onChange={(e) =>
                       handleNestedChange("dnr", "dateIssued", e.target.value)
                     }
@@ -770,7 +821,7 @@ export function MedicalInfoEditModal({
                   </label>
                   <input
                     type="text"
-                    value={formData.dnr.issuedBy}
+                    value={formData.medicalInformation.dnr.issuedBy}
                     onChange={(e) =>
                       handleNestedChange("dnr", "issuedBy", e.target.value)
                     }
@@ -784,7 +835,10 @@ export function MedicalInfoEditModal({
                   </label>
                   <input
                     type="date"
-                    value={toInputDate(formData.dnr.reviewDate) || ""}
+                    value={
+                      toInputDate(formData.medicalInformation.dnr.reviewDate) ||
+                      ""
+                    }
                     onChange={(e) =>
                       handleNestedChange("dnr", "reviewDate", e.target.value)
                     }
@@ -798,7 +852,7 @@ export function MedicalInfoEditModal({
                   </label>
                   <input
                     type="text"
-                    value={formData.dnr.location}
+                    value={formData.medicalInformation.dnr.location}
                     onChange={(e) =>
                       handleNestedChange("dnr", "location", e.target.value)
                     }
@@ -810,7 +864,7 @@ export function MedicalInfoEditModal({
                   <input
                     type="checkbox"
                     id="familyAware"
-                    checked={formData.dnr.familyAware}
+                    checked={formData.medicalInformation.dnr.familyAware}
                     onChange={(e) =>
                       handleNestedChange("dnr", "familyAware", e.target.checked)
                     }
@@ -829,7 +883,7 @@ export function MedicalInfoEditModal({
                     Notes
                   </label>
                   <textarea
-                    value={formData.dnr.notes}
+                    value={formData.medicalInformation.dnr.notes}
                     onChange={(e) =>
                       handleNestedChange("dnr", "notes", e.target.value)
                     }

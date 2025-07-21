@@ -814,12 +814,12 @@ export function CarePlanManager({ clientId }) {
                         >
                           {plan.status}
                         </span>
+                        <span className="text-xs text-gray-500 ml-2">
+                          Creation Date:{" "}
+                          {new Date(plan.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
-                      <span className="text-sm text-gray-500">
-                        {new Date(plan.createdAt).toLocaleDateString()}
-                      </span>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
                       <div>
                         <span className="font-medium">Assessed By:</span>{" "}
