@@ -130,9 +130,14 @@ export default function Clients() {
     delete payload.clientId;
 
     if (!selectedClient?._id && payload.ClientID) {
-      const result = await dispatch(checkClientId(payload.ClientID));
-      if (result.payload && result.payload.length > 0) {
-        toast.error("This Client ID already exists!");
+      try {
+        const result = await dispatch(checkClientId(payload.ClientID)).unwrap();
+        if (Array.isArray(result) && result.length > 0) {
+          toast.error("This Client ID already exists!");
+          return;
+        }
+      } catch (err) {
+        toast.error(err?.message || "Error checking Client ID");
         return;
       }
     }
@@ -140,24 +145,20 @@ export default function Clients() {
       if (selectedClient?._id) {
         await dispatch(
           updateClient({ clientId: selectedClient._id, clientData: payload })
-        );
+        ).unwrap();
         toast.success("Client updated successfully");
       } else {
-        const result = await dispatch(createClient(payload));
-
-        if (createClient.rejected.match(result)) {
-          // result.payload will have an array of validation errors
-          result.payload.forEach((error) => {
-            toast.error(`${error.path || "Error"}: ${error.msg}`);
-          });
-          return;
-        }
+        await dispatch(createClient(payload)).unwrap();
         toast.success("Client created successfully");
       }
       dispatch(clientList());
       handleBackToList();
-    } catch {
-      toast.error("An error occurred while saving the client");
+    } catch (err) {
+      toast.error(
+        Array.isArray(err.message)
+          ? err.message.map((e) => e.msg || e).join(", ")
+          : err?.message || "An error occurred while saving the client"
+      );
     }
   };
 

@@ -184,12 +184,10 @@ export function CarePlanManager({ clientId }) {
 
   const getOutcomeStatusColor = (status) => {
     switch (status) {
+      case "draft":
+        return "bg-gray-100 text-gray-800";
       case "achieved":
         return "bg-green-100 text-green-800";
-      case "in-progress":
-        return "bg-blue-100 text-blue-800";
-      case "not-started":
-        return "bg-gray-100 text-gray-800";
       case "not-achieved":
         return "bg-red-100 text-red-800";
       case "modified":
@@ -274,83 +272,80 @@ export function CarePlanManager({ clientId }) {
               activeCarePlan.status
             )}`}
           >
-            {activeCarePlan.status}
+            {activeCarePlan.status?.toUpperCase()}
           </span>
           <button
             onClick={() => setShowHistory(true)}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 py-2 rounded-full flex items-center space-x-3 shadow-md transition-all duration-200 transform hover:scale-105 border border-blue-200"
+            style={{ fontWeight: 600, letterSpacing: "0.03em" }}
           >
-            <History className="w-4 h-4" />
-            <span>History</span>
+            <History className="w-5 h-5 mr-1 text-white drop-shadow" />
+            <span className="tracking-wide text-base">History</span>
           </button>
           <button
             onClick={() => setView("edit")}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-4 py-2 rounded-full flex items-center space-x-3 shadow-md transition-all duration-200 transform hover:scale-105 border border-green-200"
+            style={{ fontWeight: 600, letterSpacing: "0.03em" }}
           >
-            <Edit3 className="w-4 h-4" />
-            <span>Edit Plan</span>
+            <Edit3 className="w-5 h-5 mr-1 text-white drop-shadow" />
+            <span className="tracking-wide text-base">Edit Plan</span>
           </button>
         </div>
       </div>
 
       {/* Care Plan Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 p-4 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-blue-900">
-                v{activeCarePlan.version}
-              </p>
-              <p className="text-sm text-blue-700 font-medium">Version</p>
-            </div>
-            <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+        {/* Version Card */}
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 px-3 py-2 hover:shadow-md transition-all duration-200 flex items-center justify-between min-h-[60px]">
+          <div>
+            <p className="text-lg font-bold text-blue-900 mb-0.5">
+              v{activeCarePlan.version}
+            </p>
+            <p className="text-xs text-blue-700 font-medium">Version</p>
           </div>
+          <FileText className="w-5 h-5 text-blue-500" />
         </div>
-
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 p-4 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-green-900">
-                {new Date(activeCarePlan.assessmentDate).toLocaleDateString()}
-              </p>
-              <p className="text-sm text-green-700 font-medium">
-                Assessment Date
-              </p>
-            </div>
-            <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-white" />
-            </div>
+        {/* Assessed By Card */}
+        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-lg border border-cyan-200 px-3 py-2 hover:shadow-md transition-all duration-200 flex items-center justify-between min-h-[60px]">
+          <div>
+            <p className="text-lg font-bold text-cyan-900 mb-0.5">
+              {activeCarePlan.assessedBy || "-"}
+            </p>
+            <p className="text-xs text-cyan-700 font-medium">Assessed By</p>
           </div>
+          <User className="w-5 h-5 text-cyan-500" />
         </div>
-
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 p-4 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-purple-900">
-                {new Date(activeCarePlan.reviewDate).toLocaleDateString()}
-              </p>
-              <p className="text-sm text-purple-700 font-medium">Review Due</p>
-            </div>
-            <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-              <Clock className="w-5 h-5 text-white" />
-            </div>
+        {/* Assessment Date Card */}
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200 px-3 py-2 hover:shadow-md transition-all duration-200 flex items-center justify-between min-h-[60px]">
+          <div>
+            <p className="text-lg font-bold text-green-900 mb-0.5">
+              {new Date(activeCarePlan.assessmentDate).toLocaleDateString()}
+            </p>
+            <p className="text-xs text-green-700 font-medium">
+              Assessment Date
+            </p>
           </div>
+          <Calendar className="w-5 h-5 text-green-500" />
         </div>
-
-        <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200 p-4 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-amber-900">
-                {outcomes.length}
-              </p>
-              <p className="text-sm text-amber-700 font-medium">Outcomes</p>
-            </div>
-            <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center">
-              <Target className="w-5 h-5 text-white" />
-            </div>
+        {/* Review Due Card */}
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 px-3 py-2 hover:shadow-md transition-all duration-200 flex items-center justify-between min-h-[60px]">
+          <div>
+            <p className="text-lg font-bold text-purple-900 mb-0.5">
+              {new Date(activeCarePlan.reviewDate).toLocaleDateString()}
+            </p>
+            <p className="text-xs text-purple-700 font-medium">Review Due</p>
           </div>
+          <Clock className="w-5 h-5 text-purple-500" />
+        </div>
+        {/* Outcomes Card */}
+        <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200 px-3 py-2 hover:shadow-md transition-all duration-200 flex items-center justify-between min-h-[60px]">
+          <div>
+            <p className="text-lg font-bold text-amber-900 mb-0.5">
+              {outcomes.length}
+            </p>
+            <p className="text-xs text-amber-700 font-medium">Outcomes</p>
+          </div>
+          <Target className="w-5 h-5 text-amber-500" />
         </div>
       </div>
 
@@ -388,27 +383,32 @@ export function CarePlanManager({ clientId }) {
             <div className="space-y-3">
               {Object.entries(activeCarePlan.personalCare || {}).map(
                 ([key, care]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 capitalize">
-                      {key.replace(/([A-Z])/g, " $1")}
-                    </span>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        care &&
+                  <div
+                    key={key}
+                    className="mb-2 p-2 rounded border border-gray-100 bg-gray-50"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-gray-600 capitalize">
+                        {key.replace(/([A-Z])/g, " $1")}
+                      </span>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          care &&
+                          typeof care === "object" &&
+                          "required" in care &&
+                          care.required
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {care &&
                         typeof care === "object" &&
                         "required" in care &&
                         care.required
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {care &&
-                      typeof care === "object" &&
-                      "required" in care &&
-                      care.required
-                        ? "Required"
-                        : "Not Required"}
-                    </span>
+                          ? "Required"
+                          : "Not Required"}
+                      </span>
+                    </div>
                   </div>
                 )
               )}
@@ -421,24 +421,29 @@ export function CarePlanManager({ clientId }) {
               Daily Living Support
             </h3>
             <div className="space-y-3">
-              {Object.entries(activeCarePlan.dailyLiving || {})
-                .filter(([, support]) => support?.required)
-                .map(([key, support]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 capitalize">
-                      {key.replace(/([A-Z])/g, " $1")}
-                    </span>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        support?.required
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {support?.required ? "Required" : "Not Required"}
-                    </span>
+              {Object.entries(activeCarePlan.dailyLiving || {}).map(
+                ([key, support]) => (
+                  <div
+                    key={key}
+                    className="mb-2 p-2 rounded border border-gray-100 bg-gray-50"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-gray-600 capitalize">
+                        {key.replace(/([A-Z])/g, " $1")}
+                      </span>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          support?.required
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {support?.required ? "Required" : "Not Required"}
+                      </span>
+                    </div>
                   </div>
-                ))}
+                )
+              )}
             </div>
           </div>
         </div>
@@ -447,7 +452,7 @@ export function CarePlanManager({ clientId }) {
       {activeTab === "outcomes" && (
         <div className="space-y-6">
           {/* Outcomes Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-4">
               <div className="text-center">
                 <p className="text-2xl font-bold text-blue-900">
@@ -468,15 +473,6 @@ export function CarePlanManager({ clientId }) {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-blue-900">
-                  {outcomes.filter((o) => o.status === "in-progress").length}
-                </p>
-                <p className="text-sm text-blue-700 font-medium">In Progress</p>
-              </div>
-            </div>
-
             <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg border border-red-200 p-4">
               <div className="text-center">
                 <p className="text-2xl font-bold text-red-900">
@@ -486,14 +482,12 @@ export function CarePlanManager({ clientId }) {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200 p-4">
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 p-4">
               <div className="text-center">
-                <p className="text-2xl font-bold text-yellow-900">
-                  {outcomes.filter((o) => o.status === "not-started").length}
+                <p className="text-2xl font-bold text-gray-900">
+                  {outcomes.filter((o) => o.status === "draft").length}
                 </p>
-                <p className="text-sm text-yellow-700 font-medium">
-                  Not Started
-                </p>
+                <p className="text-sm text-gray-700 font-medium">Draft</p>
               </div>
             </div>
           </div>

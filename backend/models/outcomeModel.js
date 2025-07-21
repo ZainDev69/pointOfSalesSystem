@@ -29,8 +29,8 @@ const outcomeSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['not-started', 'in-progress', 'achieved', 'not-achieved', 'modified'],
-        default: 'not-started'
+        enum: ['draft', 'achieved', 'not-achieved', 'modified'],
+        default: 'draft'
     },
     priority: {
         type: String,

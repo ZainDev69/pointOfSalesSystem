@@ -1,6 +1,9 @@
 const Client = require('./../models/clientModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const Contact = require('../models/contactModel');
+const CarePlan = require('../models/carePlanModel');
+const Outcome = require('../models/outcomeModel');
 
 
 
@@ -40,22 +43,90 @@ exports.getClients = catchAsync(async (req, res, next) => {
 
 exports.updateClient = catchAsync(async (req, res, next) => {
     const { id } = req.params;
-    const client = await Client.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
-    if (!client) return next(new AppError('No Client found with that ID', 404));
+    const oldClient = await Client.findById(id);
+    if (!oldClient) return next(new AppError('No Client found with that ID', 404));
+
+    // Merge nested objects
+    const updateData = { ...req.body };
+    for (const key of Object.keys(req.body)) {
+        if (typeof req.body[key] === 'object' && req.body[key] !== null && oldClient[key]) {
+            updateData[key] = { ...oldClient[key]._doc, ...req.body[key] };
+        }
+    }
+
+    const client = await Client.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+    if (client) {
+        // High-level change detection
+        let section = null;
+        for (const key of Object.keys(req.body)) {
+            if (typeof req.body[key] === 'object' && req.body[key] !== null && oldClient[key]) {
+                for (const subKey of Object.keys(req.body[key])) {
+                    if (JSON.stringify(req.body[key][subKey]) !== JSON.stringify(oldClient[key][subKey])) {
+                        section = key;
+                        break;
+                    }
+                }
+            } else {
+                if (JSON.stringify(req.body[key]) !== JSON.stringify(oldClient[key])) {
+                    section = key;
+                    break;
+                }
+            }
+            if (section) break;
+        }
+        let actionMsg = 'Updated client';
+        if (section) {
+            switch (section) {
+                case 'personalDetails':
+                    actionMsg = 'Personal details updated'; break;
+                case 'addressInformation':
+                    actionMsg = 'Address information updated'; break;
+                case 'contactInformation':
+                    actionMsg = 'Contact information updated'; break;
+                case 'nextOfKin':
+                    actionMsg = 'Next of kin updated'; break;
+                case 'consent':
+                    actionMsg = 'Consent updated'; break;
+                case 'healthcareContacts':
+                    actionMsg = 'Healthcare contacts updated'; break;
+                case 'medicalInformation':
+                    actionMsg = 'Medical information updated'; break;
+                case 'preferences':
+                    actionMsg = 'Preferences updated'; break;
+                case 'Archived':
+                    actionMsg = 'Archive status updated'; break;
+                case 'carePlan':
+                    actionMsg = 'Care plan updated'; break;
+                default:
+                    actionMsg = `${section.charAt(0).toUpperCase() + section.slice(1)} updated`;
+            }
+        }
+        client.activityLog.push({
+            date: new Date(),
+            action: actionMsg,
+            user: 'System',
+        });
+        await client.save();
+    }
     res.status(200).json({
         status: 'Success',
         data: {
             client
         }
     })
-
-
 })
 
 
 exports.deleteClient = catchAsync(async (req, res, next) => {
-    const client = await Client.findByIdAndDelete(req.params.id);
+    const client = await Client.findById(req.params.id);
     if (!client) return next(new AppError(`No client found with that ID`, 404));
+    // Log activity (not needed for client delete, as discussed)
+    await client.save();
+    // Cascade delete related contacts, care plans, and outcomes
+    await Contact.deleteMany({ client: client._id });
+    await CarePlan.deleteMany({ clientId: client._id });
+    await Outcome.deleteMany({ clientId: client._id });
+    await Client.findByIdAndDelete(req.params.id);
     res.status(204).json({
         status: 'Success',
         data: 'Client deleted Successfully'
@@ -65,6 +136,7 @@ exports.deleteClient = catchAsync(async (req, res, next) => {
 
 exports.archiveClient = catchAsync(async (req, res, next) => {
     const { id } = req.params;
+    const oldClient = await Client.findById(id);
     const client = await Client.findByIdAndUpdate(
         id,
         { Archived: true },
@@ -72,6 +144,12 @@ exports.archiveClient = catchAsync(async (req, res, next) => {
     );
 
     if (!client) return next(new AppError('No Client found with that ID', 404));
+    client.activityLog.push({
+        date: new Date(),
+        action: `Archived client: Archived: '${oldClient?.Archived}' → 'true'`,
+        user: 'System',
+    });
+    await client.save();
 
     res.status(200).json({
         status: 'Success',
@@ -82,6 +160,7 @@ exports.archiveClient = catchAsync(async (req, res, next) => {
 
 exports.unarchiveClient = catchAsync(async (req, res, next) => {
     const { id } = req.params;
+    const oldClient = await Client.findById(id);
     const client = await Client.findByIdAndUpdate(
         id,
         { Archived: false },
@@ -89,6 +168,12 @@ exports.unarchiveClient = catchAsync(async (req, res, next) => {
     );
 
     if (!client) return next(new AppError('No Client found with that ID', 404));
+    client.activityLog.push({
+        date: new Date(),
+        action: `Unarchived client: Archived: '${oldClient?.Archived}' → 'false'`,
+        user: 'System',
+    });
+    await client.save();
 
     res.status(200).json({
         status: 'Success',

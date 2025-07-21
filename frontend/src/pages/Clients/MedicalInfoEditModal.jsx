@@ -11,6 +11,12 @@ import {
   Save,
 } from "lucide-react";
 
+const toInputDate = (val) => {
+  if (!val) return "";
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+};
+
 export function MedicalInfoEditModal({
   isOpen,
   onClose,
@@ -183,8 +189,9 @@ export function MedicalInfoEditModal({
     }));
   };
 
-  const handleSave = () => {
-    onSave(formData);
+  const handleSave = async () => {
+    if (isLoading) return;
+    await onSave(formData);
   };
 
   if (!isOpen) return null;
@@ -749,7 +756,7 @@ export function MedicalInfoEditModal({
                   </label>
                   <input
                     type="date"
-                    value={formData.dnr.dateIssued}
+                    value={toInputDate(formData.dnr.dateIssued)}
                     onChange={(e) =>
                       handleNestedChange("dnr", "dateIssued", e.target.value)
                     }
@@ -777,7 +784,7 @@ export function MedicalInfoEditModal({
                   </label>
                   <input
                     type="date"
-                    value={formData.dnr.reviewDate}
+                    value={toInputDate(formData.dnr.reviewDate) || ""}
                     onChange={(e) =>
                       handleNestedChange("dnr", "reviewDate", e.target.value)
                     }

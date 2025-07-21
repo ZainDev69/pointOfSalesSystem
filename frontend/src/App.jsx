@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Dashboard from "./pages/Dashboard/dashboard";
-import Clients from "./pages/Clients/clientPage";
+import Clients from "./pages/Clients/ClientPage";
 import Documents from "./pages/Documents/document";
 import RiskManagement from "./pages/Risk/riskmanagement";
 import Staff from "./pages/Staff/staff";

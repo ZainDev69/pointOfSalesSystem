@@ -12,6 +12,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 export function ClientProfileForm({ client, onBack, onSave }) {
   const [activeTab, setActiveTab] = useState("personal");
@@ -225,14 +226,15 @@ export function ClientProfileForm({ client, onBack, onSave }) {
   // Handle checkbox toggle
   const handlePvtToggle = (checked) => {
     setIsPvt(checked);
-    setFormData((prev) => ({
-      ...prev,
-      clientId: checked
-        ? prev.clientId.startsWith("PVT")
-          ? prev.clientId
-          : "PVT"
-        : prev.clientId.replace(/^PVT/, ""),
-    }));
+    setFormData((prev) => {
+      let newId = prev.clientId;
+      if (checked && !newId.startsWith("PVT")) {
+        newId = "PVT" + newId.replace(/^PVT/, "");
+      } else if (!checked && newId.startsWith("PVT")) {
+        newId = newId.replace(/^PVT/, "");
+      }
+      return { ...prev, clientId: newId };
+    });
   };
 
   const tabs = [
@@ -252,11 +254,24 @@ export function ClientProfileForm({ client, onBack, onSave }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Send the entire formData object to the backend
-    console.log(formData);
-    onSave(formData);
+    try {
+      // Send the entire formData object to the backend
+      console.log(formData);
+      await onSave(formData); // onSave should be async and use .unwrap() internally
+    } catch (err) {
+      // Display error using toast or similar
+      if (err && err.message) {
+        toast.error(
+          Array.isArray(err.message)
+            ? err.message.map((e) => e.msg || e).join(", ")
+            : err.message
+        );
+      } else {
+        toast.error("An error occurred while saving the client");
+      }
+    }
   };
 
   const handleNestedChange = (section, subsection, field, value) => {
@@ -488,11 +503,8 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                     }
                     onChange={(val) => {
                       if (isEditing) return; // Prevent changes when editing
-                      let newVal = val;
-                      if (isPvt && !val.startsWith("PVT"))
-                        newVal = "PVT" + val.replace(/^PVT/, "");
-                      if (!isPvt && newVal.startsWith("PVT"))
-                        newVal = newVal.replace(/^PVT/, "");
+                      let newVal = val.replace(/^PVT+/, "");
+                      if (isPvt) newVal = "PVT" + newVal;
                       setFormData((prev) => ({ ...prev, clientId: newVal }));
                     }}
                   />
@@ -1590,6 +1602,25 @@ Consent to photography for care documentation"
                             "medicalInformation",
                             "dnr",
                             "issuedBy",
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Review Date
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.medicalInformation.dnr.reviewDate}
+                        onChange={(e) =>
+                          handleNestedChange(
+                            "medicalInformation",
+                            "dnr",
+                            "reviewDate",
                             e.target.value
                           )
                         }

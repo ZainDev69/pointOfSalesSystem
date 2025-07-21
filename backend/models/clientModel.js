@@ -174,7 +174,14 @@ const clientSchema = new mongoose.Schema({
         },
     },
     Archived: { type: Boolean, default: false },
-});
+    activityLog: [
+        {
+            date: { type: Date, default: Date.now },
+            action: String,
+            user: { type: String, default: 'System' },
+        },
+    ],
+}, { timestamps: true });
 
 const Client = mongoose.model('Client', clientSchema);
 module.exports = Client;

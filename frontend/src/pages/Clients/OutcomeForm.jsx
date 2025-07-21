@@ -16,7 +16,7 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
     measurable: "",
     achievable: true,
     timeframe: "",
-    status: "not-started",
+    status: "draft",
     priority: "medium",
     category: "other",
     notes: "",
@@ -32,7 +32,7 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
         achievable:
           outcome.achievable !== undefined ? outcome.achievable : true,
         timeframe: outcome.timeframe || "",
-        status: outcome.status || "not-started",
+        status: outcome.status || "draft",
         priority: outcome.priority || "medium",
         category: outcome.category || "other",
         notes: outcome.notes || "",
@@ -82,8 +82,7 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
   };
 
   const statusOptions = [
-    { value: "not-started", label: "Not Started", icon: Clock },
-    { value: "in-progress", label: "In Progress", icon: FileText },
+    { value: "draft", label: "Draft", icon: FileText },
     { value: "achieved", label: "Achieved", icon: Target },
     { value: "not-achieved", label: "Not Achieved", icon: X },
     { value: "modified", label: "Modified", icon: FileText },

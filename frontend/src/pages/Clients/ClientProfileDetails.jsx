@@ -25,6 +25,7 @@ import {
   Bell,
   TrendingUp,
   CheckCircle,
+  History,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -43,7 +44,7 @@ import {
   editContact,
   deleteContact,
 } from "../../components/redux/slice/contacts";
-import { updateClient } from "../../components/redux/slice/clients";
+import { updateClient, getClient } from "../../components/redux/slice/clients";
 import { clearCarePlans } from "../../components/redux/slice/carePlans";
 import { clearOutcomes } from "../../components/redux/slice/outcomes";
 import Spinner from "../../components/layout/Spinner";
@@ -77,6 +78,12 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
       dispatch(clearOutcomes());
     };
   }, [client._id, dispatch]);
+
+  useEffect(() => {
+    if (activeTab === "activity-log" && client && client._id) {
+      dispatch(getClient(client._id));
+    }
+  }, [activeTab, client?._id, dispatch]);
 
   const handleAddContact = () => {
     setSelectedContact(null);
@@ -288,6 +295,7 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
     { id: "visits", label: "Visit Schedule", icon: Calendar },
     { id: "documents", label: "Documentation", icon: FileText },
     { id: "compliance", label: "Compliance", icon: Shield },
+    { id: "activity-log", label: "Activity Log", icon: History },
   ];
 
   if (contactView === "form") {
@@ -375,7 +383,7 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
               <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg border border-green-300 border-opacity-50 backdrop-blur-sm transform hover:scale-105 transition-all duration-200">
                 <div className="w-2.5 h-2.5 bg-white rounded-full mr-2 animate-pulse shadow-sm"></div>
                 <span className="text-white drop-shadow-sm">
-                  {client.personalDetails?.status.toUpperCase() || "No Status"}
+                  {client.personalDetails?.status || "No Status"}
                 </span>
                 <div className="ml-2 w-1 h-1 bg-white rounded-full opacity-60"></div>
               </div>
@@ -1186,6 +1194,9 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
                         <th className="px-3 py-2 text-left font-medium text-gray-700">
                           Family Aware
                         </th>
+                        <th className="px-3 py-2 text-left font-medium text-gray-700">
+                          Review Date
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1224,6 +1235,9 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
                               ? "Yes"
                               : "No"}
                           </span>
+                        </td>
+                        <td className="px-3 py-2">
+                          {client.medicalInformation.dnr.reviewDate || "-"}
                         </td>
                       </tr>
                     </tbody>
@@ -1605,6 +1619,51 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
         />
       )}
 
+      {activeTab === "activity-log" && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+            <History className="w-5 h-5 text-blue-600" />
+            <span>Activity Log</span>
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-3 py-2 text-left font-medium text-gray-700">
+                    Date/Time
+                  </th>
+                  <th className="px-3 py-2 text-left font-medium text-gray-700">
+                    Action
+                  </th>
+                  <th className="px-3 py-2 text-left font-medium text-gray-700">
+                    User
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {(client.activityLog || []).length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="text-center py-6 text-gray-500">
+                      No activity recorded yet.
+                    </td>
+                  </tr>
+                ) : (
+                  [...client.activityLog].reverse().map((log, idx) => (
+                    <tr key={idx} className="border-b last:border-b-0">
+                      <td className="px-3 py-2">
+                        {log.date ? new Date(log.date).toLocaleString() : "-"}
+                      </td>
+                      <td className="px-3 py-2">{log.action}</td>
+                      <td className="px-3 py-2">{log.user}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {showDeleteModal && <DeleteContactModal />}
 
       {/* Medical Information Edit Modal */}
@@ -1642,6 +1701,7 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
         "visits",
         "documents",
         "compliance",
+        "activity-log",
       ].includes(activeTab) && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
           <div className="text-center">

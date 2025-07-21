@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { API_URL } from "../../../main";
 
 
 export const createClient = createAsyncThunk(
@@ -8,7 +9,7 @@ export const createClient = createAsyncThunk(
         try {
             console.log("Calling the createClient")
 
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/clients`, clientData, {
+            const response = await axios.post(`${API_URL}/clients`, clientData, {
                 withCredentials: true, headers: {
                     'Content-Type': 'application/json',
                 },
@@ -17,9 +18,9 @@ export const createClient = createAsyncThunk(
             return response.data.data;
         } catch (error) {
             if (error.response?.status === 400) {
-                return rejectWithValue(error.response.data.errors); // <-- pass validation errors
+                return rejectWithValue({ message: error.response.data.errors });
             }
-            return rejectWithValue([{ msg: 'Unknown error' }]);
+            return rejectWithValue({ message: 'Unknown error' });
         }
     }
 );
@@ -29,11 +30,11 @@ export const clientList = createAsyncThunk(
     "clients/getClients",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/clients`, { withCredentials: true });
+            const response = await axios.get(`${API_URL}/clients`, { withCredentials: true });
             return response.data.data;
 
         } catch (error) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue({ message: error.response.data.message });
         }
     }
 )
@@ -42,12 +43,12 @@ export const getClient = createAsyncThunk(
     "clients/getClient",
     async (clientId, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/clients/${clientId}`, {
+            const response = await axios.get(`${API_URL}/clients/${clientId}`, {
                 withCredentials: true,
             });
             return response.data.data;
         } catch (error) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue({ message: error.response.data.message });
         }
     }
 );
@@ -57,10 +58,10 @@ export const deleteClient = createAsyncThunk(
     "clients/deleteClient",
     async (clientId, { rejectWithValue }) => {
         try {
-            await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/clients/${clientId}`, { withCredentials: true });
+            await axios.delete(`${API_URL}/clients/${clientId}`, { withCredentials: true });
             return clientId;
         } catch (error) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue({ message: error.response.data.message });
         }
     }
 )
@@ -71,11 +72,11 @@ export const updateClient = createAsyncThunk(
     async ({ clientId, clientData }, { rejectWithValue }) => {
         try {
             console.log("Calling the updateClient")
-            const response = await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/clients/${clientId}`, clientData, { withCredentials: true });
+            const response = await axios.patch(`${API_URL}/clients/${clientId}`, clientData, { withCredentials: true });
             console.log("The Client is updated")
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue({ message: error.response.data.message });
         }
     }
 )
@@ -85,13 +86,13 @@ export const archiveClient = createAsyncThunk(
     async (clientId, { rejectWithValue }) => {
         try {
             const response = await axios.patch(
-                `${import.meta.env.VITE_BACKEND_URL}/clients/${clientId}/archive`,
+                `${API_URL}/clients/${clientId}/archive`,
                 {},
                 { withCredentials: true }
             );
             return response.data.data;
         } catch (error) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue({ message: error.response.data.message });
         }
     }
 );
@@ -101,13 +102,13 @@ export const unarchiveClient = createAsyncThunk(
     async (clientId, { rejectWithValue }) => {
         try {
             const response = await axios.patch(
-                `${import.meta.env.VITE_BACKEND_URL}/clients/${clientId}/unarchive`,
+                `${API_URL}/clients/${clientId}/unarchive`,
                 {},
                 { withCredentials: true }
             );
             return response.data.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || "Error unarchiving client");
+            return rejectWithValue({ message: error.response?.data?.message || "Error unarchiving client" });
         }
     }
 );
@@ -115,10 +116,10 @@ export const checkClientId = createAsyncThunk(
     "clients/checkClientId",
     async (clientId, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/clients/check-id?clientId=${clientId}`, { withCredentials: true });
+            const response = await axios.get(`${API_URL}/clients/check-id?clientId=${clientId}`, { withCredentials: true });
             return response.data.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || "Unknown error");
+            return rejectWithValue({ message: error.response?.data?.message || "Unknown error" });
         }
     }
 );
@@ -146,7 +147,7 @@ const clientSlice = createSlice({
             })
             .addCase(clientList.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
+                state.error = action.payload?.message || action.error?.message;
             })
             //Get Single Client
             .addCase(getClient.pending, (state) => {
@@ -159,7 +160,7 @@ const clientSlice = createSlice({
             })
             .addCase(getClient.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
+                state.error = action.payload?.message || action.error?.message;
             })
 
             // Creating a new Client
@@ -173,7 +174,7 @@ const clientSlice = createSlice({
             })
             .addCase(createClient.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
+                state.error = action.payload?.message || action.error?.message;
             })
 
 
@@ -192,7 +193,7 @@ const clientSlice = createSlice({
             })
             .addCase(updateClient.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
+                state.error = action.payload?.message || action.error?.message;
             })
 
             // Deleting the User
@@ -205,7 +206,7 @@ const clientSlice = createSlice({
 
             }).addCase(deleteClient.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
+                state.error = action.payload?.message || action.error?.message;
             })
             // Archiving the Clients 
             .addCase(archiveClient.pending, (state) => {
@@ -221,7 +222,7 @@ const clientSlice = createSlice({
             })
             .addCase(archiveClient.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
+                state.error = action.payload?.message || action.error?.message;
             })
 
             // Unarchiving the Clients
@@ -238,7 +239,7 @@ const clientSlice = createSlice({
             })
             .addCase(unarchiveClient.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
+                state.error = action.payload?.message || action.error?.message;
             });
 
 
