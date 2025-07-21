@@ -1,14 +1,14 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { API_URL } from "../../../main";
 
 // Fetch contacts for a client
 export const fetchContacts = createAsyncThunk(
     "contacts/fetchContacts",
     async (clientId) => {
         console.log("Fetching contacts for client:", clientId);
-        const res = await axios.get(`${BASE_URL}/api/clients/${clientId}/contacts`, { withCredentials: true });
+        const res = await axios.get(`${API_URL}/api/clients/${clientId}/contacts`, { withCredentials: true });
         console.log("Contacts fetched:", res.data);
         return res.data;
     }
@@ -20,7 +20,7 @@ export const addContact = createAsyncThunk(
     async ({ clientId, contactData }) => {
         console.log("Adding contact for client:", clientId);
         console.log("Contact data:", contactData);
-        const res = await axios.post(`${BASE_URL}/api/clients/${clientId}/contacts`, contactData, { withCredentials: true });
+        const res = await axios.post(`${API_URL}/api/clients/${clientId}/contacts`, contactData, { withCredentials: true });
         console.log("Contact added:", res.data);
 
         return res.data;
@@ -34,7 +34,7 @@ export const editContact = createAsyncThunk(
         console.log("Editing contact for client:", clientId);
         console.log("Contact ID:", contactId);
         console.log("Contact data:", contactData);
-        const res = await axios.put(`${BASE_URL}/api/clients/${clientId}/contacts/${contactId}`, contactData, { withCredentials: true });
+        const res = await axios.put(`${API_URL}/api/clients/${clientId}/contacts/${contactId}`, contactData, { withCredentials: true });
         console.log("Contact edited:", res.data);
         return res.data;
     }
@@ -46,7 +46,7 @@ export const deleteContact = createAsyncThunk(
     async ({ clientId, contactId }) => {
         console.log("Deleting contact for client:", clientId);
         console.log("Contact ID:", contactId);
-        await axios.delete(`${BASE_URL}/api/clients/${clientId}/contacts/${contactId}`, { withCredentials: true });
+        await axios.delete(`${API_URL}/api/clients/${clientId}/contacts/${contactId}`, { withCredentials: true });
         console.log("Contact deleted");
         return contactId;
     }

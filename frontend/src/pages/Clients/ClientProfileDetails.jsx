@@ -1574,16 +1574,7 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
       )}
 
       {activeTab === "risk-assessments" && (
-        <RiskAssessmentManager
-          clientId={client._id}
-          assessments={client.riskAssessments || []}
-          onAddAssessment={(assessment) =>
-            console.log("Add assessment:", assessment)
-          }
-          onUpdateAssessment={(id, assessment) =>
-            console.log("Update assessment:", id, assessment)
-          }
-        />
+        <RiskAssessmentManager clientId={client._id} />
       )}
 
       {activeTab === "care-plan" && <CarePlanManager clientId={client._id} />}

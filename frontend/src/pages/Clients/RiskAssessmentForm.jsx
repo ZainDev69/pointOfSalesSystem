@@ -47,12 +47,16 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const assessmentData = {
-      ...formData,
-      id: assessment?.id || Date.now().toString(),
-    };
-
+    const assessmentData = { ...formData };
+    // Ensure _id is included for editing
+    if (assessment?._id) {
+      assessmentData._id = assessment._id;
+    }
+    // Remove local id for new assessments
+    if (!assessment?._id && !assessment?.id) {
+      delete assessmentData.id;
+      delete assessmentData._id;
+    }
     onSave(assessmentData);
   };
 

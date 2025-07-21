@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Plus,
   Shield,
@@ -9,18 +10,43 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
+  Trash,
 } from "lucide-react";
 import { RiskAssessmentForm } from "./RiskAssessmentForm";
+import {
+  fetchRiskAssessments,
+  addRiskAssessment,
+  editRiskAssessment,
+  deleteRiskAssessment,
+} from "../../components/redux/slice/riskAssessments";
 
-export function RiskAssessmentManager({
-  clientId,
-  assessments,
-  onAddAssessment,
-  onUpdateAssessment,
-}) {
+export function RiskAssessmentManager({ clientId }) {
   const [view, setView] = useState("list");
   const [selectedAssessment, setSelectedAssessment] = useState(null);
   const [filterType, setFilterType] = useState("all");
+  const dispatch = useDispatch();
+  const { items: assessments } = useSelector((state) => state.riskAssessments);
+
+  useEffect(() => {
+    if (clientId) {
+      dispatch(fetchRiskAssessments(clientId));
+    }
+  }, [clientId, dispatch]);
+
+  const handleAddAssessment = async (assessment) => {
+    console.log("Inside Add Risk Assessment");
+    await dispatch(addRiskAssessment({ ...assessment, clientId }));
+  };
+
+  const handleUpdateAssessment = async (id, assessment) => {
+    console.log("Inside Edit Risk Assessment");
+    await dispatch(editRiskAssessment({ id, assessment }));
+  };
+
+  const handleDeleteAssessment = async (id) => {
+    console.log("Inside Delete Risk Assessment");
+    await dispatch(deleteRiskAssessment(id));
+  };
 
   const assessmentTypes = [
     {
@@ -85,111 +111,6 @@ export function RiskAssessmentManager({
     },
   ];
 
-  // Mock data for demonstration
-  const mockAssessments = [
-    {
-      id: "1",
-      type: "environmental",
-      assessmentDate: new Date().toISOString().split("T")[0],
-      assessedBy: "Sarah Johnson",
-      reviewDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      status: "current",
-      overallRisk: "medium",
-      risks: [
-        {
-          id: "1",
-          hazard: "Loose carpet in hallway",
-          whoAtRisk: ["Client", "Visitors", "Carers"],
-          likelihood: "possible",
-          severity: "moderate",
-          riskLevel: "medium",
-          existingControls: ["Warning signs placed"],
-          residualRisk: "low",
-        },
-      ],
-      controlMeasures: [
-        {
-          id: "1",
-          riskId: "1",
-          measure: "Secure carpet with carpet tape",
-          type: "control",
-          responsibility: "Maintenance Team",
-          implementationDate: new Date().toISOString().split("T")[0],
-          reviewDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split("T")[0],
-          status: "implemented",
-          effectiveness: "effective",
-        },
-      ],
-      monitoringPlan: {
-        frequency: "Monthly",
-        methods: ["Visual inspection", "Incident monitoring"],
-        indicators: ["Number of trips/falls", "Carpet condition"],
-        responsibility: "Care Manager",
-        reportingProcess: ["Monthly safety report", "Incident reports"],
-      },
-      version: 1,
-    },
-    {
-      id: "2",
-      type: "falls",
-      assessmentDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      assessedBy: "Emma Wilson",
-      reviewDate: new Date(Date.now() + 335 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      status: "current",
-      overallRisk: "high",
-      risks: [
-        {
-          id: "2",
-          hazard: "Client has history of falls and uses walking frame",
-          whoAtRisk: ["Client"],
-          likelihood: "likely",
-          severity: "major",
-          riskLevel: "high",
-          existingControls: ["Walking frame provided", "Non-slip socks"],
-          residualRisk: "medium",
-        },
-      ],
-      controlMeasures: [
-        {
-          id: "2",
-          riskId: "2",
-          measure: "Install grab rails in bathroom and hallway",
-          type: "control",
-          responsibility: "Occupational Therapist",
-          implementationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split("T")[0],
-          reviewDate: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split("T")[0],
-          status: "planned",
-          effectiveness: "not-assessed",
-        },
-      ],
-      monitoringPlan: {
-        frequency: "Weekly",
-        methods: ["Mobility assessment", "Fall incident monitoring"],
-        indicators: ["Mobility level", "Fall frequency", "Confidence level"],
-        responsibility: "Senior Carer",
-        reportingProcess: [
-          "Weekly mobility report",
-          "Immediate incident reporting",
-        ],
-      },
-      version: 1,
-    },
-  ];
-
-  const allAssessments = [...assessments, ...mockAssessments];
-
   const getRiskLevelColor = (level) => {
     switch (level) {
       case "low":
@@ -218,16 +139,16 @@ export function RiskAssessmentManager({
     }
   };
 
-  const filteredAssessments = allAssessments.filter(
+  const filteredAssessments = assessments.filter(
     (assessment) => filterType === "all" || assessment.type === filterType
   );
 
   const assessmentStats = {
-    total: allAssessments.length,
-    current: allAssessments.filter((a) => a.status === "current").length,
-    due: allAssessments.filter((a) => a.status === "due").length,
-    overdue: allAssessments.filter((a) => a.status === "overdue").length,
-    highRisk: allAssessments.filter(
+    total: assessments.length,
+    current: assessments.filter((a) => a.status === "current").length,
+    due: assessments.filter((a) => a.status === "due").length,
+    overdue: assessments.filter((a) => a.status === "overdue").length,
+    highRisk: assessments.filter(
       (a) => a.overallRisk === "high" || a.overallRisk === "very-high"
     ).length,
   };
@@ -238,10 +159,10 @@ export function RiskAssessmentManager({
         assessment={selectedAssessment}
         onBack={() => setView("list")}
         onSave={(assessment) => {
-          if ("id" in assessment) {
-            onUpdateAssessment(assessment.id, assessment);
+          if (assessment._id) {
+            handleUpdateAssessment(assessment._id, assessment);
           } else {
-            onAddAssessment(assessment);
+            handleAddAssessment(assessment);
           }
           setView("list");
         }}
@@ -254,7 +175,6 @@ export function RiskAssessmentManager({
       <RiskAssessmentDetails
         assessment={selectedAssessment}
         onBack={() => setView("list")}
-        onEdit={() => setView("form")}
       />
     );
   }
@@ -382,7 +302,7 @@ export function RiskAssessmentManager({
 
             return (
               <div
-                key={assessment.id}
+                key={assessment._id}
                 className="p-6 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center justify-between">
@@ -474,6 +394,14 @@ export function RiskAssessmentManager({
                     >
                       <Edit3 className="w-4 h-4" />
                     </button>
+
+                    <button
+                      onClick={() => handleDeleteAssessment(assessment._id)}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete Assessment"
+                    >
+                      <Trash className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -511,32 +439,211 @@ export function RiskAssessmentManager({
   );
 }
 
-// Placeholder component for assessment details view
-function RiskAssessmentDetails({ assessment, onBack, onEdit }) {
+function RiskAssessmentDetails({ assessment, onBack }) {
+  if (!assessment) return null;
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-      <div className="text-center">
-        <Shield className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+      <div className="mb-6 flex items-center justify-between">
+        <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Shield className="w-7 h-7 text-blue-500 mr-2" />
           Risk Assessment Details
         </h3>
-        <p className="text-gray-600 mb-4">
-          Detailed risk assessment view coming soon
-        </p>
-        <div className="flex items-center justify-center space-x-4">
+        <div className="flex items-center space-x-2">
           <button
             onClick={onBack}
             className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
           >
             Back to List
           </button>
-          <button
-            onClick={onEdit}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-          >
-            Edit Assessment
-          </button>
         </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+          <div className="mb-2 text-lg font-semibold text-blue-800 flex items-center gap-2">
+            <Shield className="w-5 h-5 text-blue-400" /> Assessment Info
+          </div>
+          <div className="space-y-1 text-blue-900">
+            <div>
+              <strong>Type:</strong> {assessment.type}
+            </div>
+            <div>
+              <strong>Assessment Date:</strong> {assessment.assessmentDate}
+            </div>
+            <div>
+              <strong>Assessed By:</strong> {assessment.assessedBy}
+            </div>
+            <div>
+              <strong>Review Date:</strong> {assessment.reviewDate}
+            </div>
+            <div>
+              <strong>Status:</strong>{" "}
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                  assessment.status === "current"
+                    ? "bg-green-100 text-green-800"
+                    : assessment.status === "due"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : assessment.status === "overdue"
+                    ? "bg-red-100 text-red-800"
+                    : "bg-gray-100 text-gray-800"
+                }`}
+              >
+                {assessment.status.charAt(0).toUpperCase() +
+                  assessment.status.slice(1).toLowerCase()}
+              </span>
+            </div>
+            <div>
+              <strong>Overall Risk:</strong>{" "}
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                  assessment.overallRisk === "high" ||
+                  assessment.overallRisk === "very-high"
+                    ? "bg-red-100 text-red-800"
+                    : assessment.overallRisk === "medium"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-green-100 text-green-800"
+                }`}
+              >
+                {assessment.overallRisk.charAt(0).toUpperCase() +
+                  assessment.overallRisk
+                    .slice(1)
+                    .toLowerCase()
+                    .replace("-", " ")}
+              </span>
+            </div>
+            <div>
+              <strong>Version:</strong> {assessment.version}
+            </div>
+          </div>
+        </div>
+        <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
+          <div className="mb-2 text-lg font-semibold text-purple-800 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-purple-400" /> Monitoring Plan
+          </div>
+          {assessment.monitoringPlan ? (
+            <ul className="space-y-1 text-purple-900">
+              <li>
+                <strong>Frequency:</strong>{" "}
+                {assessment.monitoringPlan.frequency}
+              </li>
+              <li>
+                <strong>Methods:</strong>{" "}
+                {assessment.monitoringPlan.methods?.join(", ")}
+              </li>
+              <li>
+                <strong>Indicators:</strong>{" "}
+                {assessment.monitoringPlan.indicators?.join(", ")}
+              </li>
+              <li>
+                <strong>Responsibility:</strong>{" "}
+                {assessment.monitoringPlan.responsibility}
+              </li>
+              <li>
+                <strong>Reporting Process:</strong>{" "}
+                {assessment.monitoringPlan.reportingProcess?.join(", ")}
+              </li>
+            </ul>
+          ) : (
+            <div className="text-gray-500">No monitoring plan recorded.</div>
+          )}
+        </div>
+      </div>
+      <div className="mb-8">
+        <div className="text-lg font-semibold text-red-700 mb-2 flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5 text-red-400" /> Risks
+        </div>
+        {assessment.risks && assessment.risks.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {assessment.risks.map((risk, idx) => (
+              <div
+                key={risk.id || idx}
+                className="bg-white border border-red-100 rounded-lg p-4 shadow-sm"
+              >
+                <div className="font-semibold text-red-800 mb-1">
+                  Hazard: {risk.hazard}
+                </div>
+                <div className="text-sm text-gray-700">
+                  <div>
+                    <strong>Who at Risk:</strong> {risk.whoAtRisk?.join(", ")}
+                  </div>
+                  <div>
+                    <strong>Likelihood:</strong> {risk.likelihood}
+                  </div>
+                  <div>
+                    <strong>Severity:</strong> {risk.severity}
+                  </div>
+                  <div>
+                    <strong>Risk Level:</strong>{" "}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        risk.riskLevel === "high" ||
+                        risk.riskLevel === "very-high"
+                          ? "bg-red-100 text-red-800"
+                          : risk.riskLevel === "medium"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {risk.riskLevel.charAt(0).toUpperCase() +
+                        risk.riskLevel.slice(1).toLowerCase().replace("-", " ")}
+                    </span>
+                  </div>
+                  <div>
+                    <strong>Existing Controls:</strong>{" "}
+                    {risk.existingControls?.join(", ")}
+                  </div>
+                  <div>
+                    <strong>Residual Risk:</strong> {risk.residualRisk}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-gray-500">No risks recorded.</div>
+        )}
+      </div>
+      <div>
+        <div className="text-lg font-semibold text-indigo-700 mb-2 flex items-center gap-2">
+          <Shield className="w-5 h-5 text-indigo-400" /> Control Measures
+        </div>
+        {assessment.controlMeasures && assessment.controlMeasures.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {assessment.controlMeasures.map((cm, idx) => (
+              <div
+                key={cm.id || idx}
+                className="bg-white border border-indigo-100 rounded-lg p-4 shadow-sm"
+              >
+                <div className="font-semibold text-indigo-800 mb-1">
+                  Measure: {cm.measure}
+                </div>
+                <div className="text-sm text-gray-700">
+                  <div>
+                    <strong>Type:</strong> {cm.type}
+                  </div>
+                  <div>
+                    <strong>Responsibility:</strong> {cm.responsibility}
+                  </div>
+                  <div>
+                    <strong>Implementation Date:</strong>{" "}
+                    {cm.implementationDate}
+                  </div>
+                  <div>
+                    <strong>Review Date:</strong> {cm.reviewDate}
+                  </div>
+                  <div>
+                    <strong>Status:</strong> {cm.status}
+                  </div>
+                  <div>
+                    <strong>Effectiveness:</strong> {cm.effectiveness}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-gray-500">No control measures recorded.</div>
+        )}
       </div>
     </div>
   );

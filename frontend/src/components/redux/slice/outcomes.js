@@ -1,12 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { API_URL } from "../../../main";
 
 // Async thunks
 export const fetchCarePlanOutcomes = createAsyncThunk(
     'outcomes/fetchCarePlanOutcomes',
     async (carePlanId) => {
-        const response = await fetch(`${API_BASE_URL}/care-plans/${carePlanId}/outcomes`);
+        const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes`);
         const data = await response.json();
         return data.data;
     }
@@ -15,7 +15,7 @@ export const fetchCarePlanOutcomes = createAsyncThunk(
 export const createOutcome = createAsyncThunk(
     'outcomes/createOutcome',
     async ({ carePlanId, outcomeData }) => {
-        const response = await fetch(`${API_BASE_URL}/care-plans/${carePlanId}/outcomes`, {
+        const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ export const createOutcome = createAsyncThunk(
 export const updateOutcome = createAsyncThunk(
     'outcomes/updateOutcome',
     async ({ outcomeId, outcomeData }) => {
-        const response = await fetch(`${API_BASE_URL}/outcomes/${outcomeId}`, {
+        const response = await fetch(`${API_URL}/outcomes/${outcomeId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ export const updateOutcome = createAsyncThunk(
 export const deleteOutcome = createAsyncThunk(
     'outcomes/deleteOutcome',
     async (outcomeId) => {
-        await fetch(`${API_BASE_URL}/outcomes/${outcomeId}`, {
+        await fetch(`${API_URL}/outcomes/${outcomeId}`, {
             method: 'DELETE',
         });
         return outcomeId;
@@ -55,7 +55,7 @@ export const deleteOutcome = createAsyncThunk(
 export const addOutcomeProgress = createAsyncThunk(
     'outcomes/addOutcomeProgress',
     async ({ outcomeId, progressData }) => {
-        const response = await fetch(`${API_BASE_URL}/outcomes/${outcomeId}/progress`, {
+        const response = await fetch(`${API_URL}/outcomes/${outcomeId}/progress`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

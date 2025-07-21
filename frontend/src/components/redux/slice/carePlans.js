@@ -1,12 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { API_URL } from "../../../main";
 
 // Async thunks
 export const fetchClientCarePlans = createAsyncThunk(
     'carePlans/fetchClientCarePlans',
     async (clientId) => {
-        const response = await fetch(`${API_BASE_URL}/clients/${clientId}/care-plans`);
+        const response = await fetch(`${API_URL}/clients/${clientId}/care-plans`);
         const data = await response.json();
         return data.data;
     }
@@ -15,7 +15,7 @@ export const fetchClientCarePlans = createAsyncThunk(
 export const fetchActiveCarePlan = createAsyncThunk(
     'carePlans/fetchActiveCarePlan',
     async (clientId) => {
-        const response = await fetch(`${API_BASE_URL}/clients/${clientId}/care-plans/active`);
+        const response = await fetch(`${API_URL}/clients/${clientId}/care-plans/active`);
         const data = await response.json();
         return data.data;
     }
@@ -24,7 +24,7 @@ export const fetchActiveCarePlan = createAsyncThunk(
 export const fetchCarePlanHistory = createAsyncThunk(
     'carePlans/fetchCarePlanHistory',
     async (clientId) => {
-        const response = await fetch(`${API_BASE_URL}/clients/${clientId}/care-plans/history`);
+        const response = await fetch(`${API_URL}/clients/${clientId}/care-plans/history`);
         const data = await response.json();
         return data.data;
     }
@@ -33,7 +33,7 @@ export const fetchCarePlanHistory = createAsyncThunk(
 export const createCarePlan = createAsyncThunk(
     'carePlans/createCarePlan',
     async ({ clientId, carePlanData }) => {
-        const response = await fetch(`${API_BASE_URL}/clients/${clientId}/care-plans`, {
+        const response = await fetch(`${API_URL}/clients/${clientId}/care-plans`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ export const updateCarePlan = createAsyncThunk(
                 clientId: carePlanData.clientId || carePlanData.client // fallback for different field names
             };
 
-            const response = await fetch(`${API_BASE_URL}/care-plans/${carePlanId}`, {
+            const response = await fetch(`${API_URL}/care-plans/${carePlanId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ export const updateCarePlan = createAsyncThunk(
 export const deleteCarePlan = createAsyncThunk(
     'carePlans/deleteCarePlan',
     async (carePlanId) => {
-        await fetch(`${API_BASE_URL}/care-plans/${carePlanId}`, {
+        await fetch(`${API_URL}/care-plans/${carePlanId}`, {
             method: 'DELETE',
         });
         return carePlanId;
