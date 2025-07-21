@@ -1648,15 +1648,88 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
                     </td>
                   </tr>
                 ) : (
-                  [...client.activityLog].reverse().map((log, idx) => (
-                    <tr key={idx} className="border-b last:border-b-0">
-                      <td className="px-3 py-2">
-                        {log.date ? new Date(log.date).toLocaleString() : "-"}
-                      </td>
-                      <td className="px-3 py-2">{log.action}</td>
-                      <td className="px-3 py-2">{log.user}</td>
-                    </tr>
-                  ))
+                  [...client.activityLog].reverse().map((log, idx, arr) => {
+                    // Zebra striping
+                    const isEven = idx % 2 === 0;
+                    // Highlight most recent
+                    const isMostRecent = idx === 0;
+                    // User initials
+                    const getInitials = (name) => {
+                      if (!name) return "?";
+                      return name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase();
+                    };
+                    // Action icon (simple mapping)
+                    const actionIconMap = {
+                      Created: (
+                        <Plus className="w-4 h-4 text-green-500 mr-1 inline" />
+                      ),
+                      Updated: (
+                        <Edit3 className="w-4 h-4 text-blue-500 mr-1 inline" />
+                      ),
+                      Deleted: (
+                        <Trash className="w-4 h-4 text-red-500 mr-1 inline" />
+                      ),
+                      Contacted: (
+                        <MessageSquare className="w-4 h-4 text-purple-500 mr-1 inline" />
+                      ),
+                    };
+                    // Try to pick an icon based on action text
+                    const actionKey = Object.keys(actionIconMap).find((key) =>
+                      (log.action || "")
+                        .toLowerCase()
+                        .includes(key.toLowerCase())
+                    );
+                    const ActionIcon = actionKey ? (
+                      actionIconMap[actionKey]
+                    ) : (
+                      <CheckCircle className="w-4 h-4 text-gray-400 mr-1 inline" />
+                    );
+                    return (
+                      <tr
+                        key={idx}
+                        className={`transition-colors ${
+                          isEven ? "bg-gray-50" : "bg-white"
+                        } ${
+                          isMostRecent ? "ring-2 ring-blue-200" : ""
+                        } hover:bg-blue-50`}
+                      >
+                        <td className="px-3 py-2 font-mono text-blue-700 whitespace-nowrap">
+                          {log.date ? (
+                            <span>
+                              {new Date(log.date).toLocaleDateString()}
+                              <br />
+                              <span className="text-xs text-gray-500">
+                                {new Date(log.date).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </span>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                        <td className="px-3 py-2 flex items-center">
+                          {ActionIcon}
+                          <span className="ml-1">{log.action}</span>
+                        </td>
+                        <td className="px-3 py-2">
+                          <span className="inline-flex items-center">
+                            <span className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold mr-2 border border-blue-200">
+                              {getInitials(log.user)}
+                            </span>
+                            <span className="font-medium text-gray-800">
+                              {log.user}
+                            </span>
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
