@@ -28,6 +28,7 @@ const contactRoutes = require("./routes/contactRoutes");
 const carePlanRoutes = require("./routes/carePlanRoutes");
 const riskAssessmentRoutes = require('./routes/riskAssessmentRoutes');
 const visitScheduleRoutes = require('./routes/visitScheduleRoutes');
+const carePlanDocumentRoutes = require('./routes/carePlanDocumentRoutes');
 
 app.use((req, res, next) => {
     console.log(`[${req.method}] ${req.originalUrl}`);
@@ -40,6 +41,7 @@ app.use('/clients/:clientId/visits', visitScheduleRoutes);
 app.use("/", carePlanRoutes);
 app.use('/api/risk-assessments', riskAssessmentRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/careplans', carePlanDocumentRoutes);
 
 
 

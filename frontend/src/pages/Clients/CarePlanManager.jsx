@@ -35,6 +35,7 @@ import {
   addOutcomeProgress,
 } from "../../components/redux/slice/outcomes";
 import toast from "react-hot-toast";
+import { CarePlanDocumentManager } from "./CarePlanDocumentManager";
 
 export function CarePlanManager({ clientId }) {
   const [activeTab, setActiveTab] = useState("overview");
@@ -165,6 +166,7 @@ export function CarePlanManager({ clientId }) {
     { id: "personal-care", label: "Personal Care", icon: User },
     { id: "daily-living", label: "Daily Living", icon: FileText },
     { id: "outcomes", label: "Outcomes", icon: Target },
+    { id: "documents", label: "Documents", icon: FileText },
   ];
 
   const getStatusColor = (status) => {
@@ -612,6 +614,10 @@ export function CarePlanManager({ clientId }) {
             </div>
           </div>
         </div>
+      )}
+
+      {activeTab === "documents" && (
+        <CarePlanDocumentManager carePlanId={activeCarePlan._id} />
       )}
 
       {/* Personal Care Tab */}
