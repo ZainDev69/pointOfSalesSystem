@@ -39,7 +39,7 @@ app.use('/clients', clientRouter);
 app.use('/clients/:clientId/contacts', contactRoutes);
 app.use('/clients/:clientId/visits', visitScheduleRoutes);
 app.use("/", carePlanRoutes);
-app.use('/api/risk-assessments', riskAssessmentRoutes);
+app.use('/risk-assessments', riskAssessmentRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/careplans', carePlanDocumentRoutes);
 
