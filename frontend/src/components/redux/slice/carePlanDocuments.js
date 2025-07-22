@@ -78,6 +78,18 @@ export const uploadCarePlanAttachment = createAsyncThunk(
     }
 );
 
+export const fetchAllCarePlanDocumentsForClient = createAsyncThunk(
+    'carePlanDocuments/fetchAllCarePlanDocumentsForClient',
+    async (clientId, { rejectWithValue }) => {
+        try {
+            const res = await axios.get(`${BACKEND_URL}/careplans/client/${clientId}/all-documents`, { withCredentials: true });
+            return res.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+);
+
 const carePlanDocumentsSlice = createSlice({
     name: 'carePlanDocuments',
     initialState: {
@@ -101,6 +113,18 @@ const carePlanDocumentsSlice = createSlice({
                 state.items = action.payload;
             })
             .addCase(fetchCarePlanDocuments.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(fetchAllCarePlanDocumentsForClient.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchAllCarePlanDocumentsForClient.fulfilled, (state, action) => {
+                state.loading = false;
+                state.items = action.payload;
+            })
+            .addCase(fetchAllCarePlanDocumentsForClient.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

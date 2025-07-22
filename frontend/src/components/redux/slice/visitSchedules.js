@@ -44,9 +44,6 @@ export const updateVisit = createAsyncThunk(
     }
 );
 
-
-
-
 export const deleteVisit = createAsyncThunk(
     'visitSchedules/deleteVisit',
     async ({ clientId, visitId }, { rejectWithValue }) => {
@@ -62,9 +59,6 @@ export const deleteVisit = createAsyncThunk(
     }
 );
 
-
-
-
 const visitSchedulesSlice = createSlice({
     name: 'visitSchedules',
     initialState: {
@@ -72,7 +66,13 @@ const visitSchedulesSlice = createSlice({
         loading: false,
         error: null,
     },
-    reducers: {},
+    reducers: {
+        clearVisitSchedules: (state) => {
+            state.items = [];
+            state.loading = false;
+            state.error = null;
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchVisitSchedule.pending, (state) => {
@@ -126,4 +126,5 @@ const visitSchedulesSlice = createSlice({
     },
 });
 
+export const { clearVisitSchedules } = visitSchedulesSlice.actions;
 export default visitSchedulesSlice.reducer; 

@@ -2,17 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Plus, Download, Edit3, Trash, Eye, X } from "lucide-react";
 import {
-  fetchCarePlanDocuments,
+  fetchAllCarePlanDocumentsForClient,
   addCarePlanDocument,
   updateCarePlanDocument,
   deleteCarePlanDocument,
   uploadCarePlanAttachment,
-} from "../../components/redux/slice/carePlanDocuments";
+} from "../../../components/redux/slice/carePlanDocuments";
 import { CarePlanDocumentForm } from "./CarePlanDocumentForm";
+import toast from "react-hot-toast";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-export function CarePlanDocumentManager({ carePlanId }) {
+export function CarePlanDocumentManager({ carePlanId, clientId }) {
   const dispatch = useDispatch();
   const {
     items: documents,
@@ -24,11 +25,16 @@ export function CarePlanDocumentManager({ carePlanId }) {
   const [detailsDoc, setDetailsDoc] = useState(null);
 
   useEffect(() => {
-    if (carePlanId) dispatch(fetchCarePlanDocuments(carePlanId));
-  }, [carePlanId, dispatch]);
+    if (clientId) {
+      dispatch(fetchAllCarePlanDocumentsForClient(clientId));
+    }
+  }, [clientId, dispatch]);
 
   const handleAdd = async (doc) => {
-    await dispatch(addCarePlanDocument({ carePlanId, documentData: doc }));
+    await dispatch(addCarePlanDocument({ carePlanId, documentData: doc }))
+      .unwrap()
+      .then(() => toast.success("Document added successfully"))
+      .catch(() => {});
     setView("list");
   };
   const handleEdit = async (doc) => {
@@ -38,12 +44,18 @@ export function CarePlanDocumentManager({ carePlanId }) {
         docId: doc._id,
         documentData: doc,
       })
-    );
+    )
+      .unwrap()
+      .then(() => toast.success("Document updated successfully"))
+      .catch(() => {});
     setView("list");
     setSelectedDoc(null);
   };
   const handleDelete = async (docId) => {
-    await dispatch(deleteCarePlanDocument({ carePlanId, docId }));
+    await dispatch(deleteCarePlanDocument({ carePlanId, docId }))
+      .unwrap()
+      .then(() => toast.success("Document deleted successfully"))
+      .catch(() => {});
   };
   const handleUpload = async (file) => {
     const res = await dispatch(

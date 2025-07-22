@@ -16,23 +16,27 @@ import {
   X,
 } from "lucide-react";
 import { DocumentForm } from "./DocumentForm";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addDocument,
+  updateDocument,
+  deleteDocument,
+} from "../../../components/redux/slice/documents";
+import toast from "react-hot-toast";
 
 // Add your backend base URL here
 const BACKEND_URL = "http://localhost:5500";
 
-export function DocumentationManager({
-  clientId,
-  documents,
-  onAddDocument,
-  onUpdateDocument,
-  onDeleteDocument,
-}) {
+export function DocumentationManager({ client }) {
   const [view, setView] = useState("list");
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [showArchived, setShowArchived] = useState(false);
+
+  const documents = useSelector((state) => state.documents.items) || [];
+  const dispatch = useDispatch();
 
   const documentTypes = [
     {
@@ -114,6 +118,39 @@ export function DocumentationManager({
       color: "bg-yellow-500",
     },
   ];
+
+  const handleAddDocument = async (documentData) => {
+    try {
+      await dispatch(
+        addDocument({ clientId: client._id, documentData })
+      ).unwrap();
+      toast.success("Document added successfully");
+    } catch {
+      toast.error("Failed to add document");
+    }
+  };
+
+  const handleUpdateDocument = async (documentId, documentData) => {
+    try {
+      await dispatch(
+        updateDocument({ clientId: client._id, documentId, documentData })
+      ).unwrap();
+      toast.success("Document updated successfully");
+    } catch {
+      toast.error("Failed to update document");
+    }
+  };
+
+  const handleDeleteDocument = async (documentId) => {
+    try {
+      await dispatch(
+        deleteDocument({ clientId: client._id, documentId })
+      ).unwrap();
+      toast.success("Document deleted successfully");
+    } catch {
+      toast.error("Failed to delete document");
+    }
+  };
 
   const filteredDocuments = documents.filter((doc) => {
     const matchesSearch =
@@ -197,13 +234,13 @@ export function DocumentationManager({
         onBack={() => setView("list")}
         onSave={(document) => {
           if (selectedDocument) {
-            onUpdateDocument(document.id, document);
+            handleUpdateDocument(document.id, document);
           } else {
-            onAddDocument(document);
+            handleAddDocument(document);
           }
           setView("list");
         }}
-        clientId={clientId}
+        clientId={client._id}
       />
     );
   }
@@ -537,7 +574,7 @@ export function DocumentationManager({
                       </button>
                     )}
                     <button
-                      onClick={() => onDeleteDocument(document.id)}
+                      onClick={() => handleDeleteDocument(document.id)}
                       className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Delete Document"
                     >

@@ -7,5 +7,6 @@ router.post('/:carePlanId/documents', carePlanDocumentController.addDocument);
 router.patch('/:carePlanId/documents/:docId', carePlanDocumentController.updateDocument);
 router.delete('/:carePlanId/documents/:docId', carePlanDocumentController.deleteDocument);
 router.post('/:carePlanId/documents/attachment', carePlanDocumentController.uploadAttachment, carePlanDocumentController.uploadAttachmentHandler);
+router.get('/client/:clientId/all-documents', carePlanDocumentController.getAllDocumentsForClient);
 
 module.exports = router; 

@@ -18,7 +18,7 @@ import {
   addVisit,
   updateVisit,
   deleteVisit,
-} from "../../components/redux/slice/visitSchedules";
+} from "../../../components/redux/slice/visitSchedules";
 
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
@@ -59,8 +59,7 @@ export function VisitScheduleManager({ clientId }) {
   };
 
   const handleDeleteVisit = async (id) => {
-    console.log("Deleting the visit in handleDeleteVisit", id);
-    await dispatch(deleteVisit({ clientId, visitId: id }));
+    dispatch(deleteVisit({ clientId, visitId: id }));
   };
 
   const filteredVisits =

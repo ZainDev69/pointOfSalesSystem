@@ -92,6 +92,8 @@ const documentsSlice = createSlice({
     reducers: {
         clearDocuments: (state) => {
             state.items = [];
+            state.loading = false;
+            state.error = null;
         },
     },
     extraReducers: (builder) => {

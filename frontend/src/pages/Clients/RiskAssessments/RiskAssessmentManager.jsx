@@ -18,7 +18,7 @@ import {
   addRiskAssessment,
   editRiskAssessment,
   deleteRiskAssessment,
-} from "../../components/redux/slice/riskAssessments";
+} from "../../../components/redux/slice/riskAssessments";
 
 export function RiskAssessmentManager({ clientId }) {
   const [view, setView] = useState("list");

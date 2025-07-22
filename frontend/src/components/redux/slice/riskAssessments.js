@@ -65,7 +65,13 @@ const riskAssessmentsSlice = createSlice({
         loading: false,
         error: null,
     },
-    reducers: {},
+    reducers: {
+        clearRiskAssessments: (state) => {
+            state.items = [];
+            state.loading = false;
+            state.error = null;
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchRiskAssessments.pending, (state) => {
@@ -93,4 +99,5 @@ const riskAssessmentsSlice = createSlice({
     },
 });
 
+export const { clearRiskAssessments } = riskAssessmentsSlice.actions;
 export default riskAssessmentsSlice.reducer; 

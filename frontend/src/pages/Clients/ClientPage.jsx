@@ -27,7 +27,7 @@ import {
   checkClientId,
 } from "../../components/redux/slice/clients";
 import { ClientProfileForm } from "./ClientProfileForm";
-import { ClientProfileDetails } from "./ClientProfileDetails";
+import { ClientProfileDetails } from "./ClientProfileDetails/ClientProfileDetails";
 import toast from "react-hot-toast";
 import { confirmAlert } from "react-confirm-alert";
 

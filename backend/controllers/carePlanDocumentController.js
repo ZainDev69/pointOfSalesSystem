@@ -94,4 +94,17 @@ exports.uploadAttachmentHandler = catchAsync(async (req, res, next) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const fileUrl = `/uploads/${req.file.filename}`;
     res.status(201).json({ url: fileUrl, originalName: req.file.originalname });
-}); 
+});
+
+exports.getAllDocumentsForClient = catchAsync(async (req, res, next) => {
+    const { clientId } = req.params;
+    // Find all care plans for this client
+    const carePlans = await CarePlan.find({ clientId });
+    const carePlanIds = carePlans.map(cp => cp._id);
+    // Find all documents for these care plans
+    const docs = await CarePlanDocument.find({ carePlanId: { $in: carePlanIds } });
+    res.status(200).json({ status: 'Success', data: docs });
+});
+
+
+

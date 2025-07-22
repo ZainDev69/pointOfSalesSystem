@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ArrowLeft, Save, X, FileText, Upload, Tag } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { uploadAttachment } from "../../components/redux/slice/documents";
+import { uploadAttachment } from "../../../components/redux/slice/documents";
 
 export function DocumentForm({ document, onBack, onSave, clientId }) {
   const isEditing = !!document;

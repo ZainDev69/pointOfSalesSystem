@@ -11,11 +11,7 @@ import {
   Award,
 } from "lucide-react";
 
-export function ComplianceTracker({
-  clientId,
-  compliance,
-  onUpdateCompliance,
-}) {
+export function ComplianceTracker({ client, compliance }) {
   const [activeTab, setActiveTab] = useState("overview");
 
   const tabs = [
