@@ -190,6 +190,77 @@ exports.checkClientId = catchAsync(async (req, res, next) => {
     res.status(200).json({ status: 'Success', data: clients });
 });
 
+// Get all documents for a client
+exports.getDocuments = catchAsync(async (req, res, next) => {
+    const { id } = req.params;
+    const client = await Client.findById(id);
+    if (!client) return next(new AppError('No Client found with that ID', 404));
+    res.status(200).json({
+        status: 'Success',
+        data: client.documents || []
+    });
+});
+
+// Add a document to a client
+exports.addDocument = catchAsync(async (req, res, next) => {
+    const { id } = req.params;
+    const client = await Client.findById(id);
+    if (!client) return next(new AppError('No Client found with that ID', 404));
+    const document = req.body;
+    client.documents.push(document);
+    client.activityLog.push({
+        date: new Date(),
+        action: `Document added: ${document.title || document.id}`,
+        user: 'System',
+    });
+    await client.save();
+    res.status(201).json({
+        status: 'Success',
+        data: document
+    });
+});
+
+// Update a document for a client
+exports.updateDocument = catchAsync(async (req, res, next) => {
+    const { id, documentId } = req.params;
+    const client = await Client.findById(id);
+    if (!client) return next(new AppError('No Client found with that ID', 404));
+    const docIndex = client.documents.findIndex((doc) => doc.id === documentId);
+    if (docIndex === -1) return next(new AppError('Document not found', 404));
+    client.documents[docIndex] = { ...client.documents[docIndex]._doc, ...req.body };
+    client.activityLog.push({
+        date: new Date(),
+        action: `Document updated: ${req.body.title || documentId}`,
+        user: 'System',
+    });
+    await client.save();
+    res.status(200).json({
+        status: 'Success',
+        data: client.documents[docIndex]
+    });
+});
+
+// Delete a document for a client
+exports.deleteDocument = catchAsync(async (req, res, next) => {
+    const { id, documentId } = req.params;
+    const client = await Client.findById(id);
+    if (!client) return next(new AppError('No Client found with that ID', 404));
+    const docIndex = client.documents.findIndex((doc) => doc.id === documentId);
+    if (docIndex === -1) return next(new AppError('Document not found', 404));
+    const deletedDoc = client.documents[docIndex];
+    client.documents.splice(docIndex, 1);
+    client.activityLog.push({
+        date: new Date(),
+        action: `Document deleted: ${deletedDoc?.title || documentId}`,
+        user: 'System',
+    });
+    await client.save();
+    res.status(204).json({
+        status: 'Success',
+        data: null
+    });
+});
+
 
 
 

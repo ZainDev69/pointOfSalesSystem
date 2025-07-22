@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { ArrowLeft, Save, X, FileText, Upload, Tag } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { uploadAttachment } from "../../components/redux/slice/documents";
 
-export function DocumentForm({ document, onBack, onSave }) {
+export function DocumentForm({ document, onBack, onSave, clientId }) {
   const isEditing = !!document;
 
   const [formData, setFormData] = useState({
@@ -14,9 +16,13 @@ export function DocumentForm({ document, onBack, onSave }) {
     reviewRequired: document?.reviewRequired || false,
     reviewDate: document?.reviewDate || "",
     version: document?.version || 1,
+    attachments: document?.attachments || [],
   });
 
   const [newTag, setNewTag] = useState("");
+  const [uploading, setUploading] = useState(false);
+
+  const dispatch = useDispatch();
 
   const documentTypes = [
     { id: "visit-log", label: "Visit Log" },
@@ -49,7 +55,10 @@ export function DocumentForm({ document, onBack, onSave }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    if (!formData.category) {
+      alert("Category is required");
+      return;
+    }
     const documentData = {
       ...formData,
       id: document?.id || Date.now().toString(),
@@ -57,9 +66,8 @@ export function DocumentForm({ document, onBack, onSave }) {
       createdBy: document?.createdBy || "Current User",
       lastModified: new Date().toISOString(),
       modifiedBy: "Current User",
-      attachments: document?.attachments || [],
+      attachments: (formData.attachments || []).map((att) => att.url),
     };
-
     onSave(documentData);
   };
 
@@ -85,6 +93,40 @@ export function DocumentForm({ document, onBack, onSave }) {
       e.preventDefault();
       addTag();
     }
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await dispatch(uploadAttachment({ clientId, file })).unwrap();
+      // res may be a URL or an object with url and originalName
+      let url, originalName;
+      if (typeof res === "string") {
+        url = res;
+        originalName = file.name;
+      } else {
+        url = res.url;
+        originalName = res.originalName || file.name;
+      }
+      setFormData((prev) => ({
+        ...prev,
+        attachments: [...(prev.attachments || []), { url, originalName }],
+      }));
+    } catch {
+      alert("File upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Add a function to remove an attachment
+  const handleRemoveAttachment = (idxToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      attachments: prev.attachments.filter((_, idx) => idx !== idxToRemove),
+    }));
   };
 
   return (
@@ -141,7 +183,7 @@ export function DocumentForm({ document, onBack, onSave }) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
+                Category *
               </label>
               <select
                 value={formData.category}
@@ -149,6 +191,7 @@ export function DocumentForm({ document, onBack, onSave }) {
                   setFormData((prev) => ({ ...prev, category: e.target.value }))
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
               >
                 <option value="">Select category</option>
                 {categories.map((category) => (
@@ -336,21 +379,55 @@ export function DocumentForm({ document, onBack, onSave }) {
             <Upload className="w-5 h-5 text-gray-400" />
             <h3 className="text-lg font-semibold text-gray-900">Attachments</h3>
           </div>
-
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
             <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
             <p className="text-sm text-gray-600 mb-2">
               Drag and drop files here, or click to select files
             </p>
-            <button
-              type="button"
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition-colors"
+            <input
+              type="file"
+              onChange={handleFileChange}
+              disabled={uploading}
+              className="hidden"
+              id="file-upload-input"
+            />
+            <label
+              htmlFor="file-upload-input"
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer"
             >
-              Choose Files
-            </button>
+              {uploading ? "Uploading..." : "Choose Files"}
+            </label>
             <p className="text-xs text-gray-500 mt-2">
               Supported formats: PDF, DOC, DOCX, JPG, PNG (Max 10MB)
             </p>
+            {formData.attachments && formData.attachments.length > 0 && (
+              <div className="mt-4">
+                <h4 className="font-medium mb-2">Uploaded Files:</h4>
+                <ul className="space-y-1">
+                  {formData.attachments.map((att, idx) => (
+                    <li key={idx} className="flex items-center space-x-2">
+                      <a
+                        href={att.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                        download={att.originalName}
+                      >
+                        {att.originalName || `Download Attachment ${idx + 1}`}
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAttachment(idx)}
+                        className="ml-2 text-red-600 hover:text-red-800 px-2 py-1 rounded"
+                        title="Remove attachment"
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
 

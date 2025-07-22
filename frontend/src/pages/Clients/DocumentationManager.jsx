@@ -13,20 +13,26 @@ import {
   AlertTriangle,
   CheckCircle,
   ArrowLeft,
+  X,
 } from "lucide-react";
 import { DocumentForm } from "./DocumentForm";
+
+// Add your backend base URL here
+const BACKEND_URL = "http://localhost:5500";
 
 export function DocumentationManager({
   clientId,
   documents,
   onAddDocument,
   onUpdateDocument,
+  onDeleteDocument,
 }) {
   const [view, setView] = useState("list");
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [showArchived, setShowArchived] = useState(false);
 
   const documentTypes = [
     {
@@ -109,116 +115,21 @@ export function DocumentationManager({
     },
   ];
 
-  // Mock documents data
-  const mockDocuments = [
-    {
-      id: "1",
-      type: "visit-log",
-      title: "Morning Visit - Personal Care",
-      content:
-        "Client assisted with washing and dressing. Medication administered as prescribed. Client in good spirits and engaged in conversation about family visit planned for weekend. No concerns noted. Skin integrity checked - no issues observed. Client expressed satisfaction with care provided.",
-      createdDate: new Date().toISOString(),
-      createdBy: "Emma Wilson",
-      lastModified: new Date().toISOString(),
-      modifiedBy: "Emma Wilson",
-      status: "final",
-      category: "Daily Care",
-      tags: ["personal-care", "medication", "routine", "skin-check"],
-      attachments: [],
-      reviewRequired: false,
-      version: 1,
-    },
-    {
-      id: "2",
-      type: "incident-report",
-      title: "Minor Fall in Bathroom",
-      content:
-        "At approximately 14:30, client experienced a minor slip in the bathroom while attempting to reach for towel. Client was assisted immediately and no injuries were sustained. Incident was caused by wet floor from earlier shower. Client was checked thoroughly and reported no pain or discomfort. Family contacted and informed. GP consultation not required as no injuries sustained. Additional non-slip mats have been placed in bathroom as preventive measure.",
-      createdDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      createdBy: "James Mitchell",
-      lastModified: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      modifiedBy: "James Mitchell",
-      status: "final",
-      category: "Safety",
-      tags: ["incident", "fall", "bathroom", "safety", "prevention"],
-      attachments: [],
-      reviewRequired: true,
-      reviewDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      version: 1,
-    },
-    {
-      id: "3",
-      type: "health-monitoring",
-      title: "Weekly Health Check",
-      content:
-        "Weekly health monitoring completed. Blood pressure: 135/80 mmHg (within acceptable range for client). Weight: 65.2kg (stable from last week). Temperature: 36.8°C (normal). Client reports feeling well with no new symptoms. Appetite good, sleeping well. Medication compliance excellent. Next health check scheduled for next week.",
-      createdDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      createdBy: "Sarah Thompson",
-      lastModified: new Date(
-        Date.now() - 2 * 24 * 60 * 60 * 1000
-      ).toISOString(),
-      modifiedBy: "Sarah Thompson",
-      status: "final",
-      category: "Health",
-      tags: ["health-check", "blood-pressure", "weight", "monitoring"],
-      attachments: [],
-      reviewRequired: false,
-      version: 1,
-    },
-    {
-      id: "4",
-      type: "medication-record",
-      title: "Medication Administration Record - Week 1",
-      content:
-        "Weekly medication administration record. All medications administered as prescribed with no missed doses. Client tolerated all medications well with no adverse reactions reported. Metformin 500mg twice daily - administered at 08:00 and 18:00. Ramipril 5mg once daily - administered at 08:00. Blood pressure monitoring shows good control. Next medication review due in 4 weeks.",
-      createdDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      createdBy: "Emma Wilson",
-      lastModified: new Date(
-        Date.now() - 3 * 24 * 60 * 60 * 1000
-      ).toISOString(),
-      modifiedBy: "Emma Wilson",
-      status: "final",
-      category: "Medical",
-      tags: ["medication", "MAR", "compliance", "diabetes"],
-      attachments: [],
-      reviewRequired: false,
-      version: 1,
-    },
-    {
-      id: "5",
-      type: "communication-log",
-      title: "Family Communication - Son Visit",
-      content:
-        "Spoke with client's son John regarding upcoming visit this weekend. Discussed client's recent progress and general wellbeing. Son expressed satisfaction with care provided and noted improvement in client's mood since care started. Arranged for extended visit on Saturday afternoon. Client very excited about family visit. No concerns raised by family member.",
-      createdDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      createdBy: "James Mitchell",
-      lastModified: new Date(
-        Date.now() - 5 * 24 * 60 * 60 * 1000
-      ).toISOString(),
-      modifiedBy: "James Mitchell",
-      status: "final",
-      category: "Communication",
-      tags: ["family", "communication", "visit", "wellbeing"],
-      attachments: [],
-      reviewRequired: false,
-      version: 1,
-    },
-  ];
-
-  const allDocuments = [...documents, ...mockDocuments];
-
-  const filteredDocuments = allDocuments.filter((doc) => {
+  const filteredDocuments = documents.filter((doc) => {
     const matchesSearch =
       doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.tags.some((tag) =>
+      (doc.tags || []).some((tag) =>
         tag.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
     const matchesType = filterType === "all" || doc.type === filterType;
     const matchesStatus = filterStatus === "all" || doc.status === filterStatus;
+    const matchesArchive = showArchived
+      ? doc.status === "archived"
+      : doc.status !== "archived";
 
-    return matchesSearch && matchesType && matchesStatus;
+    return matchesSearch && matchesType && matchesStatus && matchesArchive;
   });
 
   const getStatusColor = (status) => {
@@ -238,16 +149,45 @@ export function DocumentationManager({
     return documentTypes.find((t) => t.id === type) || documentTypes[0];
   };
 
+  // Calculate stats based on filtered (archived or unarchived) documents
+  const statsSource = documents.filter((doc) =>
+    showArchived ? doc.status === "archived" : doc.status !== "archived"
+  );
   const documentStats = {
-    total: allDocuments.length,
-    draft: allDocuments.filter((d) => d.status === "draft").length,
-    final: allDocuments.filter((d) => d.status === "final").length,
-    reviewRequired: allDocuments.filter((d) => d.reviewRequired).length,
-    thisWeek: allDocuments.filter((d) => {
+    total: statsSource.length,
+    draft: statsSource.filter((d) => d.status === "draft").length,
+    final: statsSource.filter((d) => d.status === "final").length,
+    reviewRequired: statsSource.filter((d) => d.reviewRequired).length,
+    thisWeek: statsSource.filter((d) => {
       const docDate = new Date(d.createdDate);
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       return docDate > weekAgo;
     }).length,
+  };
+
+  // Utility functions to handle both string and object attachment formats
+  const getAttachmentUrl = (att) => (typeof att === "string" ? att : att?.url);
+  const getAttachmentName = (att) =>
+    typeof att === "object" ? att.originalName : undefined;
+
+  const handleDownload = (att) => {
+    let url = getAttachmentUrl(att);
+    const originalName = getAttachmentName(att);
+    if (!url) {
+      alert("No file to download.");
+      return;
+    }
+    // If url is relative, prepend backend URL
+    if (url.startsWith("/")) {
+      url = BACKEND_URL + url;
+    }
+    const a = document.createElement("a");
+    a.href = url;
+    a.setAttribute("download", originalName || "download");
+    a.setAttribute("target", "_blank");
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   if (view === "form") {
@@ -256,13 +196,14 @@ export function DocumentationManager({
         document={selectedDocument}
         onBack={() => setView("list")}
         onSave={(document) => {
-          if ("id" in document) {
+          if (selectedDocument) {
             onUpdateDocument(document.id, document);
           } else {
             onAddDocument(document);
           }
           setView("list");
         }}
+        clientId={clientId}
       />
     );
   }
@@ -406,6 +347,18 @@ export function DocumentationManager({
           </div>
         </div>
       </div>
+      <div className="flex items-center mb-2">
+        <input
+          type="checkbox"
+          id="show-archived"
+          checked={showArchived}
+          onChange={(e) => setShowArchived(e.target.checked)}
+          className="mr-2"
+        />
+        <label htmlFor="show-archived" className="text-sm text-gray-700">
+          Show archived documents
+        </label>
+      </div>
 
       {/* Document List */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -418,9 +371,33 @@ export function DocumentationManager({
               <button className="text-gray-400 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-100">
                 <Upload className="w-4 h-4" />
               </button>
-              <button className="text-gray-400 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-100">
-                <Download className="w-4 h-4" />
-              </button>
+              {document.attachments && document.attachments.length > 0 ? (
+                document.attachments.map((att, idx) => (
+                  <a
+                    key={idx}
+                    href={att.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                    title={`Download ${
+                      att.originalName || `Attachment ${idx + 1}`
+                    }`}
+                    download={att.originalName}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Download className="w-4 h-4" />
+                  </a>
+                ))
+              ) : (
+                <button
+                  className="p-2 text-gray-300 cursor-not-allowed rounded-lg"
+                  title="No attachment to download"
+                  disabled
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -494,7 +471,7 @@ export function DocumentationManager({
                         </div>
                       </div>
 
-                      {document.tags.length > 0 && (
+                      {document.tags && document.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {document.tags.slice(0, 4).map((tag, index) => (
                             <span
@@ -525,7 +502,6 @@ export function DocumentationManager({
                     >
                       <Eye className="w-4 h-4" />
                     </button>
-
                     <button
                       onClick={() => {
                         setSelectedDocument(document);
@@ -536,9 +512,36 @@ export function DocumentationManager({
                     >
                       <Edit3 className="w-4 h-4" />
                     </button>
-
-                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-                      <Download className="w-4 h-4" />
+                    {document.attachments && document.attachments.length > 0 ? (
+                      <button
+                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                        title={`Download ${
+                          getAttachmentName(document.attachments[0]) ||
+                          "Attachment"
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(document.attachments[0]);
+                        }}
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <button
+                        className="p-2 text-gray-300 cursor-not-allowed rounded-lg"
+                        title="No attachment to download"
+                        disabled
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => onDeleteDocument(document.id)}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete Document"
+                    >
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -661,7 +664,7 @@ function DocumentDetails({ document, onBack, onEdit }) {
           </div>
         </div>
 
-        {document.tags.length > 0 && (
+        {document.tags && document.tags.length > 0 && (
           <div className="border-t border-gray-200 pt-6 mt-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
             <div className="flex flex-wrap gap-2">
@@ -674,6 +677,29 @@ function DocumentDetails({ document, onBack, onEdit }) {
                 </span>
               ))}
             </div>
+          </div>
+        )}
+
+        {document.attachments && document.attachments.length > 0 && (
+          <div className="border-t border-gray-200 pt-6 mt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Attachments
+            </h3>
+            <ul className="space-y-2">
+              {document.attachments.map((att, idx) => (
+                <li key={idx}>
+                  <a
+                    href={att.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                    download={att.originalName}
+                  >
+                    {att.originalName || `Download Attachment ${idx + 1}`}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>

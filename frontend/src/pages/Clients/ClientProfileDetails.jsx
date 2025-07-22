@@ -48,6 +48,12 @@ import { updateClient, getClient } from "../../components/redux/slice/clients";
 import { clearCarePlans } from "../../components/redux/slice/carePlans";
 import { clearOutcomes } from "../../components/redux/slice/outcomes";
 import Spinner from "../../components/layout/Spinner";
+import {
+  fetchDocuments,
+  addDocument,
+  updateDocument,
+  deleteDocument,
+} from "../../components/redux/slice/documents";
 
 export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
   console.log("The Client Data is", client);
@@ -66,6 +72,8 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
 
   const contacts = useSelector((state) => state.contacts.items) || [];
   const loadingContacts = useSelector((state) => state.contacts.loading);
+  const documents = useSelector((state) => state.documents.items) || [];
+  const loadingDocuments = useSelector((state) => state.documents.loading);
 
   useEffect(() => {
     if (client && client._id) {
@@ -84,6 +92,12 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
       dispatch(getClient(client._id));
     }
   }, [activeTab, client?._id, dispatch]);
+
+  useEffect(() => {
+    if (client && client._id && activeTab === "documents") {
+      dispatch(fetchDocuments(client._id));
+    }
+  }, [client._id, activeTab, dispatch]);
 
   const handleAddContact = () => {
     setSelectedContact(null);
@@ -297,6 +311,39 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
     { id: "compliance", label: "Compliance", icon: Shield },
     { id: "activity-log", label: "Activity Log", icon: History },
   ];
+
+  const handleAddDocument = async (documentData) => {
+    try {
+      await dispatch(
+        addDocument({ clientId: client._id, documentData })
+      ).unwrap();
+      toast.success("Document added successfully");
+    } catch {
+      toast.error("Failed to add document");
+    }
+  };
+
+  const handleUpdateDocument = async (documentId, documentData) => {
+    try {
+      await dispatch(
+        updateDocument({ clientId: client._id, documentId, documentData })
+      ).unwrap();
+      toast.success("Document updated successfully");
+    } catch {
+      toast.error("Failed to update document");
+    }
+  };
+
+  const handleDeleteDocument = async (documentId) => {
+    try {
+      await dispatch(
+        deleteDocument({ clientId: client._id, documentId })
+      ).unwrap();
+      toast.success("Document deleted successfully");
+    } catch {
+      toast.error("Failed to delete document");
+    }
+  };
 
   if (contactView === "form") {
     return (
@@ -1589,16 +1636,18 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
         />
       )}
 
-      {activeTab === "documents" && (
-        <DocumentationManager
-          clientId={client._id}
-          documents={client.documentation}
-          onAddDocument={(document) => console.log("Add document:", document)}
-          onUpdateDocument={(id, document) =>
-            console.log("Update document:", id, document)
-          }
-        />
-      )}
+      {activeTab === "documents" &&
+        (loadingDocuments ? (
+          <Spinner />
+        ) : (
+          <DocumentationManager
+            clientId={client._id}
+            documents={documents}
+            onAddDocument={handleAddDocument}
+            onUpdateDocument={handleUpdateDocument}
+            onDeleteDocument={handleDeleteDocument}
+          />
+        ))}
 
       {activeTab === "compliance" && (
         <ComplianceTracker
@@ -1639,7 +1688,7 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
                     </td>
                   </tr>
                 ) : (
-                  [...client.activityLog].reverse().map((log, idx, arr) => {
+                  [...client.activityLog].reverse().map((log, idx) => {
                     // Zebra striping
                     const isEven = idx % 2 === 0;
                     // Highlight most recent

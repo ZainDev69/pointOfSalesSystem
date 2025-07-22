@@ -5,6 +5,7 @@ const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
+const path = require('path');
 
 const app = express();
 app.use(express.json());
@@ -38,6 +39,7 @@ app.use('/clients/:clientId/contacts', contactRoutes);
 app.use('/clients/:clientId/visits', visitScheduleRoutes);
 app.use("/", carePlanRoutes);
 app.use('/api/risk-assessments', riskAssessmentRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 
