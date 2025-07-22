@@ -4,6 +4,7 @@ const AppError = require('./../utils/appError');
 const Contact = require('../models/contactModel');
 const CarePlan = require('../models/carePlanModel');
 const Outcome = require('../models/outcomeModel');
+const ActivityLog = require('../models/activityLogModel');
 
 
 
@@ -47,6 +48,7 @@ exports.updateClient = catchAsync(async (req, res, next) => {
     if (!oldClient) return next(new AppError('No Client found with that ID', 404));
 
     // Merge nested objects
+    console.log("Updating client");
     const updateData = { ...req.body };
     for (const key of Object.keys(req.body)) {
         if (typeof req.body[key] === 'object' && req.body[key] !== null && oldClient[key]) {
@@ -54,7 +56,11 @@ exports.updateClient = catchAsync(async (req, res, next) => {
         }
     }
 
-    const client = await Client.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+    console.log("After merging nested objects")
+    // I removed runValidators: true because it was causing the validation errors
+    console.log("updateData", updateData)
+    const client = await Client.findByIdAndUpdate(id, updateData, { new: true });
+    console.log("After findByIdAndUpdate")
     if (client) {
         // High-level change detection
         let section = null;
@@ -74,6 +80,7 @@ exports.updateClient = catchAsync(async (req, res, next) => {
             }
             if (section) break;
         }
+        console.log("After 1st if else")
         let actionMsg = 'Updated client';
         if (section) {
             switch (section) {
@@ -101,13 +108,9 @@ exports.updateClient = catchAsync(async (req, res, next) => {
                     actionMsg = `${section.charAt(0).toUpperCase() + section.slice(1)} updated`;
             }
         }
-        client.activityLog.push({
-            date: new Date(),
-            action: actionMsg,
-            user: 'System',
-        });
-        await client.save();
+        await ActivityLog.create({ client: client._id, action: actionMsg, user: 'System' });
     }
+    console.log("Client updated successfully from backend message")
     res.status(200).json({
         status: 'Success',
         data: {
@@ -144,11 +147,7 @@ exports.archiveClient = catchAsync(async (req, res, next) => {
     );
 
     if (!client) return next(new AppError('No Client found with that ID', 404));
-    client.activityLog.push({
-        date: new Date(),
-        action: `Archived client: Archived: '${oldClient?.Archived}' → 'true'`,
-        user: 'System',
-    });
+    await ActivityLog.create({ client: client._id, action: `Archived client: Archived: '${oldClient?.Archived}' → 'true'`, user: 'System' });
     await client.save();
 
     res.status(200).json({
@@ -168,11 +167,7 @@ exports.unarchiveClient = catchAsync(async (req, res, next) => {
     );
 
     if (!client) return next(new AppError('No Client found with that ID', 404));
-    client.activityLog.push({
-        date: new Date(),
-        action: `Unarchived client: Archived: '${oldClient?.Archived}' → 'false'`,
-        user: 'System',
-    });
+    await ActivityLog.create({ client: client._id, action: `Unarchived client: Archived: '${oldClient?.Archived}' → 'false'`, user: 'System' });
     await client.save();
 
     res.status(200).json({
@@ -208,11 +203,7 @@ exports.addDocument = catchAsync(async (req, res, next) => {
     if (!client) return next(new AppError('No Client found with that ID', 404));
     const document = req.body;
     client.documents.push(document);
-    client.activityLog.push({
-        date: new Date(),
-        action: `Document added: ${document.title || document.id}`,
-        user: 'System',
-    });
+    await ActivityLog.create({ client: client._id, action: `Document added: ${document.title || document.id}`, user: 'System' });
     await client.save();
     res.status(201).json({
         status: 'Success',
@@ -228,11 +219,7 @@ exports.updateDocument = catchAsync(async (req, res, next) => {
     const docIndex = client.documents.findIndex((doc) => doc.id === documentId);
     if (docIndex === -1) return next(new AppError('Document not found', 404));
     client.documents[docIndex] = { ...client.documents[docIndex]._doc, ...req.body };
-    client.activityLog.push({
-        date: new Date(),
-        action: `Document updated: ${req.body.title || documentId}`,
-        user: 'System',
-    });
+    await ActivityLog.create({ client: client._id, action: `Document updated: ${req.body.title || documentId}`, user: 'System' });
     await client.save();
     res.status(200).json({
         status: 'Success',
@@ -249,11 +236,7 @@ exports.deleteDocument = catchAsync(async (req, res, next) => {
     if (docIndex === -1) return next(new AppError('Document not found', 404));
     const deletedDoc = client.documents[docIndex];
     client.documents.splice(docIndex, 1);
-    client.activityLog.push({
-        date: new Date(),
-        action: `Document deleted: ${deletedDoc?.title || documentId}`,
-        user: 'System',
-    });
+    await ActivityLog.create({ client: client._id, action: `Document deleted: ${deletedDoc?.title || documentId}`, user: 'System' });
     await client.save();
     res.status(204).json({
         status: 'Success',

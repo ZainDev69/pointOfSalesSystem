@@ -5,6 +5,7 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const path = require('path');
 const multer = require('multer');
+const ActivityLog = require('../models/activityLogModel');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -35,12 +36,11 @@ exports.addDocument = catchAsync(async (req, res, next) => {
     if (carePlan && carePlan.clientId) {
         const client = await Client.findById(carePlan.clientId);
         if (client) {
-            client.activityLog.push({
-                date: new Date(),
+            await ActivityLog.create({
+                client: client._id,
                 action: `Care Plan Document added: ${doc.title} `,
                 user: 'System',
             });
-            await client.save();
         }
     }
     res.status(201).json({ status: 'Success', data: doc });
@@ -59,12 +59,11 @@ exports.updateDocument = catchAsync(async (req, res, next) => {
     if (carePlan && carePlan.clientId) {
         const client = await Client.findById(carePlan.clientId);
         if (client) {
-            client.activityLog.push({
-                date: new Date(),
+            await ActivityLog.create({
+                client: client._id,
                 action: `Care Plan Document updated: ${doc.title} `,
                 user: 'System',
             });
-            await client.save();
         }
     }
     res.status(200).json({ status: 'Success', data: doc });
@@ -79,12 +78,11 @@ exports.deleteDocument = catchAsync(async (req, res, next) => {
     if (carePlan && carePlan.clientId) {
         const client = await Client.findById(carePlan.clientId);
         if (client) {
-            client.activityLog.push({
-                date: new Date(),
+            await ActivityLog.create({
+                client: client._id,
                 action: `Care Plan Document deleted: ${doc.title} `,
                 user: 'System',
             });
-            await client.save();
         }
     }
     res.status(204).json({ status: 'Success', data: null });

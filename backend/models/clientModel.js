@@ -11,8 +11,8 @@ const clientSchema = new mongoose.Schema({
         nhsNumber: { type: String, required: true },
         relationshipStatus: String,
         ethnicity: String,
-        status: String,
     },
+    status: String,
     addressInformation: {
         address: { type: String, required: true },
         city: { type: String, required: true },
@@ -174,13 +174,6 @@ const clientSchema = new mongoose.Schema({
         },
     },
     Archived: { type: Boolean, default: false },
-    activityLog: [
-        {
-            date: { type: Date, default: Date.now },
-            action: String,
-            user: { type: String, default: 'System' },
-        },
-    ],
     documents: [
         {
             id: { type: String, required: true },

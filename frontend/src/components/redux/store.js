@@ -7,6 +7,7 @@ import riskAssessmentsReducer from "./slice/riskAssessments";
 import visitSchedulesReducer from './slice/visitSchedules';
 import documentsReducer from "./slice/documents";
 import carePlanDocumentsReducer from "./slice/carePlanDocuments";
+import activityLogsReducer from './slice/activityLogs';
 
 const store = configureStore({
     reducer: {
@@ -18,6 +19,7 @@ const store = configureStore({
         visitSchedules: visitSchedulesReducer,
         documents: documentsReducer,
         carePlanDocuments: carePlanDocumentsReducer,
+        activityLogs: activityLogsReducer,
     }
 });
 

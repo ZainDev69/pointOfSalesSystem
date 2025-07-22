@@ -42,6 +42,7 @@ app.use("/", carePlanRoutes);
 app.use('/risk-assessments', riskAssessmentRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/careplans', carePlanDocumentRoutes);
+app.use('/activity-logs', require('./routes/activityLogRoutes'));
 
 
 

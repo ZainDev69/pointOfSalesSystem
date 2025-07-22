@@ -19,7 +19,7 @@ import { OverviewTab } from "./Overview/OverviewTab";
 import { HistoryTab } from "./CareComponents/HistoryTab";
 import { CareNavTab } from "./CareComponents/CareNavTab";
 import { getStatusColor } from "./CareComponents/StatusColor";
-import { CardsTab } from "./Cards/CardsTab";
+import { CardsTab } from "./Cards/Cards";
 
 export function CarePlanManager({ client }) {
   const [view, setView] = useState("view");

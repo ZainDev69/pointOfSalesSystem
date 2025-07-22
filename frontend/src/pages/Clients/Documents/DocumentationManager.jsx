@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   FileText,
@@ -21,6 +21,7 @@ import {
   addDocument,
   updateDocument,
   deleteDocument,
+  fetchDocuments,
 } from "../../../components/redux/slice/documents";
 import toast from "react-hot-toast";
 
@@ -119,6 +120,12 @@ export function DocumentationManager({ client }) {
     },
   ];
 
+  useEffect(() => {
+    if (client?._id) {
+      dispatch(fetchDocuments(client._id));
+    }
+  }, [client?._id, dispatch]);
+
   const handleAddDocument = async (documentData) => {
     try {
       await dispatch(
@@ -154,10 +161,10 @@ export function DocumentationManager({ client }) {
 
   const filteredDocuments = documents.filter((doc) => {
     const matchesSearch =
-      doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (doc.tags || []).some((tag) =>
-        tag.toLowerCase().includes(searchTerm.toLowerCase())
+        tag?.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
     const matchesType = filterType === "all" || doc.type === filterType;

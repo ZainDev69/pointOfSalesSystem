@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import {
   Plus,
   MessageSquare,
@@ -6,7 +7,24 @@ import {
   CheckCircle,
   History,
 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchActivityLogs,
+  selectActivityLogs,
+  selectActivityLogsLoading,
+} from "../../../components/redux/slice/activityLogs";
+
 export function ActivityTab({ client }) {
+  const dispatch = useDispatch();
+  const logs = useSelector(selectActivityLogs);
+  const loading = useSelector(selectActivityLogsLoading);
+
+  useEffect(() => {
+    if (client?._id) {
+      dispatch(fetchActivityLogs(client._id));
+    }
+  }, [client?._id, dispatch]);
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
@@ -29,14 +47,20 @@ export function ActivityTab({ client }) {
             </tr>
           </thead>
           <tbody>
-            {(client.activityLog || []).length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={3} className="text-center py-6 text-gray-500">
+                  Loading activity log...
+                </td>
+              </tr>
+            ) : logs.length === 0 ? (
               <tr>
                 <td colSpan={3} className="text-center py-6 text-gray-500">
                   No activity recorded yet.
                 </td>
               </tr>
             ) : (
-              [...client.activityLog].reverse().map((log, idx) => {
+              [...logs].map((log, idx) => {
                 // Zebra striping
                 const isEven = idx % 2 === 0;
                 // Highlight most recent
@@ -76,7 +100,7 @@ export function ActivityTab({ client }) {
                 );
                 return (
                   <tr
-                    key={idx}
+                    key={log._id || idx}
                     className={`transition-colors ${
                       isEven ? "bg-gray-50" : "bg-white"
                     } ${

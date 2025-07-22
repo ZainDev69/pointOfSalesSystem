@@ -1,6 +1,7 @@
 const VisitSchedule = require('../models/visitScheduleModel');
 const AppError = require('../utils/appError');
 const Client = require('../models/clientModel');
+const ActivityLog = require('../models/activityLogModel');
 
 // Get all visits for a client
 exports.getVisitSchedule = async (req, res) => {
@@ -31,12 +32,11 @@ exports.addVisit = async (req, res) => {
         // Log activity
         const client = await Client.findById(clientId);
         if (client) {
-            client.activityLog.push({
-                date: new Date(),
+            await ActivityLog.create({
+                client: client._id,
                 action: `Visit scheduled: ${visitData.date} ${visitData.startTime}-${visitData.endTime}`,
                 user: 'System',
             });
-            await client.save();
         }
         res.status(201).json({ status: 'success', data: { visits: schedule.visits } });
     } catch (error) {
@@ -58,12 +58,11 @@ exports.updateVisit = async (req, res) => {
         // Log activity
         const client = await Client.findById(clientId);
         if (client) {
-            client.activityLog.push({
-                date: new Date(),
+            await ActivityLog.create({
+                client: client._id,
                 action: `Visit updated: ${updateData.date} ${updateData.startTime}-${updateData.endTime}`,
                 user: 'System',
             });
-            await client.save();
         }
         res.status(200).json({ status: 'success', data: { visits: schedule.visits } });
     } catch (error) {
@@ -82,12 +81,11 @@ exports.deleteVisit = async (req, res) => {
         // Log activity before removing
         const client = await Client.findById(clientId);
         if (client) {
-            client.activityLog.push({
-                date: new Date(),
+            await ActivityLog.create({
+                client: client._id,
                 action: `Visit deleted: ${visit.date} ${visit.startTime}-${visit.endTime}`,
                 user: 'System',
             });
-            await client.save();
         }
         schedule.visits.pull(visitId);
         await schedule.save();

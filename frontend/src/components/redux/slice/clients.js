@@ -71,12 +71,13 @@ export const updateClient = createAsyncThunk(
     "clients/updateClient",
     async ({ clientId, clientData }, { rejectWithValue }) => {
         try {
-            console.log("Calling the updateClient")
+            console.log("Calling the updateClient", clientId)
             const response = await axios.patch(`${API_URL}/clients/${clientId}`, clientData, { withCredentials: true });
             console.log("The Client is updated")
             return response.data;
         } catch (error) {
-            return rejectWithValue({ message: error.response.data.message });
+            console.log("Error in updateClient:", error);
+            return rejectWithValue({ message: error.response?.data?.message || error.message || 'Unknown error' });
         }
     }
 )

@@ -3,6 +3,7 @@ const Outcome = require('../models/outcomeModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const Client = require('../models/clientModel');
+const ActivityLog = require('../models/activityLogModel');
 
 // Get all care plans for a client
 exports.getClientCarePlans = catchAsync(async (req, res, next) => {
@@ -93,12 +94,11 @@ exports.createCarePlan = catchAsync(async (req, res, next) => {
     // Log activity
     const client = await Client.findById(clientId);
     if (client) {
-        client.activityLog.push({
-            date: new Date(),
+        ActivityLog.create({
+            client: client._id,
             action: 'Care plan added',
             user: 'System',
         });
-        await client.save();
     }
 
     res.status(201).json({
@@ -159,12 +159,11 @@ exports.updateCarePlan = catchAsync(async (req, res, next) => {
     // Log activity
     const client = await Client.findById(clientId);
     if (client) {
-        client.activityLog.push({
-            date: new Date(),
+        ActivityLog.create({
+            client: client._id,
             action: 'Care plan updated',
             user: 'System',
         });
-        await client.save();
     }
 
     res.status(200).json({
@@ -190,12 +189,11 @@ exports.deleteCarePlan = catchAsync(async (req, res, next) => {
     // Log activity
     const client = await Client.findById(carePlan.clientId);
     if (client) {
-        client.activityLog.push({
-            date: new Date(),
+        ActivityLog.create({
+            client: client._id,
             action: 'Care plan deleted',
             user: 'System',
         });
-        await client.save();
     }
 
     res.status(204).json({
@@ -255,12 +253,11 @@ exports.createOutcome = catchAsync(async (req, res, next) => {
     // Log activity
     const client = await Client.findById(carePlan.clientId);
     if (client) {
-        client.activityLog.push({
-            date: new Date(),
+        ActivityLog.create({
+            client: client._id,
             action: 'Outcome added',
             user: 'System',
         });
-        await client.save();
     }
 
     res.status(201).json({
@@ -287,12 +284,11 @@ exports.updateOutcome = catchAsync(async (req, res, next) => {
     // Log activity
     const client = await Client.findById(outcome.clientId);
     if (client) {
-        client.activityLog.push({
-            date: new Date(),
+        ActivityLog.create({
+            client: client._id,
             action: 'Outcome updated',
             user: 'System',
         });
-        await client.save();
     }
 
     res.status(200).json({
@@ -315,12 +311,11 @@ exports.deleteOutcome = catchAsync(async (req, res, next) => {
     // Log activity
     const client = await Client.findById(outcome.clientId);
     if (client) {
-        client.activityLog.push({
-            date: new Date(),
+        ActivityLog.create({
+            client: client._id,
             action: 'Outcome deleted',
             user: 'System',
         });
-        await client.save();
     }
 
     res.status(204).json({

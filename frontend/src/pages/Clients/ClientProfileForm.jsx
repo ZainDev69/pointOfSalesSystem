@@ -34,8 +34,8 @@ export function ClientProfileForm({ client, onBack, onSave }) {
       nhsNumber: client?.personalDetails.nhsNumber || "",
       relationshipStatus: client?.personalDetails.relationshipStatus || "",
       ethnicity: client?.personalDetails.ethnicity || "",
-      status: client?.personalDetails.status || "",
     },
+    status: client?.status || "",
     addressInformation: {
       address: client?.addressInformation.address || "",
       city: client?.addressInformation.city || "",
@@ -622,10 +622,8 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                 />
                 <Select
                   label="Status"
-                  value={formData.personalDetails.status}
-                  onChange={(val) =>
-                    handleChange("personalDetails", "status", val)
-                  }
+                  value={formData.status}
+                  onChange={(val) => handleChange("status", "status", val)}
                   options={["Active", "Inactive", "hospitalized", "carehome"]}
                 />
               </div>

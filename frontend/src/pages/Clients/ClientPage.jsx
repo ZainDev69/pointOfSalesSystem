@@ -49,11 +49,10 @@ export default function Clients() {
 
   const totalClients = clientData.length;
   const activeClients = clientData.filter(
-    (c) => c.personalDetails?.status?.toLowerCase() === "active" && !c.Archived
+    (c) => c.status?.toLowerCase() === "active" && !c.Archived
   ).length;
   const inactiveClients = clientData.filter(
-    (c) =>
-      c.personalDetails?.status?.toLowerCase() === "inactive" && !c.Archived
+    (c) => c.status?.toLowerCase() === "inactive" && !c.Archived
   ).length;
   const hospitalizedClients = clientData.filter(
     (c) =>
@@ -168,7 +167,7 @@ export default function Clients() {
         ? true
         : filterStatus === "private"
         ? isPrivateClient(client)
-        : client.personalDetails?.status?.toLowerCase() === filterStatus;
+        : client.status?.toLowerCase() === filterStatus;
 
     const search = searchTerm.toLowerCase();
     const matchesSearch =
@@ -512,7 +511,7 @@ export default function Clients() {
                   <div
                     key={index}
                     className={`p-6 hover:bg-gray-50 transition-colors ${getBorderColor(
-                      client.personalDetails.status
+                      client.status
                     )} `}
                   >
                     <div className="flex items-center justify-between">
@@ -535,10 +534,10 @@ export default function Clients() {
                             )}
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
-                                client.personalDetails.status
+                                client.status
                               )}`}
                             >
-                              {client.personalDetails.status}
+                              {client.status}
                             </span>
                             {client.Archived && (
                               <span className="ml-2 px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700">

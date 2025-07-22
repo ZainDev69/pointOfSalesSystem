@@ -1,6 +1,7 @@
 const Contact = require("../models/contactModel");
 const { validationResult } = require("express-validator");
 const Client = require("../models/clientModel");
+const ActivityLog = require("../models/activityLogModel");
 
 // Get all contacts for a client
 exports.getContacts = async (req, res, next) => {
@@ -24,12 +25,11 @@ exports.addContact = async (req, res, next) => {
         // Log activity
         const client = await Client.findById(req.params.clientId);
         if (client) {
-            client.activityLog.push({
-                date: new Date(),
+            await ActivityLog.create({
+                client: client._id,
                 action: `Contact added: ${contact.name}`,
                 user: 'System',
             });
-            await client.save();
         }
         res.status(201).json(contact);
     } catch (err) {
@@ -48,12 +48,11 @@ exports.editContact = async (req, res, next) => {
         // Log activity
         const client = await Client.findById(contact.client);
         if (client) {
-            client.activityLog.push({
-                date: new Date(),
+            await ActivityLog.create({
+                client: client._id,
                 action: `Contact updated: ${contact.name}`,
                 user: 'System',
             });
-            await client.save();
         }
         res.json(contact);
     } catch (err) {
@@ -69,12 +68,11 @@ exports.deleteContact = async (req, res, next) => {
         // Log activity
         const client = await Client.findById(contact.client);
         if (client) {
-            client.activityLog.push({
-                date: new Date(),
+            await ActivityLog.create({
+                client: client._id,
                 action: `Contact deleted: ${contact.name}`,
                 user: 'System',
             });
-            await client.save();
         }
         res.json({ message: "Contact deleted" });
     } catch (err) {
