@@ -5,65 +5,90 @@ import { API_URL } from "../../../main";
 // Async thunks
 export const fetchCarePlanOutcomes = createAsyncThunk(
     'outcomes/fetchCarePlanOutcomes',
-    async (carePlanId) => {
-        const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes`);
-        const data = await response.json();
-        return data.data;
+    async (carePlanId, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes`);
+            const data = await response.json();
+            return data.data;
+        } catch (error) {
+            console.error('Error in fetchCarePlanOutcomes:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
 export const createOutcome = createAsyncThunk(
     'outcomes/createOutcome',
-    async ({ carePlanId, outcomeData }) => {
-        const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(outcomeData),
-        });
-        const data = await response.json();
-        return data.data.outcome;
+    async ({ carePlanId, outcomeData }, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(outcomeData),
+            });
+            const data = await response.json();
+            return data.data.outcome;
+        } catch (error) {
+            console.error('Error in createOutcome:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
 export const updateOutcome = createAsyncThunk(
     'outcomes/updateOutcome',
-    async ({ outcomeId, outcomeData }) => {
-        const response = await fetch(`${API_URL}/outcomes/${outcomeId}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(outcomeData),
-        });
-        const data = await response.json();
-        return data.data.outcome;
+    async ({ outcomeId, outcomeData }, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`${API_URL}/outcomes/${outcomeId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(outcomeData),
+            });
+            const data = await response.json();
+            return data.data.outcome;
+        } catch (error) {
+            console.error('Error in updateOutcome:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
 export const deleteOutcome = createAsyncThunk(
     'outcomes/deleteOutcome',
-    async (outcomeId) => {
-        await fetch(`${API_URL}/outcomes/${outcomeId}`, {
-            method: 'DELETE',
-        });
-        return outcomeId;
+    async (outcomeId, { rejectWithValue }) => {
+        try {
+            await fetch(`${API_URL}/outcomes/${outcomeId}`, {
+                method: 'DELETE',
+            });
+            return outcomeId;
+        } catch (error) {
+            console.error('Error in deleteOutcome:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
 export const addOutcomeProgress = createAsyncThunk(
     'outcomes/addOutcomeProgress',
-    async ({ outcomeId, progressData }) => {
-        const response = await fetch(`${API_URL}/outcomes/${outcomeId}/progress`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(progressData),
-        });
-        const data = await response.json();
-        return data.data.outcome;
+    async ({ outcomeId, progressData }, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`${API_URL}/outcomes/${outcomeId}/progress`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(progressData),
+            });
+            const data = await response.json();
+            return data.data.outcome;
+        } catch (error) {
+            console.error('Error in addOutcomeProgress:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 

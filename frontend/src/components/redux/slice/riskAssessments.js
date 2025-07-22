@@ -5,36 +5,56 @@ import { API_URL } from "../../../main";
 // Fetch all risk assessments for a client
 export const fetchRiskAssessments = createAsyncThunk(
     'riskAssessments/fetchRiskAssessments',
-    async (clientId) => {
-        const response = await axios.get(`${API_URL}/api/risk-assessments/client/${clientId}`);
-        return response.data.data;
+    async (clientId, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(`${API_URL}/api/risk-assessments/client/${clientId}`);
+            return response.data.data;
+        } catch (error) {
+            console.error('Error in fetchRiskAssessments:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
 // Add a new risk assessment
 export const addRiskAssessment = createAsyncThunk(
     'riskAssessments/addRiskAssessment',
-    async (assessment) => {
-        const response = await axios.post(`${API_URL}/api/risk-assessments`, assessment);
-        return response.data.data;
+    async (assessment, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(`${API_URL}/api/risk-assessments`, assessment);
+            return response.data.data;
+        } catch (error) {
+            console.error('Error in addRiskAssessment:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
 // Edit a risk assessment
 export const editRiskAssessment = createAsyncThunk(
     'riskAssessments/editRiskAssessment',
-    async ({ id, assessment }) => {
-        const response = await axios.put(`${API_URL}/api/risk-assessments/${id}`, assessment);
-        return response.data.data;
+    async ({ id, assessment }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(`${API_URL}/api/risk-assessments/${id}`, assessment);
+            return response.data.data;
+        } catch (error) {
+            console.error('Error in editRiskAssessment:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
 // Delete a risk assessment
 export const deleteRiskAssessment = createAsyncThunk(
     'riskAssessments/deleteRiskAssessment',
-    async (id) => {
-        await axios.delete(`${API_URL}/api/risk-assessments/${id}`);
-        return id;
+    async (id, { rejectWithValue }) => {
+        try {
+            await axios.delete(`${API_URL}/api/risk-assessments/${id}`);
+            return id;
+        } catch (error) {
+            console.error('Error in deleteRiskAssessment:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 

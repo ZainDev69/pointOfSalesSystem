@@ -26,7 +26,7 @@ exports.addContact = async (req, res, next) => {
         if (client) {
             client.activityLog.push({
                 date: new Date(),
-                action: 'Contact added',
+                action: `Contact added: ${contact.name}`,
                 user: 'System',
             });
             await client.save();
@@ -50,7 +50,7 @@ exports.editContact = async (req, res, next) => {
         if (client) {
             client.activityLog.push({
                 date: new Date(),
-                action: 'Contact updated',
+                action: `Contact updated: ${contact.name}`,
                 user: 'System',
             });
             await client.save();
@@ -71,7 +71,7 @@ exports.deleteContact = async (req, res, next) => {
         if (client) {
             client.activityLog.push({
                 date: new Date(),
-                action: 'Contact deleted',
+                action: `Contact deleted: ${contact.name}`,
                 user: 'System',
             });
             await client.save();

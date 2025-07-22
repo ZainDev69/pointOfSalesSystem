@@ -4,6 +4,7 @@ import contactReducer from "./slice/contacts";
 import carePlansReducer from "./slice/carePlans";
 import outcomesReducer from "./slice/outcomes";
 import riskAssessmentsReducer from "./slice/riskAssessments";
+import visitSchedulesReducer from './slice/visitSchedules';
 
 const store = configureStore({
     reducer: {
@@ -12,6 +13,7 @@ const store = configureStore({
         carePlans: carePlansReducer,
         outcomes: outcomesReducer,
         riskAssessments: riskAssessmentsReducer,
+        visitSchedules: visitSchedulesReducer,
     }
 });
 

@@ -26,6 +26,7 @@ const clientRouter = require('./routes/clientRoutes');
 const contactRoutes = require("./routes/contactRoutes");
 const carePlanRoutes = require("./routes/carePlanRoutes");
 const riskAssessmentRoutes = require('./routes/riskAssessmentRoutes');
+const visitScheduleRoutes = require('./routes/visitScheduleRoutes');
 
 app.use((req, res, next) => {
     console.log(`[${req.method}] ${req.originalUrl}`);
@@ -33,7 +34,8 @@ app.use((req, res, next) => {
 });
 
 app.use('/clients', clientRouter);
-app.use("/api/clients", contactRoutes);
+app.use('/clients/:clientId/contacts', contactRoutes);
+app.use('/clients/:clientId/visits', visitScheduleRoutes);
 app.use("/", carePlanRoutes);
 app.use('/api/risk-assessments', riskAssessmentRoutes);
 

@@ -1,9 +1,20 @@
 const RiskAssessment = require('../models/riskAssessmentModel');
+const Client = require('../models/clientModel');
 
 // Create a new risk assessment
 exports.createRiskAssessment = async (req, res) => {
     try {
         const assessment = await RiskAssessment.create(req.body);
+        // Log activity
+        const client = await Client.findById(assessment.clientId);
+        if (client) {
+            client.activityLog.push({
+                date: new Date(),
+                action: `Risk Assessment added: ${assessment.type} ${assessment.assessmentDate}`,
+                user: 'System',
+            });
+            await client.save();
+        }
         res.status(201).json({ success: true, data: assessment });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
@@ -26,6 +37,16 @@ exports.updateRiskAssessment = async (req, res) => {
     try {
         const { id } = req.params;
         const updated = await RiskAssessment.findByIdAndUpdate(id, req.body, { new: true });
+        // Log activity
+        const client = await Client.findById(updated.clientId);
+        if (client) {
+            client.activityLog.push({
+                date: new Date(),
+                action: `Risk Assessment updated: ${updated.type} ${updated.assessmentDate}`,
+                user: 'System',
+            });
+            await client.save();
+        }
         res.status(200).json({ success: true, data: updated });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
@@ -36,6 +57,19 @@ exports.updateRiskAssessment = async (req, res) => {
 exports.deleteRiskAssessment = async (req, res) => {
     try {
         const { id } = req.params;
+        const assessment = await RiskAssessment.findById(id);
+        // Log activity before deleting
+        if (assessment) {
+            const client = await Client.findById(assessment.clientId);
+            if (client) {
+                client.activityLog.push({
+                    date: new Date(),
+                    action: `Risk Assessment deleted: ${assessment.type} ${assessment.assessmentDate}`,
+                    user: 'System',
+                });
+                await client.save();
+            }
+        }
         await RiskAssessment.findByIdAndDelete(id);
         res.status(204).json({ success: true });
     } catch (err) {

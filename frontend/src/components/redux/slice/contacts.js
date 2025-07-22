@@ -6,49 +6,56 @@ import { API_URL } from "../../../main";
 // Fetch contacts for a client
 export const fetchContacts = createAsyncThunk(
     "contacts/fetchContacts",
-    async (clientId) => {
-        console.log("Fetching contacts for client:", clientId);
-        const res = await axios.get(`${API_URL}/api/clients/${clientId}/contacts`, { withCredentials: true });
-        console.log("Contacts fetched:", res.data);
-        return res.data;
+    async (clientId, { rejectWithValue }) => {
+        try {
+            const res = await axios.get(`${API_URL}/clients/${clientId}/contacts`, { withCredentials: true });
+            return res.data;
+        } catch (error) {
+            console.error('Error in fetchContacts:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
 // Add a contact
 export const addContact = createAsyncThunk(
     "contacts/addContact",
-    async ({ clientId, contactData }) => {
-        console.log("Adding contact for client:", clientId);
-        console.log("Contact data:", contactData);
-        const res = await axios.post(`${API_URL}/api/clients/${clientId}/contacts`, contactData, { withCredentials: true });
-        console.log("Contact added:", res.data);
-
-        return res.data;
+    async ({ clientId, contactData }, { rejectWithValue }) => {
+        try {
+            const res = await axios.post(`${API_URL}/clients/${clientId}/contacts`, contactData, { withCredentials: true });
+            return res.data;
+        } catch (error) {
+            console.error('Error in addContact:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
 // Edit a contact
 export const editContact = createAsyncThunk(
     "contacts/editContact",
-    async ({ clientId, contactId, contactData }) => {
-        console.log("Editing contact for client:", clientId);
-        console.log("Contact ID:", contactId);
-        console.log("Contact data:", contactData);
-        const res = await axios.put(`${API_URL}/api/clients/${clientId}/contacts/${contactId}`, contactData, { withCredentials: true });
-        console.log("Contact edited:", res.data);
-        return res.data;
+    async ({ clientId, contactId, contactData }, { rejectWithValue }) => {
+        try {
+            const res = await axios.put(`${API_URL}/clients/${clientId}/contacts/${contactId}`, contactData, { withCredentials: true });
+            return res.data;
+        } catch (error) {
+            console.error('Error in editContact:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
 // Delete a contact
 export const deleteContact = createAsyncThunk(
     "contacts/deleteContact",
-    async ({ clientId, contactId }) => {
-        console.log("Deleting contact for client:", clientId);
-        console.log("Contact ID:", contactId);
-        await axios.delete(`${API_URL}/api/clients/${clientId}/contacts/${contactId}`, { withCredentials: true });
-        console.log("Contact deleted");
-        return contactId;
+    async ({ clientId, contactId }, { rejectWithValue }) => {
+        try {
+            await axios.delete(`${API_URL}/clients/${clientId}/contacts/${contactId}`, { withCredentials: true });
+            return contactId;
+        } catch (error) {
+            console.error('Error in deleteContact:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 

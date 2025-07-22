@@ -4,15 +4,15 @@ const contactController = require("../controllers/contactController");
 const { contactValidation } = require("../validators/contactValidator");
 
 // GET all contacts for a client
-router.get("/:clientId/contacts", contactController.getContacts);
+router.get("/", contactController.getContacts);
 
 // POST add a contact
-router.post("/:clientId/contacts", contactValidation, contactController.addContact);
+router.post("/", contactValidation, contactController.addContact);
 
 // PUT edit a contact
-router.put("/:clientId/contacts/:contactId", contactValidation, contactController.editContact);
+router.put("/:contactId", contactValidation, contactController.editContact);
 
 // DELETE a contact
-router.delete("/:clientId/contacts/:contactId", contactController.deleteContact);
+router.delete("/:contactId", contactController.deleteContact);
 
 module.exports = router;

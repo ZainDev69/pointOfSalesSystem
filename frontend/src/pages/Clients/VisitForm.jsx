@@ -40,17 +40,20 @@ export function VisitForm({ visit, onBack, onSave }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Calculate duration from start and end times if not manually set
+    let duration = formData.duration;
     if (formData.startTime && formData.endTime) {
       const start = new Date(`2000-01-01T${formData.startTime}`);
       const end = new Date(`2000-01-01T${formData.endTime}`);
-      const duration = (end.getTime() - start.getTime()) / (1000 * 60);
-      formData.duration = duration;
+      const calculated = (end.getTime() - start.getTime()) / (1000 * 60);
+      if (!isNaN(calculated) && calculated > 0) {
+        duration = calculated;
+      }
     }
 
     const visitData = {
       ...formData,
-      id: visit?.id || Date.now().toString(),
+      duration,
+      ...(visit && visit._id ? { _id: visit._id } : {}),
     };
 
     onSave(visitData);
@@ -58,10 +61,8 @@ export function VisitForm({ visit, onBack, onSave }) {
 
   const addTask = () => {
     const newTask = {
-      id: Date.now().toString(),
       category: "",
       task: "",
-      duration: 15,
       priority: "routine",
       skills: [],
       equipment: [],
@@ -89,10 +90,6 @@ export function VisitForm({ visit, onBack, onSave }) {
       ...prev,
       tasks: prev.tasks.filter((_, i) => i !== index),
     }));
-  };
-
-  const calculateTotalDuration = () => {
-    return formData.tasks.reduce((total, task) => total + task.duration, 0);
   };
 
   return (
@@ -177,6 +174,28 @@ export function VisitForm({ visit, onBack, onSave }) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
+                Duration (minutes)
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={formData.duration}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    duration: Number(e.target.value),
+                  }))
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Duration in minutes"
+              />
+              <span className="text-xs text-gray-500">
+                Auto-calculated from start/end time if both are set.
+              </span>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Assigned Carer
               </label>
               <input
@@ -255,9 +274,6 @@ export function VisitForm({ visit, onBack, onSave }) {
               <h3 className="text-lg font-semibold text-gray-900">
                 Visit Tasks
               </h3>
-              <span className="text-sm text-gray-500">
-                (Total: {calculateTotalDuration()} minutes)
-              </span>
             </div>
             <button
               type="button"
@@ -272,7 +288,7 @@ export function VisitForm({ visit, onBack, onSave }) {
           <div className="space-y-4">
             {formData.tasks.map((task, index) => (
               <div
-                key={task.id}
+                key={task._id || index}
                 className="border border-gray-200 rounded-lg p-4"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -294,22 +310,6 @@ export function VisitForm({ visit, onBack, onSave }) {
                         </option>
                       ))}
                     </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Duration (minutes)
-                    </label>
-                    <input
-                      type="number"
-                      min="5"
-                      max="240"
-                      value={task.duration}
-                      onChange={(e) =>
-                        updateTask(index, "duration", parseInt(e.target.value))
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
                   </div>
 
                   <div className="md:col-span-2">

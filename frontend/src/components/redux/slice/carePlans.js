@@ -5,43 +5,63 @@ import { API_URL } from "../../../main";
 // Async thunks
 export const fetchClientCarePlans = createAsyncThunk(
     'carePlans/fetchClientCarePlans',
-    async (clientId) => {
-        const response = await fetch(`${API_URL}/clients/${clientId}/care-plans`);
-        const data = await response.json();
-        return data.data;
+    async (clientId, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`${API_URL}/clients/${clientId}/care-plans`);
+            const data = await response.json();
+            return data.data;
+        } catch (error) {
+            console.error('Error in fetchClientCarePlans:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
 export const fetchActiveCarePlan = createAsyncThunk(
     'carePlans/fetchActiveCarePlan',
-    async (clientId) => {
-        const response = await fetch(`${API_URL}/clients/${clientId}/care-plans/active`);
-        const data = await response.json();
-        return data.data;
+    async (clientId, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`${API_URL}/clients/${clientId}/care-plans/active`);
+            const data = await response.json();
+            return data.data;
+        } catch (error) {
+            console.error('Error in fetchActiveCarePlan:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
 export const fetchCarePlanHistory = createAsyncThunk(
     'carePlans/fetchCarePlanHistory',
-    async (clientId) => {
-        const response = await fetch(`${API_URL}/clients/${clientId}/care-plans/history`);
-        const data = await response.json();
-        return data.data;
+    async (clientId, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`${API_URL}/clients/${clientId}/care-plans/history`);
+            const data = await response.json();
+            return data.data;
+        } catch (error) {
+            console.error('Error in fetchCarePlanHistory:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
 export const createCarePlan = createAsyncThunk(
     'carePlans/createCarePlan',
-    async ({ clientId, carePlanData }) => {
-        const response = await fetch(`${API_URL}/clients/${clientId}/care-plans`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(carePlanData),
-        });
-        const data = await response.json();
-        return data.data.carePlan;
+    async ({ clientId, carePlanData }, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`${API_URL}/clients/${clientId}/care-plans`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(carePlanData),
+            });
+            const data = await response.json();
+            return data.data.carePlan;
+        } catch (error) {
+            console.error('Error in createCarePlan:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
@@ -50,13 +70,11 @@ export const updateCarePlan = createAsyncThunk(
     async ({ carePlanId, carePlanData }, { rejectWithValue }) => {
         try {
             console.log("Updating care plan", carePlanId, carePlanData);
-
             // Add clientId to the request body as required by the backend
             const requestData = {
                 ...carePlanData,
                 clientId: carePlanData.clientId || carePlanData.client // fallback for different field names
             };
-
             const response = await fetch(`${API_URL}/care-plans/${carePlanId}`, {
                 method: 'PATCH',
                 headers: {
@@ -64,13 +82,11 @@ export const updateCarePlan = createAsyncThunk(
                 },
                 body: JSON.stringify(requestData),
             });
-
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error("API Error:", errorData);
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
-
             const data = await response.json();
             console.log("Care Plan updated successfully:", data);
             return data.data.carePlan;
@@ -83,11 +99,16 @@ export const updateCarePlan = createAsyncThunk(
 
 export const deleteCarePlan = createAsyncThunk(
     'carePlans/deleteCarePlan',
-    async (carePlanId) => {
-        await fetch(`${API_URL}/care-plans/${carePlanId}`, {
-            method: 'DELETE',
-        });
-        return carePlanId;
+    async (carePlanId, { rejectWithValue }) => {
+        try {
+            await fetch(`${API_URL}/care-plans/${carePlanId}`, {
+                method: 'DELETE',
+            });
+            return carePlanId;
+        } catch (error) {
+            console.error('Error in deleteCarePlan:', error);
+            return rejectWithValue(error.message);
+        }
     }
 );
 
