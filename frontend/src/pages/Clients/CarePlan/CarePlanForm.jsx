@@ -25,12 +25,27 @@ export function CarePlanForm({ carePlan, onBack, onSave }) {
     }
   };
 
+  // Helper to format date as local datetime-local string
+  const formatDateTimeLocal = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const pad = (n) => n.toString().padStart(2, "0");
+    const yyyy = date.getFullYear();
+    const mm = pad(date.getMonth() + 1);
+    const dd = pad(date.getDate());
+    const hh = pad(date.getHours());
+    const min = pad(date.getMinutes());
+    return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+  };
+
   const [formData, setFormData] = useState({
     assessmentDate: formatDateForInput(carePlan?.assessmentDate),
     assessedBy: carePlan?.assessedBy || "",
     approvedBy: carePlan?.approvedBy || "",
     startDate: formatDateForInput(carePlan?.startDate),
-    reviewDate: formatDateForInput(carePlan?.reviewDate),
+    reviewDate: isEditing
+      ? formatDateTimeLocal(new Date())
+      : formatDateTimeLocal(carePlan?.reviewDate),
     status: carePlan?.status || "draft",
     personalCare: {
       washing: {
@@ -115,9 +130,13 @@ export function CarePlanForm({ carePlan, onBack, onSave }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    // Convert reviewDate string (local) to Date object
+    const reviewDateObj = formData.reviewDate
+      ? new Date(formData.reviewDate)
+      : null;
     const carePlanData = {
       ...formData,
+      reviewDate: reviewDateObj,
       id: carePlan?.id || Date.now().toString(),
     };
 
@@ -456,7 +475,7 @@ export function CarePlanForm({ carePlan, onBack, onSave }) {
                     Review Date *
                   </label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     required
                     value={formData.reviewDate}
                     onChange={(e) =>
@@ -465,7 +484,12 @@ export function CarePlanForm({ carePlan, onBack, onSave }) {
                         reviewDate: e.target.value,
                       }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      isEditing
+                        ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                        : ""
+                    }`}
+                    disabled={isEditing}
                   />
                 </div>
 

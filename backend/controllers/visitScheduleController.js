@@ -35,7 +35,7 @@ exports.addVisit = async (req, res) => {
             await ActivityLog.create({
                 client: client._id,
                 action: `Visit scheduled: ${visitData.date} ${visitData.startTime}-${visitData.endTime}`,
-                user: 'System',
+                user: 'Admin',
             });
         }
         res.status(201).json({ status: 'success', data: { visits: schedule.visits } });
@@ -61,7 +61,7 @@ exports.updateVisit = async (req, res) => {
             await ActivityLog.create({
                 client: client._id,
                 action: `Visit updated: ${updateData.date} ${updateData.startTime}-${updateData.endTime}`,
-                user: 'System',
+                user: 'Admin',
             });
         }
         res.status(200).json({ status: 'success', data: { visits: schedule.visits } });
@@ -84,7 +84,7 @@ exports.deleteVisit = async (req, res) => {
             await ActivityLog.create({
                 client: client._id,
                 action: `Visit deleted: ${visit.date} ${visit.startTime}-${visit.endTime}`,
-                user: 'System',
+                user: 'Admin',
             });
         }
         schedule.visits.pull(visitId);

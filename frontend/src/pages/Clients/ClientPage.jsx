@@ -30,6 +30,7 @@ import { ClientProfileForm } from "./ClientProfileForm";
 import { ClientProfileDetails } from "./ClientProfileDetails/ClientProfileDetails";
 import toast from "react-hot-toast";
 import { confirmAlert } from "react-confirm-alert";
+import defaultClientImg from "../../assets/default.jpg";
 
 export default function Clients() {
   const [view, setView] = useState("list");
@@ -222,6 +223,9 @@ export default function Clients() {
     };
     return colors[status?.toLowerCase()] || "border-l-4 border-gray-300";
   };
+
+  const backendUrl =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:5500";
 
   if (view === "form") {
     return (
@@ -516,8 +520,16 @@ export default function Clients() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Users className="w-6 h-6 text-blue-600" />
+                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-200 shadow flex items-center justify-center bg-blue-50">
+                          <img
+                            src={
+                              client.photo?.startsWith("/uploads/")
+                                ? `${backendUrl}${client.photo}`
+                                : client.photo || defaultClientImg
+                            }
+                            alt="Client"
+                            className="w-full h-full object-cover rounded-full"
+                          />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center space-x-3">

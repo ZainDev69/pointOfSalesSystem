@@ -28,7 +28,7 @@ exports.addContact = async (req, res, next) => {
             await ActivityLog.create({
                 client: client._id,
                 action: `Contact added: ${contact.name}`,
-                user: 'System',
+                user: 'Admin',
             });
         }
         res.status(201).json(contact);
@@ -51,7 +51,7 @@ exports.editContact = async (req, res, next) => {
             await ActivityLog.create({
                 client: client._id,
                 action: `Contact updated: ${contact.name}`,
-                user: 'System',
+                user: 'Admin',
             });
         }
         res.json(contact);
@@ -71,7 +71,7 @@ exports.deleteContact = async (req, res, next) => {
             await ActivityLog.create({
                 client: client._id,
                 action: `Contact deleted: ${contact.name}`,
-                user: 'System',
+                user: 'Admin',
             });
         }
         res.json({ message: "Contact deleted" });

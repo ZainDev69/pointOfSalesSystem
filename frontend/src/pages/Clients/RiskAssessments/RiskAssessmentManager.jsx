@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Trash,
 } from "lucide-react";
+import { RiskAssessmentDetails } from "./RiskAssessmentDetails";
 import { RiskAssessmentForm } from "./RiskAssessmentForm";
 import {
   fetchRiskAssessments,
@@ -19,11 +20,14 @@ import {
   editRiskAssessment,
   deleteRiskAssessment,
 } from "../../../components/redux/slice/riskAssessments";
+import toast from "react-hot-toast";
 
 export function RiskAssessmentManager({ clientId }) {
   const [view, setView] = useState("list");
   const [selectedAssessment, setSelectedAssessment] = useState(null);
   const [filterType, setFilterType] = useState("all");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [assessmentToDelete, setAssessmentToDelete] = useState(null);
   const dispatch = useDispatch();
   const { items: assessments } = useSelector((state) => state.riskAssessments);
 
@@ -34,18 +38,43 @@ export function RiskAssessmentManager({ clientId }) {
   }, [clientId, dispatch]);
 
   const handleAddAssessment = async (assessment) => {
-    console.log("Inside Add Risk Assessment");
-    await dispatch(addRiskAssessment({ ...assessment, clientId }));
+    try {
+      await dispatch(addRiskAssessment({ ...assessment, clientId })).unwrap();
+      toast.success("Risk assessment added successfully");
+    } catch {
+      toast.error("Failed to add risk assessment");
+    }
   };
 
   const handleUpdateAssessment = async (id, assessment) => {
-    console.log("Inside Edit Risk Assessment");
-    await dispatch(editRiskAssessment({ id, assessment }));
+    try {
+      await dispatch(editRiskAssessment({ id, assessment })).unwrap();
+      toast.success("Risk assessment updated successfully");
+    } catch {
+      toast.error("Failed to update risk assessment");
+    }
   };
 
   const handleDeleteAssessment = async (id) => {
-    console.log("Inside Delete Risk Assessment");
-    await dispatch(deleteRiskAssessment(id));
+    setAssessmentToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAssessment = async () => {
+    try {
+      await dispatch(deleteRiskAssessment(assessmentToDelete)).unwrap();
+      toast.success("Risk assessment deleted");
+    } catch {
+      toast.error("Failed to delete risk assessment");
+    } finally {
+      setShowDeleteModal(false);
+      setAssessmentToDelete(null);
+    }
+  };
+
+  const cancelDeleteAssessment = () => {
+    setShowDeleteModal(false);
+    setAssessmentToDelete(null);
   };
 
   const assessmentTypes = [
@@ -181,99 +210,35 @@ export function RiskAssessmentManager({ clientId }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Risk Assessments</h2>
           <p className="text-gray-600 mt-1">
             Comprehensive risk management and safety planning
           </p>
         </div>
-
         <button
           onClick={() => {
             setSelectedAssessment(null);
             setView("form");
           }}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-6 py-2 rounded-full shadow-lg flex items-center space-x-2 text-base font-semibold transition-all duration-200"
+          style={{ minWidth: 180 }}
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5" />
           <span>New Assessment</span>
         </button>
       </div>
-
-      {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <Shield className="w-8 h-8 text-blue-600" />
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {assessmentStats.total}
-              </p>
-              <p className="text-sm text-gray-600">Total Assessments</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <CheckCircle className="w-8 h-8 text-green-600" />
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {assessmentStats.current}
-              </p>
-              <p className="text-sm text-gray-600">Current</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <Calendar className="w-8 h-8 text-yellow-600" />
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {assessmentStats.due}
-              </p>
-              <p className="text-sm text-gray-600">Due for Review</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <XCircle className="w-8 h-8 text-red-600" />
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {assessmentStats.overdue}
-              </p>
-              <p className="text-sm text-gray-600">Overdue</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <AlertTriangle className="w-8 h-8 text-orange-600" />
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {assessmentStats.highRisk}
-              </p>
-              <p className="text-sm text-gray-600">High Risk</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div className="mb-6" />
 
       {/* Filter */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-        <div className="flex items-center space-x-4">
-          <label className="text-sm font-medium text-gray-700">
-            Filter by type:
-          </label>
+      <div className="flex items-center gap-2 mb-4">
+        <div className="relative">
+          <Shield className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="pl-9 pr-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="all">All Types</option>
             {assessmentTypes.map((type) => (
@@ -435,216 +400,33 @@ export function RiskAssessmentManager({ clientId }) {
           )}
         </div>
       </div>
-    </div>
-  );
-}
-
-function RiskAssessmentDetails({ assessment, onBack }) {
-  if (!assessment) return null;
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Shield className="w-7 h-7 text-blue-500 mr-2" />
-          Risk Assessment Details
-        </h3>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={onBack}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
-          >
-            Back to List
-          </button>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-          <div className="mb-2 text-lg font-semibold text-blue-800 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-blue-400" /> Assessment Info
-          </div>
-          <div className="space-y-1 text-blue-900">
-            <div>
-              <strong>Type:</strong> {assessment.type}
-            </div>
-            <div>
-              <strong>Assessment Date:</strong> {assessment.assessmentDate}
-            </div>
-            <div>
-              <strong>Assessed By:</strong> {assessment.assessedBy}
-            </div>
-            <div>
-              <strong>Review Date:</strong> {assessment.reviewDate}
-            </div>
-            <div>
-              <strong>Status:</strong>{" "}
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  assessment.status === "current"
-                    ? "bg-green-100 text-green-800"
-                    : assessment.status === "due"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : assessment.status === "overdue"
-                    ? "bg-red-100 text-red-800"
-                    : "bg-gray-100 text-gray-800"
-                }`}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              Delete Risk Assessment?
+            </h2>
+            <p className="text-gray-700 mb-4">
+              Are you sure you want to delete this risk assessment? This action
+              cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={cancelDeleteAssessment}
+                className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
               >
-                {assessment.status.charAt(0).toUpperCase() +
-                  assessment.status.slice(1).toLowerCase()}
-              </span>
-            </div>
-            <div>
-              <strong>Overall Risk:</strong>{" "}
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  assessment.overallRisk === "high" ||
-                  assessment.overallRisk === "very-high"
-                    ? "bg-red-100 text-red-800"
-                    : assessment.overallRisk === "medium"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : "bg-green-100 text-green-800"
-                }`}
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteAssessment}
+                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
               >
-                {assessment.overallRisk.charAt(0).toUpperCase() +
-                  assessment.overallRisk
-                    .slice(1)
-                    .toLowerCase()
-                    .replace("-", " ")}
-              </span>
-            </div>
-            <div>
-              <strong>Version:</strong> {assessment.version}
+                Delete
+              </button>
             </div>
           </div>
         </div>
-        <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
-          <div className="mb-2 text-lg font-semibold text-purple-800 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-purple-400" /> Monitoring Plan
-          </div>
-          {assessment.monitoringPlan ? (
-            <ul className="space-y-1 text-purple-900">
-              <li>
-                <strong>Frequency:</strong>{" "}
-                {assessment.monitoringPlan.frequency}
-              </li>
-              <li>
-                <strong>Methods:</strong>{" "}
-                {assessment.monitoringPlan.methods?.join(", ")}
-              </li>
-              <li>
-                <strong>Indicators:</strong>{" "}
-                {assessment.monitoringPlan.indicators?.join(", ")}
-              </li>
-              <li>
-                <strong>Responsibility:</strong>{" "}
-                {assessment.monitoringPlan.responsibility}
-              </li>
-              <li>
-                <strong>Reporting Process:</strong>{" "}
-                {assessment.monitoringPlan.reportingProcess?.join(", ")}
-              </li>
-            </ul>
-          ) : (
-            <div className="text-gray-500">No monitoring plan recorded.</div>
-          )}
-        </div>
-      </div>
-      <div className="mb-8">
-        <div className="text-lg font-semibold text-red-700 mb-2 flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-red-400" /> Risks
-        </div>
-        {assessment.risks && assessment.risks.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {assessment.risks.map((risk, idx) => (
-              <div
-                key={risk.id || idx}
-                className="bg-white border border-red-100 rounded-lg p-4 shadow-sm"
-              >
-                <div className="font-semibold text-red-800 mb-1">
-                  Hazard: {risk.hazard}
-                </div>
-                <div className="text-sm text-gray-700">
-                  <div>
-                    <strong>Who at Risk:</strong> {risk.whoAtRisk?.join(", ")}
-                  </div>
-                  <div>
-                    <strong>Likelihood:</strong> {risk.likelihood}
-                  </div>
-                  <div>
-                    <strong>Severity:</strong> {risk.severity}
-                  </div>
-                  <div>
-                    <strong>Risk Level:</strong>{" "}
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        risk.riskLevel === "high" ||
-                        risk.riskLevel === "very-high"
-                          ? "bg-red-100 text-red-800"
-                          : risk.riskLevel === "medium"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {risk.riskLevel.charAt(0).toUpperCase() +
-                        risk.riskLevel.slice(1).toLowerCase().replace("-", " ")}
-                    </span>
-                  </div>
-                  <div>
-                    <strong>Existing Controls:</strong>{" "}
-                    {risk.existingControls?.join(", ")}
-                  </div>
-                  <div>
-                    <strong>Residual Risk:</strong> {risk.residualRisk}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-gray-500">No risks recorded.</div>
-        )}
-      </div>
-      <div>
-        <div className="text-lg font-semibold text-indigo-700 mb-2 flex items-center gap-2">
-          <Shield className="w-5 h-5 text-indigo-400" /> Control Measures
-        </div>
-        {assessment.controlMeasures && assessment.controlMeasures.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {assessment.controlMeasures.map((cm, idx) => (
-              <div
-                key={cm.id || idx}
-                className="bg-white border border-indigo-100 rounded-lg p-4 shadow-sm"
-              >
-                <div className="font-semibold text-indigo-800 mb-1">
-                  Measure: {cm.measure}
-                </div>
-                <div className="text-sm text-gray-700">
-                  <div>
-                    <strong>Type:</strong> {cm.type}
-                  </div>
-                  <div>
-                    <strong>Responsibility:</strong> {cm.responsibility}
-                  </div>
-                  <div>
-                    <strong>Implementation Date:</strong>{" "}
-                    {cm.implementationDate}
-                  </div>
-                  <div>
-                    <strong>Review Date:</strong> {cm.reviewDate}
-                  </div>
-                  <div>
-                    <strong>Status:</strong> {cm.status}
-                  </div>
-                  <div>
-                    <strong>Effectiveness:</strong> {cm.effectiveness}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-gray-500">No control measures recorded.</div>
-        )}
-      </div>
+      )}
     </div>
   );
 }

@@ -5,7 +5,20 @@ const Contact = require('../models/contactModel');
 const CarePlan = require('../models/carePlanModel');
 const Outcome = require('../models/outcomeModel');
 const ActivityLog = require('../models/activityLogModel');
-
+const multer = require('multer');
+const path = require('path');
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../uploads/'));
+    },
+    filename: function (req, file, cb) {
+        const ext = path.extname(file.originalname);
+        const base = path.basename(file.originalname, ext);
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, base + '-' + uniqueSuffix + ext);
+    }
+});
+const upload = multer({ storage });
 
 
 exports.createClient = catchAsync(async (req, res, next) => {
@@ -108,7 +121,7 @@ exports.updateClient = catchAsync(async (req, res, next) => {
                     actionMsg = `${section.charAt(0).toUpperCase() + section.slice(1)} updated`;
             }
         }
-        await ActivityLog.create({ client: client._id, action: actionMsg, user: 'System' });
+        await ActivityLog.create({ client: client._id, action: actionMsg, user: 'Admin' });
     }
     console.log("Client updated successfully from backend message")
     res.status(200).json({
@@ -147,7 +160,7 @@ exports.archiveClient = catchAsync(async (req, res, next) => {
     );
 
     if (!client) return next(new AppError('No Client found with that ID', 404));
-    await ActivityLog.create({ client: client._id, action: `Archived client: Archived: '${oldClient?.Archived}' → 'true'`, user: 'System' });
+    await ActivityLog.create({ client: client._id, action: `Archived client: Archived: '${oldClient?.Archived}' → 'true'`, user: 'Admin' });
     await client.save();
 
     res.status(200).json({
@@ -167,7 +180,7 @@ exports.unarchiveClient = catchAsync(async (req, res, next) => {
     );
 
     if (!client) return next(new AppError('No Client found with that ID', 404));
-    await ActivityLog.create({ client: client._id, action: `Unarchived client: Archived: '${oldClient?.Archived}' → 'false'`, user: 'System' });
+    await ActivityLog.create({ client: client._id, action: `Unarchived client: Archived: '${oldClient?.Archived}' → 'false'`, user: 'Admin' });
     await client.save();
 
     res.status(200).json({
@@ -185,64 +198,20 @@ exports.checkClientId = catchAsync(async (req, res, next) => {
     res.status(200).json({ status: 'Success', data: clients });
 });
 
-// Get all documents for a client
-exports.getDocuments = catchAsync(async (req, res, next) => {
-    const { id } = req.params;
-    const client = await Client.findById(id);
-    if (!client) return next(new AppError('No Client found with that ID', 404));
-    res.status(200).json({
-        status: 'Success',
-        data: client.documents || []
-    });
-});
-
-// Add a document to a client
-exports.addDocument = catchAsync(async (req, res, next) => {
-    const { id } = req.params;
-    const client = await Client.findById(id);
-    if (!client) return next(new AppError('No Client found with that ID', 404));
-    const document = req.body;
-    client.documents.push(document);
-    await ActivityLog.create({ client: client._id, action: `Document added: ${document.title || document.id}`, user: 'System' });
-    await client.save();
-    res.status(201).json({
-        status: 'Success',
-        data: document
-    });
-});
-
-// Update a document for a client
-exports.updateDocument = catchAsync(async (req, res, next) => {
-    const { id, documentId } = req.params;
-    const client = await Client.findById(id);
-    if (!client) return next(new AppError('No Client found with that ID', 404));
-    const docIndex = client.documents.findIndex((doc) => doc.id === documentId);
-    if (docIndex === -1) return next(new AppError('Document not found', 404));
-    client.documents[docIndex] = { ...client.documents[docIndex]._doc, ...req.body };
-    await ActivityLog.create({ client: client._id, action: `Document updated: ${req.body.title || documentId}`, user: 'System' });
-    await client.save();
-    res.status(200).json({
-        status: 'Success',
-        data: client.documents[docIndex]
-    });
-});
-
-// Delete a document for a client
-exports.deleteDocument = catchAsync(async (req, res, next) => {
-    const { id, documentId } = req.params;
-    const client = await Client.findById(id);
-    if (!client) return next(new AppError('No Client found with that ID', 404));
-    const docIndex = client.documents.findIndex((doc) => doc.id === documentId);
-    if (docIndex === -1) return next(new AppError('Document not found', 404));
-    const deletedDoc = client.documents[docIndex];
-    client.documents.splice(docIndex, 1);
-    await ActivityLog.create({ client: client._id, action: `Document deleted: ${deletedDoc?.title || documentId}`, user: 'System' });
-    await client.save();
-    res.status(204).json({
-        status: 'Success',
-        data: null
-    });
-});
+// Upload or update client photo
+exports.uploadClientPhoto = [
+    upload.single('photo'),
+    catchAsync(async (req, res, next) => {
+        const { id } = req.params;
+        const client = await Client.findById(id);
+        if (!client) return next(new AppError('No Client found with that ID', 404));
+        if (req.file) {
+            client.photo = `/uploads/${req.file.filename}`;
+            await client.save();
+        }
+        res.status(200).json({ status: 'Success', data: client });
+    })
+];
 
 
 

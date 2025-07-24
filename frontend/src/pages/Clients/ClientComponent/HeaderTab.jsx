@@ -1,5 +1,10 @@
 import { ArrowLeft, User } from "lucide-react";
+import defaultClientImg from "../../../assets/default.jpg"; // Adjust path as needed
+const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5500";
 export function HeaderTab({ client, onBack }) {
+  const imageUrl = client.photo?.startsWith("/uploads/")
+    ? `${backendUrl}${client.photo}`
+    : client.photo || defaultClientImg;
   return (
     <div className="flex items-center space-x-4">
       <button
@@ -11,8 +16,12 @@ export function HeaderTab({ client, onBack }) {
       <div className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg p-6 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-              <User className="w-8 h-8" />
+            <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center overflow-hidden border-2 border-white shadow">
+              <img
+                src={imageUrl}
+                alt="Client"
+                className="w-full h-full object-cover rounded-full"
+              />
             </div>
             <div>
               <h2 className="text-2xl font-bold">

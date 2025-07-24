@@ -8,6 +8,7 @@ import {
   Calendar,
   Clock,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 export function VisitForm({ visit, onBack, onSave }) {
   const isEditing = !!visit;
@@ -39,7 +40,14 @@ export function VisitForm({ visit, onBack, onSave }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    // Prevent Sunday selection
+    const selectedDate = new Date(formData.date);
+    if (selectedDate.getDay() === 0) {
+      toast.error(
+        "Visits can only be scheduled from Monday to Saturday. Please select a valid date."
+      );
+      return;
+    }
     let duration = formData.duration;
     if (formData.startTime && formData.endTime) {
       const start = new Date(`2000-01-01T${formData.startTime}`);
@@ -49,13 +57,11 @@ export function VisitForm({ visit, onBack, onSave }) {
         duration = calculated;
       }
     }
-
     const visitData = {
       ...formData,
       duration,
       ...(visit && visit._id ? { _id: visit._id } : {}),
     };
-
     onSave(visitData);
   };
 
@@ -132,9 +138,16 @@ export function VisitForm({ visit, onBack, onSave }) {
                 type="date"
                 required
                 value={formData.date}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, date: e.target.value }))
-                }
+                onChange={(e) => {
+                  const date = new Date(e.target.value);
+                  if (date.getDay() === 0) {
+                    toast.error(
+                      "Visits cannot be scheduled on Sundays. Please select a different date."
+                    );
+                    return;
+                  }
+                  setFormData((prev) => ({ ...prev, date: e.target.value }));
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>

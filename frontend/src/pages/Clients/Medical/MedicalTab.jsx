@@ -71,12 +71,14 @@ export function MedicalTab({ client, onClientUpdate }) {
         </h2>
         <button
           onClick={handleEditMedicalInfo}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-6 py-2 rounded-full shadow-lg flex items-center space-x-2 text-base font-semibold transition-all duration-200"
+          style={{ minWidth: 180 }}
         >
-          <Edit3 className="w-4 h-4" />
+          <Edit3 className="w-5 h-5" />
           <span>Edit Medical Info</span>
         </button>
       </div>
+      <div className="mb-4" />
 
       {/* Medical Conditions Card */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">

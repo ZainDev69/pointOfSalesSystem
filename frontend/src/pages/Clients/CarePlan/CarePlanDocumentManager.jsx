@@ -23,6 +23,7 @@ export function CarePlanDocumentManager({ carePlanId, clientId }) {
   const [view, setView] = useState("list");
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [detailsDoc, setDetailsDoc] = useState(null);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     if (clientId) {
@@ -38,21 +39,30 @@ export function CarePlanDocumentManager({ carePlanId, clientId }) {
     setView("list");
   };
   const handleEdit = async (doc) => {
-    await dispatch(
-      updateCarePlanDocument({
-        carePlanId,
-        docId: doc._id,
-        documentData: doc,
-      })
-    )
-      .unwrap()
-      .then(() => toast.success("Document updated successfully"))
-      .catch(() => {});
-    setView("list");
-    setSelectedDoc(null);
+    setUpdating(true);
+    try {
+      await dispatch(
+        updateCarePlanDocument({
+          carePlanId: doc.carePlanId || carePlanId,
+          docId: doc._id,
+          documentData: doc,
+        })
+      ).unwrap();
+      toast.success("Document updated successfully");
+      setView("list");
+      setSelectedDoc(null);
+    } catch {
+      toast.error("Failed to update document");
+      setView("list");
+      setSelectedDoc(null);
+    } finally {
+      setUpdating(false);
+    }
   };
-  const handleDelete = async (docId) => {
-    await dispatch(deleteCarePlanDocument({ carePlanId, docId }))
+  const handleDelete = async (doc) => {
+    await dispatch(
+      deleteCarePlanDocument({ carePlanId: doc.carePlanId, docId: doc._id })
+    )
       .unwrap()
       .then(() => toast.success("Document deleted successfully"))
       .catch(() => {});
@@ -75,6 +85,33 @@ export function CarePlanDocumentManager({ carePlanId, clientId }) {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  };
+  const handleOpenInNewTab = (att) => {
+    let url = typeof att === "string" ? att : att?.url;
+    console.log("Opening in new tab", att.url);
+    const originalName = typeof att === "object" ? att.originalName : undefined;
+    console.log(url);
+    if (!url) return;
+    if (url.startsWith("/")) url = BACKEND_URL + url;
+    console.log(BACKEND_URL);
+    const ext = (originalName || url).split(".").pop().toLowerCase();
+    if (ext === "pdf") {
+      // Use anchor navigation for PDFs to avoid popup blockers
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else if (["docx", "xlsx", "pptx", "doc", "xls", "ppt"].includes(ext)) {
+      const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(
+        url
+      )}&embedded=true`;
+      window.open(viewerUrl, "_blank");
+    } else {
+      window.open(url, "_blank");
+    }
   };
 
   if (view === "form") {
@@ -108,6 +145,11 @@ export function CarePlanDocumentManager({ carePlanId, clientId }) {
       </div>
       {loading && <div>Loading...</div>}
       {error && <div className="text-red-600">{error}</div>}
+      {updating && (
+        <div className="text-center text-blue-600 py-2">
+          Updating document...
+        </div>
+      )}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="divide-y divide-gray-200">
           {documents.map((doc) => (
@@ -122,18 +164,30 @@ export function CarePlanDocumentManager({ carePlanId, clientId }) {
                   </h4>
                   {doc.attachments && doc.attachments.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {doc.attachments.map((att, idx) => (
-                        <button
-                          key={idx}
-                          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-                          title={`Download ${
-                            att.originalName || `Attachment ${idx + 1}`
-                          }`}
-                          onClick={() => handleDownload(att)}
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                      ))}
+                      {doc.attachments.map((att, idx) => {
+                        const originalName = att.originalName || "";
+                        const ext = originalName.split(".").pop().toLowerCase();
+                        return (
+                          <React.Fragment key={att._id || idx}>
+                            {ext === "pdf" ? (
+                              <button
+                                className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                                title={`Open ${originalName}`}
+                                onClick={() => handleOpenInNewTab(att)}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                            ) : null}
+                            <button
+                              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                              title={`Download ${originalName}`}
+                              onClick={() => handleDownload(att)}
+                            >
+                              <Download className="w-4 h-4" />
+                            </button>
+                          </React.Fragment>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -156,7 +210,7 @@ export function CarePlanDocumentManager({ carePlanId, clientId }) {
                     <Edit3 className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(doc._id)}
+                    onClick={() => handleDelete(doc)}
                     className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     title="Delete Document"
                   >
@@ -196,9 +250,9 @@ export function CarePlanDocumentManager({ carePlanId, clientId }) {
                     <li key={idx}>
                       <button
                         className="text-blue-600 underline"
-                        onClick={() => handleDownload(att)}
+                        onClick={() => handleOpenInNewTab(att)}
                       >
-                        {att.originalName || `Download Attachment ${idx + 1}`}
+                        {att.originalName || `Open Attachment ${idx + 1}`}
                       </button>
                     </li>
                   ))}

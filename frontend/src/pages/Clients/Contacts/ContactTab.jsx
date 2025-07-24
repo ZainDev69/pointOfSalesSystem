@@ -181,8 +181,7 @@ export function ContactTab({ client }) {
   return (
     <div className="space-y-6">
       {/* Contact Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {/* Total Contacts */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-4">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-3 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
@@ -197,7 +196,6 @@ export function ContactTab({ client }) {
           </div>
         </div>
 
-        {/* Family */}
         <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg border border-red-200 p-3 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
@@ -212,7 +210,6 @@ export function ContactTab({ client }) {
           </div>
         </div>
 
-        {/* Friends */}
         <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200 p-3 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
@@ -227,7 +224,6 @@ export function ContactTab({ client }) {
           </div>
         </div>
 
-        {/* Can Receive Updates */}
         <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 p-3 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
@@ -242,7 +238,6 @@ export function ContactTab({ client }) {
           </div>
         </div>
 
-        {/* Has Consent */}
         <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200 p-3 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
@@ -261,33 +256,40 @@ export function ContactTab({ client }) {
       {/* Contact Management */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h3 className="text-lg font-semibold text-gray-900">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
                 Family & Friends Contacts
-              </h3>
-              <div className="flex items-center space-x-2">
-                <select
-                  value={contactFilter}
-                  onChange={(e) => setContactFilter(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="all">All Contacts</option>
-                  <option value="family">Family</option>
-                  <option value="friend">Friends</option>
-                  <option value="neighbor">Neighbors</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
+              </h2>
+              <p className="text-gray-600 mt-1">
+                Manage and connect with client contacts
+              </p>
             </div>
-
             <button
               onClick={handleAddContact}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+              className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-6 py-2 rounded-full shadow-lg flex items-center space-x-2 text-base font-semibold transition-all duration-200"
+              style={{ minWidth: 180 }}
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-5 h-5" />
               <span>Add Contact</span>
             </button>
+          </div>
+          <div className="mb-6" />
+          <div className="flex items-center gap-2 mb-4">
+            <div className="relative">
+              <Users className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <select
+                value={contactFilter}
+                onChange={(e) => setContactFilter(e.target.value)}
+                className="pl-9 pr-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Contacts</option>
+                <option value="family">Family</option>
+                <option value="friend">Friends</option>
+                <option value="neighbor">Neighbors</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
           </div>
         </div>
 

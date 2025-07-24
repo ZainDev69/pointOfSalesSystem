@@ -41,18 +41,8 @@ router
     .route('/:id/unarchive')
     .patch(clientController.unarchiveClient);
 
-router.route('/:id/documents')
-    .get(clientController.getDocuments)
-    .post(clientController.addDocument);
-
-router.route('/:id/documents/:documentId')
-    .patch(clientController.updateDocument)
-    .delete(clientController.deleteDocument);
-
-router.post('/:id/documents/attachment', upload.single('file'), (req, res) => {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    const fileUrl = `/uploads/${req.file.filename}`;
-    res.status(201).json({ url: fileUrl, originalName: req.file.originalname });
-});
+router
+    .route('/:id/photo')
+    .patch(clientController.uploadClientPhoto);
 
 module.exports = router;

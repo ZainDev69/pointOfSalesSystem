@@ -174,25 +174,7 @@ const clientSchema = new mongoose.Schema({
         },
     },
     Archived: { type: Boolean, default: false },
-    documents: [
-        {
-            id: { type: String, required: true },
-            type: { type: String, required: true },
-            title: { type: String, required: true },
-            content: { type: String, required: true },
-            category: String,
-            tags: [String],
-            status: { type: String, enum: ['draft', 'final', 'archived'], default: 'draft' },
-            reviewRequired: { type: Boolean, default: false },
-            reviewDate: String,
-            version: { type: Number, default: 1 },
-            createdDate: { type: String },
-            createdBy: { type: String },
-            lastModified: { type: String },
-            modifiedBy: { type: String },
-            attachments: [String],
-        }
-    ],
+    photo: { type: String, default: '' }, // URL or filename for client image
 }, { timestamps: true });
 
 const Client = mongoose.model('Client', clientSchema);

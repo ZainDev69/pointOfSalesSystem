@@ -61,7 +61,7 @@ export function DocumentForm({ document, onBack, onSave, clientId }) {
     }
     const documentData = {
       ...formData,
-      id: document?.id || Date.now().toString(),
+      _id: document?._id, // Ensure ObjectId is preserved for editing
       createdDate: document?.createdDate || new Date().toISOString(),
       createdBy: document?.createdBy || "Current User",
       lastModified: new Date().toISOString(),

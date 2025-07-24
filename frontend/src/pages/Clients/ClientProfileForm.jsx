@@ -13,6 +13,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import defaultClientImg from "../../assets/default.jpg";
 
 export function ClientProfileForm({ client, onBack, onSave }) {
   const [activeTab, setActiveTab] = useState("personal");
@@ -20,6 +21,8 @@ export function ClientProfileForm({ client, onBack, onSave }) {
   const [isPvt, setIsPvt] = useState(false);
   const [clientIdExists, setClientIdExists] = useState(false);
   const [checkingClientId, setCheckingClientId] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState(client?.photo || "");
+  const [photoFile, setPhotoFile] = useState(null);
 
   const toInputDate = (val) => (val ? val.slice(0, 10) : "");
 
@@ -237,6 +240,14 @@ export function ClientProfileForm({ client, onBack, onSave }) {
     });
   };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
+    }
+  };
+
   const tabs = [
     { id: "personal", label: "Personal Details", icon: User },
     { id: "healthcare", label: "Healthcare Contacts", icon: Heart },
@@ -257,9 +268,25 @@ export function ClientProfileForm({ client, onBack, onSave }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Send the entire formData object to the backend
-      console.log(formData);
-      await onSave(formData); // onSave should be async and use .unwrap() internally
+      let photoUrl = formData.photo || "";
+      if (photoFile) {
+        const formDataImg = new FormData();
+        formDataImg.append("photo", photoFile);
+        const res = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/clients/${
+            client?._id || formData.clientId
+          }/photo`,
+          {
+            method: "PATCH",
+            body: formDataImg,
+          }
+        );
+        const data = await res.json();
+        if (data.data && data.data.photo) {
+          photoUrl = data.data.photo;
+        }
+      }
+      await onSave({ ...formData, photo: photoUrl }); // onSave should be async and use .unwrap() internally
     } catch (err) {
       // Display error using toast or similar
       if (err && err.message) {
@@ -419,6 +446,14 @@ export function ClientProfileForm({ client, onBack, onSave }) {
     }));
   };
 
+  const backendUrl =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:5500";
+  const imageUrl = photoPreview
+    ? photoPreview
+    : client?.photo?.startsWith("/uploads/")
+    ? `${backendUrl}${client.photo}`
+    : client?.photo || defaultClientImg;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
@@ -463,6 +498,23 @@ export function ClientProfileForm({ client, onBack, onSave }) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Photo Upload */}
+        <div className="flex flex-col items-center mb-6">
+          <img
+            src={imageUrl}
+            alt="Client"
+            className="w-32 h-32 rounded-full object-cover border-2 border-gray-200 shadow mb-2"
+          />
+          <label className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full shadow cursor-pointer">
+            Change Photo
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              className="hidden"
+            />
+          </label>
+        </div>
         {/* Personal Details */}
         {activeTab === "personal" && (
           <div className="space-y-6">

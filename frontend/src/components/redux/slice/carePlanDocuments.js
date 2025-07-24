@@ -35,7 +35,7 @@ export const updateCarePlanDocument = createAsyncThunk(
     'carePlanDocuments/updateCarePlanDocument',
     async ({ carePlanId, docId, documentData }, { rejectWithValue }) => {
         try {
-            console.log("Updating the care plan document", documentData);
+            console.log("Updating the care plan document", carePlanId, docId, documentData);
             const res = await axios.patch(`${BACKEND_URL}/careplans/${carePlanId}/documents/${docId}`, documentData, { withCredentials: true });
             console.log("Care plan document updated", res.data.data);
             return res.data.data;

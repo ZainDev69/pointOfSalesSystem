@@ -1,5 +1,17 @@
 import { FileText, User, Calendar, Clock, Target } from "lucide-react";
 
+// Helper to format date as 'YYYY-MM-DD, h:mm AM/PM'
+const formatReviewDateTime = (dateString) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  const yyyy = date.getFullYear();
+  const mm = (date.getMonth() + 1).toString().padStart(2, "0");
+  const dd = date.getDate().toString().padStart(2, "0");
+  const hh = date.getHours().toString().padStart(2, "0");
+  const min = date.getMinutes().toString().padStart(2, "0");
+  return `${dd}/${mm}/${yyyy}, ${hh}:${min}`;
+};
+
 export function CardsTab({ activeCarePlan, outcomes }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
@@ -36,8 +48,11 @@ export function CardsTab({ activeCarePlan, outcomes }) {
       {/* Review Due Card */}
       <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 px-3 py-2 hover:shadow-md transition-all duration-200 flex items-center justify-between min-h-[60px]">
         <div>
-          <p className="text-lg font-bold text-purple-900 mb-0.5">
-            {new Date(activeCarePlan.reviewDate).toLocaleDateString()}
+          <p
+            className="text-base font-bold text-purple-900 mb-0.5 truncate"
+            style={{ maxWidth: "160px" }}
+          >
+            {formatReviewDateTime(activeCarePlan.reviewDate)}
           </p>
           <p className="text-xs text-purple-700 font-medium">Review Due</p>
         </div>

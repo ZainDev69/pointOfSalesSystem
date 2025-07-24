@@ -12,7 +12,7 @@ exports.createRiskAssessment = async (req, res) => {
             await ActivityLog.create({
                 client: client._id,
                 action: `Risk Assessment added: ${assessment.type} ${assessment.assessmentDate}`,
-                user: 'System',
+                user: 'Admin',
             });
         }
         res.status(201).json({ success: true, data: assessment });
@@ -43,7 +43,7 @@ exports.updateRiskAssessment = async (req, res) => {
             await ActivityLog.create({
                 client: client._id,
                 action: `Risk Assessment updated: ${updated.type} ${updated.assessmentDate}`,
-                user: 'System',
+                user: 'Admin',
             });
         }
         res.status(200).json({ success: true, data: updated });
@@ -64,7 +64,7 @@ exports.deleteRiskAssessment = async (req, res) => {
                 await ActivityLog.create({
                     client: client._id,
                     action: `Risk Assessment deleted: ${assessment.type} ${assessment.assessmentDate}`,
-                    user: 'System',
+                    user: 'Admin',
                 });
             }
         }

@@ -6,19 +6,20 @@ const globalErrorHandler = require('./controllers/errorController');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const path = require('path');
-
+const fs = require('fs');
 const app = express();
 app.use(express.json());
 
 
 
 app.use(cors({
-    origin: process.env.ORIGIN,
+    origin: "http://localhost:5173",
     methods: "GET,POST,PUT,PATCH,DELETE",
     credentials: true
 }));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(helmet());
 
 
@@ -29,6 +30,7 @@ const carePlanRoutes = require("./routes/carePlanRoutes");
 const riskAssessmentRoutes = require('./routes/riskAssessmentRoutes');
 const visitScheduleRoutes = require('./routes/visitScheduleRoutes');
 const carePlanDocumentRoutes = require('./routes/carePlanDocumentRoutes');
+const documentRoutes = require('./routes/documentRoutes');
 
 app.use((req, res, next) => {
     console.log(`[${req.method}] ${req.originalUrl}`);
@@ -40,7 +42,8 @@ app.use('/clients/:clientId/contacts', contactRoutes);
 app.use('/clients/:clientId/visits', visitScheduleRoutes);
 app.use("/", carePlanRoutes);
 app.use('/risk-assessments', riskAssessmentRoutes);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/documents', documentRoutes);
+
 app.use('/careplans', carePlanDocumentRoutes);
 app.use('/activity-logs', require('./routes/activityLogRoutes'));
 

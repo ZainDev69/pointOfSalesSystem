@@ -39,7 +39,7 @@ exports.addDocument = catchAsync(async (req, res, next) => {
             await ActivityLog.create({
                 client: client._id,
                 action: `Care Plan Document added: ${doc.title} `,
-                user: 'System',
+                user: 'Admin',
             });
         }
     }
@@ -48,13 +48,18 @@ exports.addDocument = catchAsync(async (req, res, next) => {
 
 exports.updateDocument = catchAsync(async (req, res, next) => {
     const { carePlanId, docId } = req.params;
+    console.log("Updating carePlan document", req.body);
+    // Remove _id from update payload if present
+    const updateData = { ...req.body, updatedAt: new Date() };
+    delete updateData._id;
     const doc = await CarePlanDocument.findOneAndUpdate(
         { _id: docId, carePlanId },
-        { ...req.body, updatedAt: new Date() },
+        updateData,
         { new: true }
     );
     if (!doc) return next(new AppError('Document not found', 404));
     // Log to client activity log
+    console.log("I am reached")
     const carePlan = await CarePlan.findById(carePlanId);
     if (carePlan && carePlan.clientId) {
         const client = await Client.findById(carePlan.clientId);
@@ -62,7 +67,7 @@ exports.updateDocument = catchAsync(async (req, res, next) => {
             await ActivityLog.create({
                 client: client._id,
                 action: `Care Plan Document updated: ${doc.title} `,
-                user: 'System',
+                user: 'Admin',
             });
         }
     }
@@ -81,7 +86,7 @@ exports.deleteDocument = catchAsync(async (req, res, next) => {
             await ActivityLog.create({
                 client: client._id,
                 action: `Care Plan Document deleted: ${doc.title} `,
-                user: 'System',
+                user: 'Admin',
             });
         }
     }
@@ -89,6 +94,7 @@ exports.deleteDocument = catchAsync(async (req, res, next) => {
 });
 
 exports.uploadAttachmentHandler = catchAsync(async (req, res, next) => {
+    console.log("Uploading attachment", req.file);
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const fileUrl = `/uploads/${req.file.filename}`;
     res.status(201).json({ url: fileUrl, originalName: req.file.originalname });

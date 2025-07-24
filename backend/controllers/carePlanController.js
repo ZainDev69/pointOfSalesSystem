@@ -97,7 +97,7 @@ exports.createCarePlan = catchAsync(async (req, res, next) => {
         ActivityLog.create({
             client: client._id,
             action: 'Care plan added',
-            user: 'System',
+            user: 'Admin',
         });
     }
 
@@ -138,7 +138,8 @@ exports.updateCarePlan = catchAsync(async (req, res, next) => {
         ...req.body,
         clientId,
         version: newVersion,
-        status: 'active'
+        status: 'active',
+        reviewDate: new Date(), // Always set to now on update
     };
 
     const updatedCarePlan = await CarePlan.create(carePlanData);
@@ -162,7 +163,7 @@ exports.updateCarePlan = catchAsync(async (req, res, next) => {
         ActivityLog.create({
             client: client._id,
             action: 'Care plan updated',
-            user: 'System',
+            user: 'Admin',
         });
     }
 
@@ -192,7 +193,7 @@ exports.deleteCarePlan = catchAsync(async (req, res, next) => {
         ActivityLog.create({
             client: client._id,
             action: 'Care plan deleted',
-            user: 'System',
+            user: 'Admin',
         });
     }
 
@@ -256,7 +257,7 @@ exports.createOutcome = catchAsync(async (req, res, next) => {
         ActivityLog.create({
             client: client._id,
             action: 'Outcome added',
-            user: 'System',
+            user: 'Admin',
         });
     }
 
@@ -287,7 +288,7 @@ exports.updateOutcome = catchAsync(async (req, res, next) => {
         ActivityLog.create({
             client: client._id,
             action: 'Outcome updated',
-            user: 'System',
+            user: 'Admin',
         });
     }
 
@@ -314,7 +315,7 @@ exports.deleteOutcome = catchAsync(async (req, res, next) => {
         ActivityLog.create({
             client: client._id,
             action: 'Outcome deleted',
-            user: 'System',
+            user: 'Admin',
         });
     }
 

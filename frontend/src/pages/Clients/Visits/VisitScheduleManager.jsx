@@ -9,7 +9,7 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Trash2,
+  Trash,
 } from "lucide-react";
 import { VisitForm } from "./VisitForm";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,6 +19,7 @@ import {
   updateVisit,
   deleteVisit,
 } from "../../../components/redux/slice/visitSchedules";
+import toast from "react-hot-toast";
 
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
@@ -251,124 +252,104 @@ export function VisitScheduleManager({ clientId }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Visit Schedule</h2>
           <p className="text-gray-600 mt-1">
             Manage client visits and care delivery
           </p>
         </div>
-
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setView("calendar")}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                view === "calendar"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              Calendar
-            </button>
-            <button
-              onClick={() => setView("list")}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                view === "list"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              List
-            </button>
-          </div>
-
-          <button
-            onClick={() => {
-              setSelectedVisit(null);
-              setView("form");
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Schedule Visit</span>
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setSelectedVisit(null);
+            setView("form");
+          }}
+          className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-6 py-2 rounded-full shadow-lg flex items-center space-x-2 text-base font-semibold transition-all duration-200"
+          style={{ minWidth: 180 }}
+        >
+          <Plus className="w-5 h-5" />
+          <span>Schedule Visit</span>
+        </button>
       </div>
+      <div className="mb-6" />
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <Calendar className="w-8 h-8 text-blue-600" />
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-4">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-3 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-lg font-bold text-blue-900">
                 {visitStats.total}
               </p>
-              <p className="text-sm text-gray-600">Total Visits</p>
+              <p className="text-xs text-blue-700 font-medium">Total</p>
+            </div>
+            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+              <Calendar className="w-4 h-4 text-white" />
             </div>
           </div>
         </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <Clock className="w-8 h-8 text-yellow-600" />
+        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200 p-3 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-lg font-bold text-yellow-900">
                 {visitStats.scheduled}
               </p>
-              <p className="text-sm text-gray-600">Scheduled</p>
+              <p className="text-xs text-yellow-700 font-medium">Scheduled</p>
+            </div>
+            <div className="w-8 h-8 bg-yellow-400 rounded-lg flex items-center justify-center">
+              <Clock className="w-4 h-4 text-white" />
             </div>
           </div>
         </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200 p-3 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-lg font-bold text-green-900">
                 {visitStats.confirmed}
               </p>
-              <p className="text-sm text-gray-600">Confirmed</p>
+              <p className="text-xs text-green-700 font-medium">Confirmed</p>
+            </div>
+            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+              <CheckCircle className="w-4 h-4 text-white" />
             </div>
           </div>
         </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <CheckCircle className="w-8 h-8 text-gray-600" />
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 p-3 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-lg font-bold text-gray-900">
                 {visitStats.completed}
               </p>
-              <p className="text-sm text-gray-600">Completed</p>
+              <p className="text-xs text-gray-700 font-medium">Completed</p>
+            </div>
+            <div className="w-8 h-8 bg-gray-400 rounded-lg flex items-center justify-center">
+              <CheckCircle className="w-4 h-4 text-white" />
             </div>
           </div>
         </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <XCircle className="w-8 h-8 text-red-600" />
+        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg border border-red-200 p-3 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-lg font-bold text-red-900">
                 {visitStats.cancelled}
               </p>
-              <p className="text-sm text-gray-600">Cancelled</p>
+              <p className="text-xs text-red-700 font-medium">Cancelled</p>
+            </div>
+            <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+              <XCircle className="w-4 h-4 text-white" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Filter */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-        <div className="flex items-center space-x-4">
-          <label className="text-sm font-medium text-gray-700">
-            Filter by status:
-          </label>
+      <div className="flex items-center gap-2 mb-4">
+        <div className="relative">
+          <Calendar className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="pl-9 pr-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="all">All Visits</option>
             <option value="scheduled">Scheduled</option>
@@ -511,7 +492,7 @@ export function VisitScheduleManager({ clientId }) {
                           className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete Visit"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
@@ -567,12 +548,27 @@ export function VisitScheduleManager({ clientId }) {
                 return (
                   <button
                     key={day}
-                    onClick={() => setSelectedDay(day)}
+                    onClick={() => {
+                      const date = new Date(year, month, day);
+                      if (date.getDay() === 0) {
+                        toast.error(
+                          "Visits cannot be scheduled on Sundays. Please select a different day."
+                        );
+                        return;
+                      }
+                      setSelectedDay(day);
+                    }}
                     className={`h-12 w-full rounded-lg flex flex-col items-center justify-center border transition-colors
                       ${isToday ? "border-blue-500" : "border-gray-200"}
                       ${selectedDay === day ? "bg-blue-100" : "bg-white"}
                       ${hasVisits ? "ring-2 ring-green-300" : ""}
+                      ${
+                        new Date(year, month, day).getDay() === 0
+                          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                          : ""
+                      }
                     `}
+                    disabled={new Date(year, month, day).getDay() === 0}
                   >
                     <span className="font-bold">{day}</span>
                     {hasVisits && (
@@ -630,7 +626,7 @@ export function VisitScheduleManager({ clientId }) {
                         className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="Delete Visit"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash className="w-4 h-4" />
                       </button>
                     </div>
                   </div>

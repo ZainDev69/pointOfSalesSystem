@@ -10,7 +10,6 @@ import { ComplianceTracker } from "../Compliance/ComplianceTracker";
 import { useDispatch } from "react-redux";
 import { clearCarePlans } from "../../../components/redux/slice/carePlans";
 import { clearOutcomes } from "../../../components/redux/slice/outcomes";
-import Spinner from "../../../components/layout/Spinner";
 import { OverviewTab } from "../Overview/OverviewTab";
 import { PersonalTab } from "../Personal/PersonalTab";
 import { MedicalTab } from "../Medical/MedicalTab";
@@ -25,6 +24,7 @@ import { clearVisitSchedules } from "../../../components/redux/slice/visitSchedu
 import { clearCarePlanDocuments } from "../../../components/redux/slice/carePlanDocuments";
 import { clearActivityLogs } from "../../../components/redux/slice/activityLogs";
 import { HeaderTab } from "../ClientComponent/HeaderTab";
+
 export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
   const [activeTab, setActiveTab] = useState("overview");
 

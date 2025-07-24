@@ -13,7 +13,7 @@ import {
   AlertTriangle,
   CheckCircle,
   ArrowLeft,
-  X,
+  Trash,
 } from "lucide-react";
 import { DocumentForm } from "./DocumentForm";
 import { useDispatch, useSelector } from "react-redux";
@@ -139,9 +139,8 @@ export function DocumentationManager({ client }) {
 
   const handleUpdateDocument = async (documentId, documentData) => {
     try {
-      await dispatch(
-        updateDocument({ clientId: client._id, documentId, documentData })
-      ).unwrap();
+      console.log("Document Data", documentId, documentData);
+      await dispatch(updateDocument({ documentId, documentData })).unwrap();
       toast.success("Document updated successfully");
     } catch {
       toast.error("Failed to update document");
@@ -150,9 +149,7 @@ export function DocumentationManager({ client }) {
 
   const handleDeleteDocument = async (documentId) => {
     try {
-      await dispatch(
-        deleteDocument({ clientId: client._id, documentId })
-      ).unwrap();
+      await dispatch(deleteDocument(documentId)).unwrap();
       toast.success("Document deleted successfully");
     } catch {
       toast.error("Failed to delete document");
@@ -241,7 +238,7 @@ export function DocumentationManager({ client }) {
         onBack={() => setView("list")}
         onSave={(document) => {
           if (selectedDocument) {
-            handleUpdateDocument(document.id, document);
+            handleUpdateDocument(document._id, document);
           } else {
             handleAddDocument(document);
           }
@@ -264,109 +261,46 @@ export function DocumentationManager({ client }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Move the add button above the search/filters and add spacing between heading/subheading and controls */}
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Documentation</h2>
           <p className="text-gray-600 mt-1">
             Client records, reports, and care documentation
           </p>
         </div>
-
         <button
           onClick={() => {
             setSelectedDocument(null);
             setView("form");
           }}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-6 py-2 rounded-full shadow-lg flex items-center space-x-2 text-base font-semibold transition-all duration-200"
+          style={{ minWidth: 160 }}
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5" />
           <span>New Document</span>
         </button>
       </div>
-
-      {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <FileText className="w-8 h-8 text-blue-600" />
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {documentStats.total}
-              </p>
-              <p className="text-sm text-gray-600">Total Documents</p>
-            </div>
-          </div>
+      <div className="mb-6" />
+      {/* The search/filter controls remain below, with their own margin-top for separation */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <div className="flex-1 flex items-center bg-white rounded-full shadow-sm border border-gray-200 px-4 py-2">
+          <Search className="w-5 h-5 text-blue-500 mr-2" />
+          <input
+            type="text"
+            placeholder="Search documents by title, content, or tags..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1 bg-transparent outline-none text-gray-800 placeholder-gray-400"
+          />
         </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <Edit3 className="w-8 h-8 text-yellow-600" />
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {documentStats.draft}
-              </p>
-              <p className="text-sm text-gray-600">Draft</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <CheckCircle className="w-8 h-8 text-green-600" />
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {documentStats.final}
-              </p>
-              <p className="text-sm text-gray-600">Final</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <AlertTriangle className="w-8 h-8 text-orange-600" />
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {documentStats.reviewRequired}
-              </p>
-              <p className="text-sm text-gray-600">Review Required</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <Calendar className="w-8 h-8 text-purple-600" />
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {documentStats.thisWeek}
-              </p>
-              <p className="text-sm text-gray-600">This Week</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search documents by title, content, or tags..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Filter className="w-4 h-4 text-gray-400" />
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Filter className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="pl-9 pr-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Types</option>
               {documentTypes.map((type) => (
@@ -376,12 +310,12 @@ export function DocumentationManager({ client }) {
               ))}
             </select>
           </div>
-
-          <div className="flex items-center space-x-2">
+          <div className="relative">
+            <Filter className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="pl-9 pr-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Status</option>
               <option value="draft">Draft</option>
@@ -391,17 +325,92 @@ export function DocumentationManager({ client }) {
           </div>
         </div>
       </div>
-      <div className="flex items-center mb-2">
-        <input
-          type="checkbox"
-          id="show-archived"
-          checked={showArchived}
-          onChange={(e) => setShowArchived(e.target.checked)}
-          className="mr-2"
-        />
-        <label htmlFor="show-archived" className="text-sm text-gray-700">
-          Show archived documents
-        </label>
+
+      {/* Statistics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-3 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-lg font-bold text-blue-900">
+                {documentStats.total}
+              </p>
+              <p className="text-xs text-blue-700 font-medium">Total</p>
+            </div>
+            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+              <FileText className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200 p-3 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-lg font-bold text-yellow-900">
+                {documentStats.draft}
+              </p>
+              <p className="text-xs text-yellow-700 font-medium">Draft</p>
+            </div>
+            <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
+              <Edit3 className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200 p-3 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-lg font-bold text-green-900">
+                {documentStats.final}
+              </p>
+              <p className="text-xs text-green-700 font-medium">Final</p>
+            </div>
+            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+              <CheckCircle className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200 p-3 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-lg font-bold text-orange-900">
+                {documentStats.reviewRequired}
+              </p>
+              <p className="text-xs text-orange-700 font-medium">
+                Review Required
+              </p>
+            </div>
+            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+              <AlertTriangle className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 p-3 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-lg font-bold text-purple-900">
+                {documentStats.thisWeek}
+              </p>
+              <p className="text-xs text-purple-700 font-medium">This Week</p>
+            </div>
+            <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+              <Calendar className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center mb-2">
+          <input
+            type="checkbox"
+            id="show-archived"
+            checked={showArchived}
+            onChange={(e) => setShowArchived(e.target.checked)}
+            className="mr-2"
+          />
+          <label htmlFor="show-archived" className="text-sm text-gray-700">
+            Show archived documents
+          </label>
+        </div>
       </div>
 
       {/* Document List */}
@@ -453,7 +462,7 @@ export function DocumentationManager({ client }) {
 
             return (
               <div
-                key={document.id}
+                key={document._id}
                 className="p-6 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center justify-between">
@@ -581,11 +590,11 @@ export function DocumentationManager({ client }) {
                       </button>
                     )}
                     <button
-                      onClick={() => handleDeleteDocument(document.id)}
+                      onClick={() => handleDeleteDocument(document._id)}
                       className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Delete Document"
                     >
-                      <X className="w-4 h-4" />
+                      <Trash className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -644,44 +653,60 @@ function DocumentDetails({ document, onBack, onEdit }) {
           </button>
           <div className="flex items-center space-x-3">
             <div
-              className={`w-10 h-10 ${typeInfo.color} rounded-full flex items-center justify-center`}
+              className={`w-10 h-10 ${typeInfo.color} rounded-full flex items-center justify-center shadow-md`}
             >
               <FileText className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-gray-900 mb-1">
                 {document.title}
               </h1>
-              <p className="text-gray-600 mt-1">
-                {typeInfo.label} • {document.category}
-              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-semibold ${typeInfo.color} text-white`}
+                >
+                  {typeInfo.label}
+                </span>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    document.status === "final"
+                      ? "bg-green-100 text-green-800"
+                      : document.status === "draft"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {document.status}
+                </span>
+                <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+                  v{document.version}
+                </span>
+              </div>
+              <p className="text-gray-500 mt-1 text-sm">{document.category}</p>
             </div>
           </div>
         </div>
-
         <button
           onClick={onEdit}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-6 py-2 rounded-full shadow-lg flex items-center space-x-2 text-base font-semibold transition-all duration-200"
         >
-          <Edit3 className="w-4 h-4" />
+          <Edit3 className="w-5 h-5" />
           <span>Edit Document</span>
         </button>
       </div>
-
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div>
             <p className="text-sm font-medium text-gray-500">Created</p>
-            <p className="text-gray-900">
+            <p className="text-gray-900 font-semibold">
               {new Date(document.createdDate).toLocaleDateString()}
             </p>
             <p className="text-sm text-gray-600">by {document.createdBy}</p>
           </div>
-
           <div>
             <p className="text-sm font-medium text-gray-500">Status</p>
             <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${
+              className={`px-2 py-1 rounded-full text-xs font-semibold ${
                 document.status === "final"
                   ? "bg-green-100 text-green-800"
                   : document.status === "draft"
@@ -692,13 +717,13 @@ function DocumentDetails({ document, onBack, onEdit }) {
               {document.status}
             </span>
           </div>
-
           <div>
             <p className="text-sm font-medium text-gray-500">Version</p>
-            <p className="text-gray-900">v{document.version}</p>
+            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+              v{document.version}
+            </span>
           </div>
         </div>
-
         <div className="border-t border-gray-200 pt-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Content</h3>
           <div className="prose max-w-none">
@@ -707,7 +732,6 @@ function DocumentDetails({ document, onBack, onEdit }) {
             </p>
           </div>
         </div>
-
         {document.tags && document.tags.length > 0 && (
           <div className="border-t border-gray-200 pt-6 mt-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
@@ -723,15 +747,15 @@ function DocumentDetails({ document, onBack, onEdit }) {
             </div>
           </div>
         )}
-
         {document.attachments && document.attachments.length > 0 && (
           <div className="border-t border-gray-200 pt-6 mt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Attachments
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Download className="w-5 h-5 text-blue-500" /> Attachments
             </h3>
             <ul className="space-y-2">
               {document.attachments.map((att, idx) => (
-                <li key={idx}>
+                <li key={idx} className="flex items-center gap-2">
+                  <Download className="w-4 h-4 text-blue-400" />
                   <a
                     href={att.url}
                     target="_blank"
