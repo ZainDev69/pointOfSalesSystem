@@ -59,18 +59,40 @@ export const deleteContact = createAsyncThunk(
     }
 );
 
+// Fetch contact types
+export const fetchContactTypes = createAsyncThunk(
+    "contacts/fetchContactTypes",
+    async (_, { rejectWithValue }) => {
+        try {
+            console.log("Contact Types loading...")
+            const res = await axios.get(`${API_URL}/contacts/types`, { withCredentials: true });
+            console.log("Contact Types fetched")
+            return res.data.data;
+        } catch (error) {
+            console.error('Error in fetchContactTypes:', error);
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
 const contactsSlice = createSlice({
     name: "contacts",
     initialState: {
         items: [],
         loading: false,
         error: null,
+        contactTypes: [],
+        contactTypesLoading: false,
+        contactTypesError: null,
     },
     reducers: {
         clearContacts: (state) => {
             state.items = [];
             state.loading = false;
             state.error = null;
+            state.contactTypes = [];
+            state.contactTypesLoading = false;
+            state.contactTypesError = null;
         },
     },
     extraReducers: (builder) => {
@@ -96,6 +118,18 @@ const contactsSlice = createSlice({
             })
             .addCase(deleteContact.fulfilled, (state, action) => {
                 state.items = state.items.filter((c) => c._id !== action.payload);
+            })
+            .addCase(fetchContactTypes.pending, (state) => {
+                state.contactTypesLoading = true;
+                state.contactTypesError = null;
+            })
+            .addCase(fetchContactTypes.fulfilled, (state, action) => {
+                state.contactTypesLoading = false;
+                state.contactTypes = action.payload;
+            })
+            .addCase(fetchContactTypes.rejected, (state, action) => {
+                state.contactTypesLoading = false;
+                state.contactTypesError = action.error.message;
             });
     },
 });

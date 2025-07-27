@@ -24,6 +24,8 @@ import { clearVisitSchedules } from "../../../components/redux/slice/visitSchedu
 import { clearCarePlanDocuments } from "../../../components/redux/slice/carePlanDocuments";
 import { clearActivityLogs } from "../../../components/redux/slice/activityLogs";
 import { HeaderTab } from "../ClientComponent/HeaderTab";
+import { CommunicationTab } from "../Communication/CommunicationTab";
+import { MessageSquare } from "lucide-react";
 
 export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
   const [activeTab, setActiveTab] = useState("overview");
@@ -50,7 +52,7 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
   return (
     <div className="space-y-6">
       {/* Client header Tab */}
-      <HeaderTab client={client} onBack={onBack} />
+      <HeaderTab client={client} onBack={onBack} setActiveTab={setActiveTab} />
 
       {/* Navigation Tabs */}
       <NavTabs activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -69,14 +71,24 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
       {activeTab === "contacts" && <ContactTab client={client} />}
 
       {activeTab === "risk-assessments" && (
-        <RiskAssessmentManager clientId={client._id} />
+        <RiskAssessmentManager
+          clientId={client._id}
+          clientName={
+            client?.personalDetails.fullName
+              ? `${client.personalDetails.fullName}`
+              : "Unknown Client"
+          }
+        />
       )}
 
       {activeTab === "care-plan" && <CarePlanManager client={client} />}
       {activeTab === "visits" && <VisitScheduleManager clientId={client._id} />}
 
-      {/* Show Spinner for documents tab if loading */}
       {activeTab === "documents" && <DocumentationManager client={client} />}
+
+      {activeTab === "communications" && (
+        <CommunicationTab clientId={client._id} />
+      )}
 
       {activeTab === "compliance" && (
         <ComplianceTracker client={client} compliance={client.compliance} />

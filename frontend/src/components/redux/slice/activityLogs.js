@@ -4,10 +4,16 @@ import { API_URL } from '../../../main';
 
 export const fetchActivityLogs = createAsyncThunk(
     'activityLogs/fetchActivityLogs',
-    async (clientId, { rejectWithValue }) => {
+    async ({ clientId, page = 1, limit = 10, date, user }, { rejectWithValue }) => {
         try {
-            const res = await axios.get(`${API_URL}/activity-logs/client/${clientId}`);
-            return res.data.data;
+            let url = `${API_URL}/activity-logs/client/${clientId}?page=${page}&limit=${limit}`;
+
+            // Add filter parameters to URL
+            if (date) url += `&date=${date}`;
+            if (user) url += `&user=${encodeURIComponent(user)}`;
+
+            const res = await axios.get(url);
+            return res.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || error.message);
         }
@@ -44,11 +50,17 @@ const activityLogsSlice = createSlice({
         logs: [],
         loading: false,
         error: null,
+        total: 0,
+        page: 1,
+        pages: 1,
     }, reducers: {
         clearActivityLogs: (state) => {
             state.logs = [];
             state.loading = false;
             state.error = null;
+            state.total = 0;
+            state.page = 1;
+            state.pages = 1;
         },
     },
     extraReducers: (builder) => {
@@ -59,7 +71,10 @@ const activityLogsSlice = createSlice({
             })
             .addCase(fetchActivityLogs.fulfilled, (state, action) => {
                 state.loading = false;
-                state.logs = action.payload;
+                state.logs = action.payload.data;
+                state.total = action.payload.total;
+                state.page = action.payload.page;
+                state.pages = action.payload.pages;
             })
             .addCase(fetchActivityLogs.rejected, (state, action) => {
                 state.loading = false;

@@ -14,8 +14,43 @@ exports.createActivityLog = async (req, res, next) => {
 exports.getActivityLogsByClient = async (req, res, next) => {
     try {
         const { clientId } = req.params;
-        const logs = await ActivityLog.find({ client: clientId }).sort({ date: -1 });
-        res.status(200).json({ status: 'Success', data: logs });
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const skip = (page - 1) * limit;
+
+        // Build query with filters
+        const query = { client: clientId };
+
+        // Date filter - filter by specific date
+        if (req.query.date) {
+            const filterDate = new Date(req.query.date);
+            const nextDate = new Date(filterDate);
+            nextDate.setDate(nextDate.getDate() + 1);
+
+            query.date = {
+                $gte: filterDate,
+                $lt: nextDate
+            };
+        }
+
+        // User filter
+        if (req.query.user) {
+            query.user = { $regex: req.query.user, $options: 'i' };
+        }
+
+        const total = await ActivityLog.countDocuments(query);
+        const logs = await ActivityLog.find(query)
+            .sort({ date: -1 })
+            .skip(skip)
+            .limit(limit);
+        res.status(200).json({
+            status: 'Success',
+            total,
+            page,
+            pages: Math.ceil(total / limit),
+            results: logs.length,
+            data: logs
+        });
     } catch (err) {
         res.status(400).json({ status: 'Fail', message: err.message });
     }

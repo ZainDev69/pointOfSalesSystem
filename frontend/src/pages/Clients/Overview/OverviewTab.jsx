@@ -1,18 +1,51 @@
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchContacts } from "../../../components/redux/slice/contacts";
 import {
-  User,
-  FileText,
-  Heart,
-  Shield,
-  Users,
   Calendar,
-  Mail,
   MapPin,
   Phone,
-  TrendingUp,
+  Mail,
+  Heart,
+  User,
+  Shield,
+  Users,
+  Activity,
+  Clock,
 } from "lucide-react";
-import { useSelector } from "react-redux";
+
 export function OverviewTab({ client }) {
-  const contacts = useSelector((state) => state.contacts.items) || [];
+  const dispatch = useDispatch();
+  const { items: contacts } = useSelector((state) => state.contacts);
+  const [emergencyContact, setEmergencyContact] = useState(null);
+
+  useEffect(() => {
+    if (client?._id) {
+      dispatch(fetchContacts(client._id));
+    }
+  }, [dispatch, client?._id]);
+
+  // Find emergency contact from family contacts
+  useEffect(() => {
+    if (contacts && contacts.length > 0) {
+      // First try to find a family contact with canMakeDecisions
+      let contact = contacts.find(
+        (c) => c.contactType === "family" && c.canMakeDecisions
+      );
+
+      // If not found, get the first family contact
+      if (!contact) {
+        contact = contacts.find((c) => c.contactType === "family");
+      }
+
+      // If still not found, get the first active contact
+      if (!contact) {
+        contact = contacts.find((c) => c.status === "active");
+      }
+
+      setEmergencyContact(contact);
+    }
+  }, [contacts]);
 
   return (
     <div className="space-y-6">
@@ -153,7 +186,7 @@ export function OverviewTab({ client }) {
             <div className="flex items-center space-x-2 mb-4">
               <Heart className="w-5 h-5 text-red-500" />
               <h3 className="text-lg font-semibold text-gray-900">
-                Next of Kin
+                Emergency Contact
               </h3>
             </div>
 
@@ -161,7 +194,7 @@ export function OverviewTab({ client }) {
               <div>
                 <p className="text-sm font-medium text-gray-500">Name</p>
                 <p className="text-gray-900">
-                  {client.nextOfKin.name || "Not Specified"}
+                  {emergencyContact?.name || "Not Specified"}
                 </p>
               </div>
 
@@ -170,26 +203,26 @@ export function OverviewTab({ client }) {
                   Relationship
                 </p>
                 <p className="text-gray-900">
-                  {client.nextOfKin.relationship || "Not Specified"}
+                  {emergencyContact?.relationship || "Not Specified"}
                 </p>
               </div>
 
               <div>
                 <p className="text-sm font-medium text-gray-500">Phone</p>
                 <p className="text-gray-900">
-                  {client.nextOfKin.phone || "Not Specified"}
+                  {emergencyContact?.phone || "Not Specified"}
                 </p>
               </div>
 
               <div className="flex items-center space-x-4 pt-2">
-                {client.nextOfKin.hasLegalAuthority && (
+                {emergencyContact?.canMakeDecisions && (
                   <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                    Legal Authority
+                    Can Make Decisions
                   </span>
                 )}
-                {client.nextOfKin.powerOfAttorney && (
+                {emergencyContact?.consentToContact && (
                   <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                    Power of Attorney
+                    Consent to Contact
                   </span>
                 )}
               </div>
@@ -214,48 +247,18 @@ export function OverviewTab({ client }) {
               </div>
 
               <div>
-                <p className="text-sm font-medium text-gray-500">Practice</p>
+                <p className="text-sm font-medium text-gray-500">Surgery</p>
                 <p className="text-gray-900">
-                  {client.healthcareContacts?.gp?.organization ||
-                    "Not Specified"}
+                  {client.healthcareContacts?.surgery?.name || "Not Specified"}
                 </p>
               </div>
 
               <div>
                 <p className="text-sm font-medium text-gray-500">Phone</p>
                 <p className="text-gray-900">
-                  {client.healthcareContacts?.gp?.phone || "Not Specified"}
+                  {client.healthcareContacts?.surgery?.phone || "Not Specified"}
                 </p>
               </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <TrendingUp className="w-5 h-5 text-green-500" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                Quick Actions
-              </h3>
-            </div>
-
-            <div className="space-y-3">
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center space-x-2 hover:shadow-md">
-                <Calendar className="w-4 h-4" />
-                <span>Schedule Visit</span>
-              </button>
-              <button className="w-full bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center space-x-2 hover:shadow-md">
-                <Shield className="w-4 h-4" />
-                <span>Update Care Plan</span>
-              </button>
-              <button className="w-full bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center space-x-2 hover:shadow-md">
-                <FileText className="w-4 h-4" />
-                <span>Generate Report</span>
-              </button>
-              <button className="w-full bg-gray-600 hover:bg-gray-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center space-x-2 hover:shadow-md">
-                <Users className="w-4 h-4" />
-                <span>Contact Family</span>
-              </button>
             </div>
           </div>
         </div>

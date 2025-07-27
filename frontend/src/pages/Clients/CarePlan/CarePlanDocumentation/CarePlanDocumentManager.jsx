@@ -7,7 +7,7 @@ import {
   updateCarePlanDocument,
   deleteCarePlanDocument,
   uploadCarePlanAttachment,
-} from "../../../components/redux/slice/carePlanDocuments";
+} from "../../../../components/redux/slice/carePlanDocuments";
 import { CarePlanDocumentForm } from "./CarePlanDocumentForm";
 import toast from "react-hot-toast";
 

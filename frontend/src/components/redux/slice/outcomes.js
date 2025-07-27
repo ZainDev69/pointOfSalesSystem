@@ -92,18 +92,115 @@ export const addOutcomeProgress = createAsyncThunk(
     }
 );
 
+export const fetchOutcomeOptions = createAsyncThunk(
+    'outcomes/fetchOutcomeOptions',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`${API_URL}/outcomes/options`);
+            const data = await response.json();
+            return data.data;
+        } catch (error) {
+            console.error('Error in fetchOutcomeOptions:', error);
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+export const filterOutcomesByCategory = createAsyncThunk(
+    'outcomes/filterOutcomesByCategory',
+    async ({ carePlanId, category }, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes/filter/category?category=${category}`);
+            const data = await response.json();
+            return data.data;
+        } catch (error) {
+            console.error('Error in filterOutcomesByCategory:', error);
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+export const filterOutcomesByStatus = createAsyncThunk(
+    'outcomes/filterOutcomesByStatus',
+    async ({ carePlanId, status }, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes/filter/status?status=${status}`);
+            const data = await response.json();
+            return data.data;
+        } catch (error) {
+            console.error('Error in filterOutcomesByStatus:', error);
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+export const filterOutcomes = createAsyncThunk(
+    'outcomes/filterOutcomes',
+    async ({ carePlanId, filters }, { rejectWithValue }) => {
+        try {
+            const queryParams = new URLSearchParams(filters).toString();
+            const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes/filter?${queryParams}`);
+            const data = await response.json();
+            return data.data;
+        } catch (error) {
+            console.error('Error in filterOutcomes:', error);
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
 const outcomesSlice = createSlice({
     name: 'outcomes',
     initialState: {
         items: [],
         loading: false,
         error: null,
+        options: {
+            status: [],
+            priority: [],
+            category: []
+        },
+        optionsLoading: false,
+        optionsError: null,
+        filters: {
+            category: '',
+            status: '',
+            priority: ''
+        },
+        filteredItems: [],
+        isFiltered: false,
     },
     reducers: {
         clearOutcomes: (state) => {
             state.items = [];
             state.loading = false;
             state.error = null;
+        },
+        clearOutcomeOptions: (state) => {
+            state.options = {
+                status: [],
+                priority: [],
+                category: []
+            };
+            state.optionsLoading = false;
+            state.optionsError = null;
+        },
+        setFilter: (state, action) => {
+            const { filterType, value } = action.payload;
+            state.filters[filterType] = value;
+        },
+        clearFilters: (state) => {
+            state.filters = {
+                category: '',
+                status: '',
+                priority: ''
+            };
+            state.filteredItems = [];
+            state.isFiltered = false;
+        },
+        resetToOriginalItems: (state) => {
+            state.filteredItems = [];
+            state.isFiltered = false;
         },
     },
     extraReducers: (builder) => {
@@ -182,9 +279,68 @@ const outcomesSlice = createSlice({
             .addCase(addOutcomeProgress.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+            })
+
+            // Fetch outcome options
+            .addCase(fetchOutcomeOptions.pending, (state) => {
+                state.optionsLoading = true;
+                state.optionsError = null;
+            })
+            .addCase(fetchOutcomeOptions.fulfilled, (state, action) => {
+                state.optionsLoading = false;
+                state.options = action.payload;
+            })
+            .addCase(fetchOutcomeOptions.rejected, (state, action) => {
+                state.optionsLoading = false;
+                state.optionsError = action.error.message;
+            })
+
+            // Filter outcomes by category
+            .addCase(filterOutcomesByCategory.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(filterOutcomesByCategory.fulfilled, (state, action) => {
+                state.loading = false;
+                state.filteredItems = action.payload;
+                state.isFiltered = true;
+            })
+            .addCase(filterOutcomesByCategory.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+
+            // Filter outcomes by status
+            .addCase(filterOutcomesByStatus.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(filterOutcomesByStatus.fulfilled, (state, action) => {
+                state.loading = false;
+                state.filteredItems = action.payload;
+                state.isFiltered = true;
+            })
+            .addCase(filterOutcomesByStatus.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+
+            // Filter outcomes by multiple criteria
+            .addCase(filterOutcomes.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(filterOutcomes.fulfilled, (state, action) => {
+                state.loading = false;
+                state.filteredItems = action.payload;
+                state.isFiltered = true;
+            })
+            .addCase(filterOutcomes.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
             });
     },
 });
 
-export const { clearOutcomes } = outcomesSlice.actions;
+export const { clearOutcomes, clearOutcomeOptions, setFilter, clearFilters, resetToOriginalItems } = outcomesSlice.actions;
 export default outcomesSlice.reducer; 

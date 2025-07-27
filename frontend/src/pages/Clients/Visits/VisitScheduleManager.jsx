@@ -19,7 +19,6 @@ import {
   updateVisit,
   deleteVisit,
 } from "../../../components/redux/slice/visitSchedules";
-import toast from "react-hot-toast";
 
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
@@ -342,23 +341,49 @@ export function VisitScheduleManager({ clientId }) {
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="relative">
-          <Calendar className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="pl-9 pr-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      {/* View Toggle and Filter */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Calendar className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="pl-9 pr-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">All Visits</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="missed">Missed</option>
+            </select>
+          </div>
+        </div>
+
+        {/* View Toggle Buttons */}
+        <div className="flex items-center bg-gray-100 rounded-lg p-1">
+          <button
+            onClick={() => setView("list")}
+            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+              view === "list"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
           >
-            <option value="all">All Visits</option>
-            <option value="scheduled">Scheduled</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="in-progress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="missed">Missed</option>
-          </select>
+            List View
+          </button>
+          <button
+            onClick={() => setView("calendar")}
+            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+              view === "calendar"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Calendar View
+          </button>
         </div>
       </div>
 
@@ -507,34 +532,69 @@ export function VisitScheduleManager({ clientId }) {
       {/* Calendar View */}
       {view === "calendar" && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}
+                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+              <h3 className="text-xl font-semibold text-gray-900">
+                {calendarMonth.toLocaleString("default", { month: "long" })}{" "}
+                {year}
+              </h3>
+              <button
+                onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}
+                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
+            </div>
             <button
-              onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}
-              className="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200"
+              onClick={() => setCalendarMonth(new Date())}
+              className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
             >
-              &lt;
-            </button>
-            <h3 className="text-lg font-medium text-gray-900">
-              {calendarMonth.toLocaleString("default", { month: "long" })}{" "}
-              {year}
-            </h3>
-            <button
-              onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}
-              className="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200"
-            >
-              &gt;
+              Today
             </button>
           </div>
-          <div className="grid grid-cols-7 gap-2 mb-4">
+          <div className="grid grid-cols-7 gap-1 mb-6">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-              <div key={d} className="text-center font-semibold text-gray-500">
+              <div
+                key={d}
+                className="text-center font-semibold text-gray-500 py-2"
+              >
                 {d}
               </div>
             ))}
             {Array(firstDayOfWeek)
               .fill(null)
               .map((_, idx) => (
-                <div key={"empty-" + idx}></div>
+                <div key={"empty-" + idx} className="h-16"></div>
               ))}
             {Array(daysInMonth)
               .fill(null)
@@ -545,89 +605,148 @@ export function VisitScheduleManager({ clientId }) {
                   month === today.getMonth() &&
                   day === today.getDate();
                 const hasVisits = !!visitsByDay[day];
+                const isSelected = selectedDay === day;
+
                 return (
                   <button
                     key={day}
                     onClick={() => {
-                      const date = new Date(year, month, day);
-                      if (date.getDay() === 0) {
-                        toast.error(
-                          "Visits cannot be scheduled on Sundays. Please select a different day."
-                        );
-                        return;
-                      }
                       setSelectedDay(day);
                     }}
-                    className={`h-12 w-full rounded-lg flex flex-col items-center justify-center border transition-colors
-                      ${isToday ? "border-blue-500" : "border-gray-200"}
-                      ${selectedDay === day ? "bg-blue-100" : "bg-white"}
-                      ${hasVisits ? "ring-2 ring-green-300" : ""}
+                    className={`h-16 w-full rounded-lg flex flex-col items-center justify-center border transition-all duration-200 hover:shadow-md
                       ${
-                        new Date(year, month, day).getDay() === 0
-                          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                          : ""
+                        isToday
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200"
                       }
+                      ${
+                        isSelected
+                          ? "bg-blue-100 border-blue-600 shadow-md"
+                          : "bg-white hover:bg-gray-50"
+                      }
+                      ${hasVisits ? "ring-2 ring-green-300" : ""}
                     `}
-                    disabled={new Date(year, month, day).getDay() === 0}
                   >
-                    <span className="font-bold">{day}</span>
+                    <span
+                      className={`font-bold ${isToday ? "text-blue-700" : ""}`}
+                    >
+                      {day}
+                    </span>
                     {hasVisits && (
-                      <span className="text-xs text-green-600 font-semibold">
-                        {visitsByDay[day].length} visit
-                        {visitsByDay[day].length > 1 ? "s" : ""}
-                      </span>
+                      <div className="flex flex-col items-center mt-1">
+                        <span className="text-xs text-green-600 font-semibold">
+                          {visitsByDay[day].length} visit
+                          {visitsByDay[day].length > 1 ? "s" : ""}
+                        </span>
+                        <div className="flex space-x-1 mt-1">
+                          {visitsByDay[day]
+                            .slice(0, 3)
+                            .map((visit, visitIdx) => (
+                              <div
+                                key={visitIdx}
+                                className={`w-1 h-1 rounded-full ${
+                                  visit.status === "completed"
+                                    ? "bg-green-500"
+                                    : visit.status === "cancelled"
+                                    ? "bg-red-500"
+                                    : visit.status === "in-progress"
+                                    ? "bg-yellow-500"
+                                    : "bg-blue-500"
+                                }`}
+                              />
+                            ))}
+                        </div>
+                      </div>
                     )}
                   </button>
                 );
               })}
           </div>
-          <div>
-            <h4 className="text-md font-semibold mb-2">
-              Visits on{" "}
-              {calendarMonth.toLocaleString("default", { month: "long" })}{" "}
-              {selectedDay}, {year}
-            </h4>
+          <div className="border-t border-gray-200 pt-6">
+            <div className="mb-4">
+              <h4 className="text-lg font-semibold text-gray-900">
+                Visits on{" "}
+                {calendarMonth.toLocaleString("default", { month: "long" })}{" "}
+                {selectedDay}, {year}
+              </h4>
+            </div>
+
             {selectedDateVisits.length === 0 ? (
-              <div className="text-gray-500">
-                No visits scheduled for this day.
+              <div className="text-center py-8">
+                <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <h5 className="text-lg font-medium text-gray-900 mb-2">
+                  No visits scheduled
+                </h5>
+                <p className="text-gray-600 mb-4">
+                  No visits are scheduled for this date.
+                </p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {selectedDateVisits.map((visit) => (
                   <div
                     key={visit._id}
-                    className="p-3 bg-gray-50 rounded-lg flex items-center justify-between"
+                    className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
                   >
-                    <div>
-                      <span className="font-semibold text-blue-700">
-                        {visit.startTime} - {visit.endTime}
-                      </span>{" "}
-                      <span className="text-gray-700">
-                        {visit.assignedCarer}
-                      </span>
-                      <span
-                        className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          visit.status
-                        )}`}
-                      >
-                        {visit.status}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleEditVisit(visit)}
-                        className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit Visit"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteVisit(visit._id)}
-                        className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete Visit"
-                      >
-                        <Trash className="w-4 h-4" />
-                      </button>
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <span className="font-semibold text-blue-700 text-lg">
+                            {visit.startTime} - {visit.endTime}
+                          </span>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              visit.status
+                            )}`}
+                          >
+                            {visit.status}
+                          </span>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
+                              visit.priority
+                            )}`}
+                          >
+                            {visit.priority}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                          <div className="flex items-center">
+                            <User className="w-4 h-4 mr-1" />
+                            <span>{visit.assignedCarer || "Unassigned"}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            <span>{visit.duration} minutes</span>
+                          </div>
+                          <div className="flex items-center">
+                            <AlertTriangle className="w-4 h-4 mr-1" />
+                            <span>{visit.tasks?.length || 0} tasks</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => setDetailModalVisit(visit)}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleEditVisit(visit)}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit Visit"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteVisit(visit._id)}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete Visit"
+                        >
+                          <Trash className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

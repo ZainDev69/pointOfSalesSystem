@@ -1,3 +1,4 @@
+import { FileText } from "lucide-react";
 export function DailyLivingTab({ activeCarePlan }) {
   return (
     <div className="space-y-6">

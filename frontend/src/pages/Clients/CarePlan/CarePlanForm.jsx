@@ -38,14 +38,21 @@ export function CarePlanForm({ carePlan, onBack, onSave }) {
     return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
   };
 
+  // Function to calculate review date (6 months from assessment date)
+  const calculateReviewDate = (assessmentDate) => {
+    const date = new Date(assessmentDate);
+    date.setMonth(date.getMonth() + 6);
+    return formatDateTimeLocal(date);
+  };
+
   const [formData, setFormData] = useState({
     assessmentDate: formatDateForInput(carePlan?.assessmentDate),
     assessedBy: carePlan?.assessedBy || "",
     approvedBy: carePlan?.approvedBy || "",
     startDate: formatDateForInput(carePlan?.startDate),
     reviewDate: isEditing
-      ? formatDateTimeLocal(new Date())
-      : formatDateTimeLocal(carePlan?.reviewDate),
+      ? formatDateTimeLocal(carePlan?.reviewDate)
+      : calculateReviewDate(formatDateForInput(carePlan?.assessmentDate)),
     status: carePlan?.status || "draft",
     personalCare: {
       washing: {
@@ -117,15 +124,24 @@ export function CarePlanForm({ carePlan, onBack, onSave }) {
         notes: carePlan?.dailyLiving?.cooking?.notes || "",
       },
     },
-    outcomes: carePlan?.outcomes || [],
+
     version: carePlan?.version || 1,
   });
+
+  // Update review date when assessment date changes (only for new care plans)
+  React.useEffect(() => {
+    if (!isEditing && formData.assessmentDate) {
+      setFormData((prev) => ({
+        ...prev,
+        reviewDate: calculateReviewDate(formData.assessmentDate),
+      }));
+    }
+  }, [formData.assessmentDate, isEditing]);
 
   const tabs = [
     { id: "overview", label: "Overview", icon: Shield },
     { id: "personal-care", label: "Personal Care", icon: User },
     { id: "daily-living", label: "Daily Living", icon: Heart },
-    { id: "outcomes", label: "Outcomes", icon: Target },
   ];
 
   const handleSubmit = (e) => {
@@ -141,39 +157,6 @@ export function CarePlanForm({ carePlan, onBack, onSave }) {
     };
 
     onSave(carePlanData);
-  };
-
-  const addOutcome = () => {
-    const newOutcome = {
-      id: Date.now().toString(),
-      goal: "",
-      measurable: "",
-      achievable: true,
-      timeframe: "",
-      progress: [],
-      status: "not-started",
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      outcomes: [...prev.outcomes, newOutcome],
-    }));
-  };
-
-  const updateOutcome = (index, field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      outcomes: prev.outcomes.map((outcome, i) =>
-        i === index ? { ...outcome, [field]: value } : outcome
-      ),
-    }));
-  };
-
-  const removeOutcome = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      outcomes: prev.outcomes.filter((_, i) => i !== index),
-    }));
   };
 
   const updateCareTask = (section, task, field, value) => {
@@ -484,12 +467,7 @@ export function CarePlanForm({ carePlan, onBack, onSave }) {
                         reviewDate: e.target.value,
                       }))
                     }
-                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      isEditing
-                        ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                        : ""
-                    }`}
-                    disabled={isEditing}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
 
@@ -576,140 +554,6 @@ export function CarePlanForm({ carePlan, onBack, onSave }) {
                   "dailyLiving",
                   "cooking",
                   "Cooking & Meal Preparation"
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Outcomes Tab */}
-        {activeTab === "outcomes" && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-2">
-                  <Target className="w-5 h-5 text-gray-400" />
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Care Outcomes
-                  </h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={addOutcome}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center space-x-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Outcome</span>
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {formData.outcomes.map((outcome, index) => (
-                  <div
-                    key={outcome.id}
-                    className="border border-gray-200 rounded-lg p-4"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Goal
-                        </label>
-                        <input
-                          type="text"
-                          value={outcome.goal}
-                          onChange={(e) =>
-                            updateOutcome(index, "goal", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="What do we want to achieve?"
-                        />
-                      </div>
-
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Measurable Outcome
-                        </label>
-                        <textarea
-                          value={outcome.measurable}
-                          onChange={(e) =>
-                            updateOutcome(index, "measurable", e.target.value)
-                          }
-                          rows={2}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="How will we measure success?"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Timeframe
-                        </label>
-                        <input
-                          type="text"
-                          value={outcome.timeframe}
-                          onChange={(e) =>
-                            updateOutcome(index, "timeframe", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="e.g., 3 months, 6 weeks"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Status
-                        </label>
-                        <select
-                          value={outcome.status}
-                          onChange={(e) =>
-                            updateOutcome(index, "status", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="not-started">Not Started</option>
-                          <option value="in-progress">In Progress</option>
-                          <option value="achieved">Achieved</option>
-                          <option value="not-achieved">Not Achieved</option>
-                          <option value="modified">Modified</option>
-                        </select>
-                      </div>
-
-                      <div className="md:col-span-2 flex items-center">
-                        <input
-                          type="checkbox"
-                          id={`outcome-${index}-achievable`}
-                          checked={outcome.achievable}
-                          onChange={(e) =>
-                            updateOutcome(index, "achievable", e.target.checked)
-                          }
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <label
-                          htmlFor={`outcome-${index}-achievable`}
-                          className="ml-2 block text-sm text-gray-900"
-                        >
-                          This outcome is achievable and realistic
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end mt-3">
-                      <button
-                        type="button"
-                        onClick={() => removeOutcome(index)}
-                        className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center space-x-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        <span>Remove</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-
-                {formData.outcomes.length === 0 && (
-                  <p className="text-gray-500 text-center py-4">
-                    No outcomes defined yet. Click "Add Outcome" to get started.
-                  </p>
                 )}
               </div>
             </div>

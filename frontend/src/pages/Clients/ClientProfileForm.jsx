@@ -55,14 +55,6 @@ export function ClientProfileForm({ client, onBack, onSave }) {
         client?.contactInformation.preferredContactMethod || "",
       bestTimeToContact: client?.contactInformation.bestTimeToContact || "",
     },
-    nextOfKin: {
-      name: client?.nextOfKin?.name || "",
-      relationship: client?.nextOfKin?.relationship || "",
-      phone: client?.nextOfKin?.phone || "",
-      email: client?.nextOfKin?.email || "",
-      hasLegalAuthority: client?.nextOfKin?.hasLegalAuthority || false,
-      powerOfAttorney: client?.nextOfKin?.powerOfAttorney || false,
-    },
     consent: {
       photoConsent: client?.consent.photoConsent || false,
       dataProcessingConsent: client?.consent.dataProcessingConsent || false,
@@ -76,23 +68,13 @@ export function ClientProfileForm({ client, onBack, onSave }) {
         phone: client?.healthcareContacts?.gp?.phone || "",
         email: client?.healthcareContacts?.gp?.email || "",
       },
-      practice: {
-        name: client?.healthcareContacts?.practice?.name || "",
-        phone: client?.healthcareContacts?.practice?.phone || "",
-        email: client?.healthcareContacts?.practice?.email || "",
+      surgery: {
+        name: client?.healthcareContacts?.surgery?.name || "",
+        phone: client?.healthcareContacts?.surgery?.phone || "",
+        email: client?.healthcareContacts?.surgery?.email || "",
         outOfHoursNumber:
-          client?.healthcareContacts?.practice?.outOfHoursNumber || "",
-        address: {
-          line1: client?.healthcareContacts?.practice?.address?.line1 || "",
-          line2: client?.healthcareContacts?.practice?.address?.line2 || "",
-          city: client?.healthcareContacts?.practice?.address?.city || "",
-          county: client?.healthcareContacts?.practice?.address?.county || "",
-          postcode:
-            client?.healthcareContacts?.practice?.address?.postcode || "",
-          country:
-            client?.healthcareContacts?.practice?.address?.country ||
-            "United Kingdom",
-        },
+          client?.healthcareContacts?.surgery?.outOfHoursNumber || "",
+        address: client?.healthcareContacts?.surgery?.address || "",
       },
     },
     medicalInformation: {
@@ -803,57 +785,6 @@ export function ClientProfileForm({ client, onBack, onSave }) {
               </div>
             </Section>
 
-            {/* Next Of Kin Information */}
-
-            <Section
-              title="Next of Kin"
-              icon={<User className="w-5 h-5 text-gray-400" />}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Name*"
-                  required
-                  value={formData.nextOfKin.name}
-                  onChange={(val) => handleChange("nextOfKin", "name", val)}
-                />
-                <Input
-                  label="Relationship*"
-                  required
-                  value={formData.nextOfKin.relationship}
-                  onChange={(val) =>
-                    handleChange("nextOfKin", "relationship", val)
-                  }
-                />
-                <Input
-                  label="Phone*"
-                  required
-                  value={formData.nextOfKin.phone}
-                  onChange={(val) => handleChange("nextOfKin", "phone", val)}
-                />
-                <Input
-                  label="Email"
-                  value={formData.nextOfKin.email}
-                  onChange={(val) => handleChange("nextOfKin", "email", val)}
-                />
-
-                <div className="md:col-span-2 space-y-3">
-                  <Checkbox
-                    label="Has legal authority to make decisions"
-                    checked={formData.nextOfKin.hasLegalAuthority}
-                    onChange={(val) =>
-                      handleChange("nextOfKin", "hasLegalAuthority", val)
-                    }
-                  />
-                  <Checkbox
-                    label="Has Power of Attorney"
-                    checked={formData.nextOfKin.powerOfAttorney}
-                    onChange={(val) =>
-                      handleChange("nextOfKin", "powerOfAttorney", val)
-                    }
-                  />
-                </div>
-              </div>
-            </Section>
             {/* Consent & Data Processing */}
             <Section
               title="Consent & Data Processing"
@@ -914,17 +845,17 @@ Consent to photography for care documentation"
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Practice Name *
+                    Surgery Name *
                   </label>
                   <input
                     type="text"
                     required
-                    value={formData.healthcareContacts.gp.organization}
+                    value={formData.healthcareContacts.surgery.name}
                     onChange={(e) =>
                       handleNestedChange(
                         "healthcareContacts",
-                        "gp",
-                        "organization",
+                        "surgery",
+                        "name",
                         e.target.value
                       )
                     }
@@ -973,24 +904,24 @@ Consent to photography for care documentation"
               </div>
             </div>
 
-            {/* Practice Information */}
+            {/* Surgery Information */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Practice Information
+                Surgery Information
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Practice Phone
+                    Surgery Phone
                   </label>
                   <input
                     type="tel"
-                    value={formData.healthcareContacts.practice.phone}
+                    value={formData.healthcareContacts.surgery.phone}
                     onChange={(e) =>
                       handleNestedChange(
                         "healthcareContacts",
-                        "practice",
+                        "surgery",
                         "phone",
                         e.target.value
                       )
@@ -1005,13 +936,11 @@ Consent to photography for care documentation"
                   </label>
                   <input
                     type="tel"
-                    value={
-                      formData.healthcareContacts.practice.outOfHoursNumber
-                    }
+                    value={formData.healthcareContacts.surgery.outOfHoursNumber}
                     onChange={(e) =>
                       handleNestedChange(
                         "healthcareContacts",
-                        "practice",
+                        "surgery",
                         "outOfHoursNumber",
                         e.target.value
                       )
@@ -1022,20 +951,17 @@ Consent to photography for care documentation"
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Practice Address
+                    Surgery Address
                   </label>
                   <input
                     type="text"
-                    value={formData.healthcareContacts.practice.address?.line1}
+                    value={formData.healthcareContacts.surgery.address}
                     onChange={(e) =>
                       handleNestedChange(
                         "healthcareContacts",
-                        "practice",
+                        "surgery",
                         "address",
-                        {
-                          ...formData.healthcareContacts.practice.address,
-                          line1: e.target.value,
-                        }
+                        e.target.value
                       )
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"

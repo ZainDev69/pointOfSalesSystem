@@ -37,6 +37,7 @@ export function DocumentationManager({ client }) {
   const [showArchived, setShowArchived] = useState(false);
 
   const documents = useSelector((state) => state.documents.items) || [];
+  const documentsLoading = useSelector((state) => state.documents.loading);
   const dispatch = useDispatch();
 
   const documentTypes = [
@@ -256,6 +257,16 @@ export function DocumentationManager({ client }) {
         onBack={() => setView("list")}
         onEdit={() => setView("form")}
       />
+    );
+  }
+
+  if (documentsLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <span className="text-blue-600 text-lg font-semibold">
+          Loading documents...
+        </span>
+      </div>
     );
   }
 

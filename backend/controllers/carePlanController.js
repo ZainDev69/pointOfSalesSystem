@@ -343,4 +343,84 @@ exports.addOutcomeProgress = catchAsync(async (req, res, next) => {
             outcome
         }
     });
-}); 
+});
+
+// Get outcome options for select dropdowns
+exports.getOutcomeOptions = catchAsync(async (req, res, next) => {
+    // Get the outcome schema to extract enum values
+    const Outcome = require('../models/outcomeModel');
+    const outcomeSchema = Outcome.schema;
+
+    const options = {
+        status: outcomeSchema.path('status').enumValues || ['in-progress', 'achieved', 'unachieved', 'modified'],
+        priority: outcomeSchema.path('priority').enumValues || ['low', 'medium', 'high'],
+        category: outcomeSchema.path('category').enumValues || ['personal-care', 'daily-living', 'mobility', 'nutrition', 'social', 'medical', 'other']
+    };
+
+    res.status(200).json({
+        status: 'Success',
+        data: options
+    });
+});
+
+// Filter outcomes by category
+exports.filterOutcomesByCategory = catchAsync(async (req, res, next) => {
+    const { carePlanId } = req.params;
+    const { category } = req.query;
+
+    if (!category) {
+        return next(new AppError('Category parameter is required', 400));
+    }
+
+    const outcomes = await Outcome.find({
+        carePlanId,
+        category: category
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+        status: 'Success',
+        results: outcomes.length,
+        data: outcomes
+    });
+});
+
+// Filter outcomes by status
+exports.filterOutcomesByStatus = catchAsync(async (req, res, next) => {
+    const { carePlanId } = req.params;
+    const { status } = req.query;
+
+    if (!status) {
+        return next(new AppError('Status parameter is required', 400));
+    }
+
+    const outcomes = await Outcome.find({
+        carePlanId,
+        status: status
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+        status: 'Success',
+        results: outcomes.length,
+        data: outcomes
+    });
+});
+
+// Filter outcomes by multiple criteria
+exports.filterOutcomes = catchAsync(async (req, res, next) => {
+    const { carePlanId } = req.params;
+    const { category, status, priority } = req.query;
+
+    const filterCriteria = { carePlanId };
+
+    if (category) filterCriteria.category = category;
+    if (status) filterCriteria.status = status;
+    if (priority) filterCriteria.priority = priority;
+
+    const outcomes = await Outcome.find(filterCriteria).sort({ createdAt: -1 });
+
+    res.status(200).json({
+        status: 'Success',
+        results: outcomes.length,
+        data: outcomes
+    });
+});

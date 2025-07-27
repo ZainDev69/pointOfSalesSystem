@@ -79,3 +79,9 @@ exports.deleteContact = async (req, res, next) => {
         next(err);
     }
 };
+
+exports.getContactTypes = (req, res) => {
+    // Get enum values from the model
+    const contactTypes = Contact.schema.path('contactType').enumValues;
+    res.status(200).json({ status: 'Success', data: contactTypes });
+};

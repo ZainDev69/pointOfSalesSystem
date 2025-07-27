@@ -40,15 +40,21 @@ export default function Clients() {
   const [showArchived, setShowArchived] = useState(false);
   const [sortField, setSortField] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
-
   const [currentPage, setCurrentPage] = useState(1);
   const clientsPerPage = 10;
 
   const dispatch = useDispatch();
   const clientData = useSelector((state) => state.client.clients) || [];
-  const isLoading = useSelector((state) => state.client.isLoading);
+  const isLoading = useSelector((state) => state.client.loading);
+  const totalClients = useSelector((state) => state.client.total);
+  const pages = useSelector((state) => state.client.pages);
 
-  const totalClients = clientData.length;
+  // Stats - calculate based on current filter state
+  const isPrivateClient = (client) => {
+    return client.ClientID && client.ClientID.startsWith("PVT");
+  };
+
+  // For stats, we want to show counts for non-archived clients only (regardless of current filter)
   const activeClients = clientData.filter(
     (c) => c.status?.toLowerCase() === "active" && !c.Archived
   ).length;
@@ -63,40 +69,54 @@ export default function Clients() {
     (c) =>
       c.personalDetails?.status?.toLowerCase() === "care home" && !c.Archived
   ).length;
-
-  // Check if client is private (has PVT prefix)
-  const isPrivateClient = (client) => {
-    return client.ClientID && client.ClientID.startsWith("PVT");
-  };
-
   const privateClients = clientData.filter(
     (c) => isPrivateClient(c) && !c.Archived
   ).length;
 
-  const confirmAction = ({ title, message, onConfirm }) => {
-    confirmAlert({
-      title,
-      message,
-      buttons: [
-        {
-          label: "Yes",
-          onClick: onConfirm,
-        },
-        {
-          label: "No",
-          onClick: () => {}, // do nothing
-        },
-      ],
-    });
+  // Build params for backend
+  const getBackendParams = () => {
+    const params = {
+      page: currentPage,
+      limit: clientsPerPage,
+    };
+    if (searchTerm) params.fullName = searchTerm;
+    if (filterStatus !== "all") {
+      if (filterStatus === "private") {
+        params.ClientID = "PVT"; // Custom handling, backend may need to support this
+      } else {
+        params.status = filterStatus;
+      }
+    }
+    if (showArchived) params.Archived = true;
+    else params.Archived = false;
+    // Sorting
+    if (sortField === "name")
+      params.sort =
+        sortDirection === "asc"
+          ? "personalDetails.fullName"
+          : "-personalDetails.fullName";
+    else if (sortField === "date")
+      params.sort = sortDirection === "asc" ? "createdAt" : "-createdAt";
+    return params;
   };
 
+  // Fetch clients from backend on filter/sort/page change
   useEffect(() => {
-    dispatch(clientList());
-  }, [dispatch]);
+    dispatch(clientList(getBackendParams()));
+  }, [
+    dispatch,
+    searchTerm,
+    filterStatus,
+    showArchived,
+    sortField,
+    sortDirection,
+    currentPage,
+  ]);
 
+  // Reset to first page on filter/search change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterStatus]);
+  }, [searchTerm, filterStatus, showArchived, sortField, sortDirection]);
 
   const handleAddClient = () => {
     setSelectedClient(null);
@@ -151,7 +171,7 @@ export default function Clients() {
         await dispatch(createClient(payload)).unwrap();
         toast.success("Client created successfully");
       }
-      dispatch(clientList());
+      dispatch(clientList(getBackendParams()));
       handleBackToList();
     } catch (err) {
       toast.error(
@@ -162,47 +182,22 @@ export default function Clients() {
     }
   };
 
-  const filteredClients = clientData.filter((client) => {
-    const matchesStatus =
-      filterStatus === "all"
-        ? true
-        : filterStatus === "private"
-        ? isPrivateClient(client)
-        : client.status?.toLowerCase() === filterStatus;
-
-    const search = searchTerm.toLowerCase();
-    const matchesSearch =
-      client.personalDetails.fullName?.toLowerCase().includes(search) ||
-      client.ClientID?.toLowerCase().includes(search) ||
-      client.contactInformation.primaryPhone?.toLowerCase().includes(search) ||
-      client.contactInformation.email?.toLowerCase().includes(search) ||
-      client.personalDetails.nhsNumber?.toLowerCase().includes(search);
-
-    const matchesArchive = showArchived ? client.Archived : !client.Archived;
-    return matchesStatus && matchesSearch && matchesArchive;
-  });
-
-  // Sorting logic
-  const sortedClients = [...filteredClients].sort((a, b) => {
-    let aValue, bValue;
-    if (sortField === "name") {
-      aValue = a?.personalDetails?.fullName?.toLowerCase() || "";
-      bValue = b?.personalDetails?.fullName?.toLowerCase() || "";
-    } else if (sortField === "date") {
-      // Use createdAt or dateAdded; fallback to a very old date if not present
-      aValue = new Date(a?.createdAt || a?.dateAdded || "1970-01-01");
-      bValue = new Date(b?.createdAt || b?.dateAdded || "1970-01-01");
-    }
-    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-    return 0;
-  });
-
-  const totalPages = Math.ceil(sortedClients.length / clientsPerPage);
-  const paginatedClients = sortedClients.slice(
-    (currentPage - 1) * clientsPerPage,
-    currentPage * clientsPerPage
-  );
+  const confirmAction = ({ title, message, onConfirm }) => {
+    confirmAlert({
+      title,
+      message,
+      buttons: [
+        {
+          label: "Yes",
+          onClick: onConfirm,
+        },
+        {
+          label: "No",
+          onClick: () => {}, // do nothing
+        },
+      ],
+    });
+  };
 
   const getStatusStyle = (status) => {
     const styles = {
@@ -504,14 +499,14 @@ export default function Clients() {
         ) : (
           <>
             <div className="divide-y divide-gray-200">
-              {paginatedClients.length === 0 ? (
+              {clientData.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   {showArchived
                     ? "No archived clients found."
                     : "No clients found."}
                 </div>
               ) : (
-                paginatedClients.map((client, index) => (
+                clientData.map((client, index) => (
                   <div
                     key={index}
                     className={`p-6 hover:bg-gray-50 transition-colors ${getBorderColor(
@@ -566,8 +561,8 @@ export default function Clients() {
                               {client.contactInformation?.primaryPhone}
                             </span>
                             <span>
-                              <strong>Email:</strong>{" "}
-                              {client.contactInformation?.email}
+                              <strong>Postcode:</strong>{" "}
+                              {client.addressInformation?.postCode}
                             </span>
                             <span>
                               <strong>NHS:</strong>{" "}
@@ -599,7 +594,11 @@ export default function Clients() {
                                 "Are you sure you want to delete this client?",
                               onConfirm: () => {
                                 dispatch(deleteClient(client._id))
-                                  .then(() => toast.success("Client deleted"))
+                                  .then(() => {
+                                    toast.success("Client deleted");
+                                    // Refetch client list to reflect the deletion
+                                    dispatch(clientList(getBackendParams()));
+                                  })
                                   .catch(() => toast.error("Delete failed"));
                               },
                             });
@@ -613,7 +612,11 @@ export default function Clients() {
                           <button
                             onClick={() => {
                               dispatch(archiveClient(client._id))
-                                .then(() => toast.success("Client archived"))
+                                .then(() => {
+                                  toast.success("Client archived");
+                                  // Refetch client list to reflect the new archive state
+                                  dispatch(clientList(getBackendParams()));
+                                })
                                 .catch(() => toast.error("Archive failed"));
                             }}
                             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
@@ -626,7 +629,11 @@ export default function Clients() {
                           <button
                             onClick={() => {
                               dispatch(unarchiveClient(client._id))
-                                .then(() => toast.success("Client unarchived"))
+                                .then(() => {
+                                  toast.success("Client unarchived");
+                                  // Refetch client list to reflect the new archive state
+                                  dispatch(clientList(getBackendParams()));
+                                })
                                 .catch(() => toast.error("Unarchive failed"));
                             }}
                             className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
@@ -643,9 +650,9 @@ export default function Clients() {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {pages > 1 && (
               <div className="flex justify-center mt-4 space-x-2 px-6 pb-6">
-                {Array.from({ length: totalPages }, (_, i) => (
+                {Array.from({ length: pages }, (_, i) => (
                   <button
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}

@@ -8,7 +8,7 @@ import visitSchedulesReducer from './slice/visitSchedules';
 import documentsReducer from "./slice/documents";
 import carePlanDocumentsReducer from "./slice/carePlanDocuments";
 import activityLogsReducer from './slice/activityLogs';
-
+import communicationsReducer from './slice/communications';
 const store = configureStore({
     reducer: {
         client: clientReducer,
@@ -20,6 +20,7 @@ const store = configureStore({
         documents: documentsReducer,
         carePlanDocuments: carePlanDocumentsReducer,
         activityLogs: activityLogsReducer,
+        communications: communicationsReducer,
     }
 });
 

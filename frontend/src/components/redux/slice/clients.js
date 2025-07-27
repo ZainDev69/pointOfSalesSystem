@@ -28,13 +28,14 @@ export const createClient = createAsyncThunk(
 
 export const clientList = createAsyncThunk(
     "clients/getClients",
-    async (_, { rejectWithValue }) => {
+    async (params = {}, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${API_URL}/clients`, { withCredentials: true });
-            return response.data.data;
-
+            // params: { page, limit, sort, fullName, status, ... }
+            const query = new URLSearchParams(params).toString();
+            const response = await axios.get(`${API_URL}/clients?${query}`, { withCredentials: true });
+            return response.data;
         } catch (error) {
-            return rejectWithValue({ message: error.response.data.message });
+            return rejectWithValue({ message: error.response?.data?.message || error.message });
         }
     }
 )
@@ -130,7 +131,10 @@ const initialState = {
     clients: [],
     client: null,
     loading: false,
-    error: null
+    error: null,
+    total: 0,
+    page: 1,
+    pages: 1
 }
 
 const clientSlice = createSlice({
@@ -144,7 +148,10 @@ const clientSlice = createSlice({
         })
             .addCase(clientList.fulfilled, (state, action) => {
                 state.loading = false;
-                state.clients = action.payload;
+                state.clients = action.payload.data;
+                state.total = action.payload.total;
+                state.page = action.payload.page;
+                state.pages = action.payload.pages;
             })
             .addCase(clientList.rejected, (state, action) => {
                 state.loading = false;

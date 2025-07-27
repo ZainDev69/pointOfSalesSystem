@@ -2,6 +2,20 @@ const RiskAssessment = require('../models/riskAssessmentModel');
 const Client = require('../models/clientModel');
 const ActivityLog = require('../models/activityLogModel');
 
+// Helper function to get enum values from schema
+const getEnumValues = (schema, path) => {
+    return schema.path(path).enumValues || [];
+};
+
+// Helper function to create option objects
+const createOptions = (values) => {
+    return values.map((value, index) => ({
+        value: value,
+        label: value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+        score: index + 1
+    }));
+};
+
 // Create a new risk assessment
 exports.createRiskAssessment = async (req, res) => {
     try {
@@ -73,4 +87,66 @@ exports.deleteRiskAssessment = async (req, res) => {
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }
+};
+
+exports.getRiskAssessmentTypes = (req, res) => {
+    const types = getEnumValues(RiskAssessment.schema, 'type');
+    const options = createOptions(types);
+    res.status(200).json({ status: 'Success', data: options });
+};
+
+// Get likelihood options
+exports.getLikelihoodOptions = (req, res) => {
+    const likelihoodValues = getEnumValues(RiskAssessment.schema.path('risks').schema, 'likelihood');
+    const options = createOptions(likelihoodValues);
+    res.status(200).json({ status: 'Success', data: options });
+};
+
+// Get severity options
+exports.getSeverityOptions = (req, res) => {
+    const severityValues = getEnumValues(RiskAssessment.schema.path('risks').schema, 'severity');
+    const options = createOptions(severityValues);
+    res.status(200).json({ status: 'Success', data: options });
+};
+
+// Get risk level options
+exports.getRiskLevelOptions = (req, res) => {
+    const riskLevelValues = getEnumValues(RiskAssessment.schema.path('risks').schema, 'riskLevel');
+    const options = createOptions(riskLevelValues);
+    res.status(200).json({ status: 'Success', data: options });
+};
+
+// Get overall risk options
+exports.getOverallRiskOptions = (req, res) => {
+    const overallRiskValues = getEnumValues(RiskAssessment.schema, 'overallRisk');
+    const options = createOptions(overallRiskValues);
+    res.status(200).json({ status: 'Success', data: options });
+};
+
+// Get assessment status options
+exports.getAssessmentStatusOptions = (req, res) => {
+    const statusValues = getEnumValues(RiskAssessment.schema, 'status');
+    const options = createOptions(statusValues);
+    res.status(200).json({ status: 'Success', data: options });
+};
+
+// Get control measure type options
+exports.getControlMeasureTypeOptions = (req, res) => {
+    const typeValues = getEnumValues(RiskAssessment.schema.path('controlMeasures').schema, 'type');
+    const options = createOptions(typeValues);
+    res.status(200).json({ status: 'Success', data: options });
+};
+
+// Get control measure status options
+exports.getControlMeasureStatusOptions = (req, res) => {
+    const statusValues = getEnumValues(RiskAssessment.schema.path('controlMeasures').schema, 'status');
+    const options = createOptions(statusValues);
+    res.status(200).json({ status: 'Success', data: options });
+};
+
+// Get control measure effectiveness options
+exports.getControlMeasureEffectivenessOptions = (req, res) => {
+    const effectivenessValues = getEnumValues(RiskAssessment.schema.path('controlMeasures').schema, 'effectiveness');
+    const options = createOptions(effectivenessValues);
+    res.status(200).json({ status: 'Success', data: options });
 }; 

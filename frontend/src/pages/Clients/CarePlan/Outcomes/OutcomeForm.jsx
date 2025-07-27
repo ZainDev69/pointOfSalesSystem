@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   ArrowLeft,
   Target,
@@ -9,20 +10,29 @@ import {
   Clock,
   FileText,
 } from "lucide-react";
+import { fetchOutcomeOptions } from "../../../../components/redux/slice/outcomes";
 
 export function OutcomeForm({ outcome, onBack, onSave }) {
+  const dispatch = useDispatch();
+  const { options, optionsLoading } = useSelector((state) => state.outcomes);
+
   const [formData, setFormData] = useState({
     goal: "",
     measurable: "",
     achievable: true,
     timeframe: "",
-    status: "draft",
+    status: "in-progress",
     priority: "medium",
     category: "other",
     notes: "",
   });
 
   const [errors, setErrors] = useState({});
+
+  // Fetch outcome options on component mount
+  useEffect(() => {
+    dispatch(fetchOutcomeOptions());
+  }, [dispatch]);
 
   useEffect(() => {
     if (outcome) {
@@ -32,7 +42,7 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
         achievable:
           outcome.achievable !== undefined ? outcome.achievable : true,
         timeframe: outcome.timeframe || "",
-        status: outcome.status || "draft",
+        status: outcome.status || "in-progress",
         priority: outcome.priority || "medium",
         category: outcome.category || "other",
         notes: outcome.notes || "",
@@ -81,28 +91,46 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
     }
   };
 
-  const statusOptions = [
-    { value: "draft", label: "Draft", icon: FileText },
-    { value: "achieved", label: "Achieved", icon: Target },
-    { value: "not-achieved", label: "Not Achieved", icon: X },
-    { value: "modified", label: "Modified", icon: FileText },
-  ];
+  // Helper function to format option labels
+  const formatOptionLabel = (value) => {
+    return value
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
 
-  const priorityOptions = [
-    { value: "low", label: "Low", color: "text-green-600" },
-    { value: "medium", label: "Medium", color: "text-yellow-600" },
-    { value: "high", label: "High", color: "text-red-600" },
-  ];
+  // Create options from fetched data
+  const statusOptions =
+    options.status?.map((status) => ({
+      value: status,
+      label: formatOptionLabel(status),
+      icon:
+        status === "in-progress"
+          ? Clock
+          : status === "achieved"
+          ? Target
+          : status === "unachieved"
+          ? X
+          : FileText,
+    })) || [];
 
-  const categoryOptions = [
-    { value: "personal-care", label: "Personal Care" },
-    { value: "daily-living", label: "Daily Living" },
-    { value: "mobility", label: "Mobility" },
-    { value: "nutrition", label: "Nutrition" },
-    { value: "social", label: "Social" },
-    { value: "medical", label: "Medical" },
-    { value: "other", label: "Other" },
-  ];
+  const priorityOptions =
+    options.priority?.map((priority) => ({
+      value: priority,
+      label: formatOptionLabel(priority),
+      color:
+        priority === "low"
+          ? "text-green-600"
+          : priority === "medium"
+          ? "text-yellow-600"
+          : "text-red-600",
+    })) || [];
+
+  const categoryOptions =
+    options.category?.map((category) => ({
+      value: category,
+      label: formatOptionLabel(category),
+    })) || [];
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200">
@@ -194,12 +222,17 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
               value={formData.priority}
               onChange={(e) => handleInputChange("priority", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={optionsLoading}
             >
-              {priorityOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              {optionsLoading ? (
+                <option>Loading options...</option>
+              ) : (
+                priorityOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))
+              )}
             </select>
           </div>
         </div>
@@ -214,12 +247,17 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
               value={formData.category}
               onChange={(e) => handleInputChange("category", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={optionsLoading}
             >
-              {categoryOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              {optionsLoading ? (
+                <option>Loading options...</option>
+              ) : (
+                categoryOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
@@ -231,12 +269,17 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
               value={formData.status}
               onChange={(e) => handleInputChange("status", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={optionsLoading}
             >
-              {statusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              {optionsLoading ? (
+                <option>Loading options...</option>
+              ) : (
+                statusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))
+              )}
             </select>
           </div>
         </div>

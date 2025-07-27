@@ -93,4 +93,14 @@ exports.deleteVisit = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+};
+
+exports.getVisitStatusTypes = (req, res) => {
+    const statusTypes = VisitSchedule.schema.path('visits').schema.path('status').enumValues;
+    res.status(200).json({ status: 'Success', data: statusTypes });
+};
+
+exports.getVisitPriorityTypes = (req, res) => {
+    const priorityTypes = VisitSchedule.schema.path('visits').schema.path('priority').enumValues;
+    res.status(200).json({ status: 'Success', data: priorityTypes });
 }; 

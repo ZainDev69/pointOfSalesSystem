@@ -15,13 +15,14 @@ import {
   Home,
   User,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ContactForm } from "./ContactForm";
 import {
   addContact,
   editContact,
   deleteContact,
+  fetchContactTypes,
 } from "../../../components/redux/slice/contacts";
 import toast from "react-hot-toast";
 
@@ -34,6 +35,16 @@ export function ContactTab({ client }) {
 
   const dispatch = useDispatch();
   const contacts = useSelector((state) => state.contacts.items) || [];
+  const contactTypes = useSelector((state) => state.contacts.contactTypes);
+  const contactTypesLoading = useSelector(
+    (state) => state.contacts.contactTypesLoading
+  );
+
+  useEffect(() => {
+    if (!contactTypes || contactTypes.length === 0) {
+      dispatch(fetchContactTypes());
+    }
+  }, [dispatch, contactTypes]);
 
   const contactTypeIconMap = {
     family: { icon: Heart, bg: "bg-red-100", text: "text-red-600" },
@@ -284,10 +295,15 @@ export function ContactTab({ client }) {
                 className="pl-9 pr-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">All Contacts</option>
-                <option value="family">Family</option>
-                <option value="friend">Friends</option>
-                <option value="neighbor">Neighbors</option>
-                <option value="other">Other</option>
+                {contactTypesLoading ? (
+                  <option disabled>Loading...</option>
+                ) : (
+                  contactTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           </div>

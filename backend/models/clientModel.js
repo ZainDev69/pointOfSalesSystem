@@ -28,14 +28,6 @@ const clientSchema = new mongoose.Schema({
         preferredContactMethod: String,
         bestTimeToContact: String,
     },
-    nextOfKin: {
-        name: { type: String, required: true },
-        relationship: { type: String, required: true },
-        phone: { type: String, required: true },
-        email: String,
-        hasLegalAuthority: Boolean,
-        powerOfAttorney: Boolean,
-    },
     consent: {
         photoConsent: Boolean,
         dataProcessingConsent: Boolean,
@@ -49,19 +41,12 @@ const clientSchema = new mongoose.Schema({
             phone: String,
             email: String,
         },
-        practice: {
+        surgery: {
             name: String,
             phone: String,
             email: String,
             outOfHoursNumber: String,
-            address: {
-                line1: String,
-                line2: String,
-                city: String,
-                county: String,
-                postcode: String,
-                country: String,
-            },
+            address: String
         },
     },
     medicalInformation: {

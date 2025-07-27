@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Shield, Edit3, History } from "lucide-react";
+import { Plus, Shield, Edit3, History, Bell } from "lucide-react";
 import { CarePlanForm } from "./CarePlanForm";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -12,7 +12,7 @@ import {
 } from "../../../components/redux/slice/carePlans";
 import { fetchCarePlanOutcomes } from "../../../components/redux/slice/outcomes";
 import toast from "react-hot-toast";
-import { CarePlanDocumentManager } from "./CarePlanDocumentManager";
+import { CarePlanDocumentManager } from "./CarePlanDocumentation/CarePlanDocumentManager";
 import { DailyLivingTab } from "./DailyLiving/DailyLiving";
 import { OutcomesTab } from "./Outcomes/OutcomesTab";
 import { OverviewTab } from "./Overview/OverviewTab";
@@ -20,16 +20,18 @@ import { HistoryTab } from "./CareComponents/HistoryTab";
 import { CareNavTab } from "./CareComponents/CareNavTab";
 import { getStatusColor } from "./CareComponents/StatusColor";
 import { CardsTab } from "./Cards/Cards";
+import { PersonalTab } from "../Personal/PersonalTab";
 
 export function CarePlanManager({ client }) {
   const [view, setView] = useState("view");
   const [showHistory, setShowHistory] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const dispatch = useDispatch();
 
-  const { activeCarePlan } = useSelector((state) => state.carePlans);
+  const { activeCarePlan, loading } = useSelector((state) => state.carePlans);
   const { items: outcomes } = useSelector((state) => state.outcomes);
 
   useEffect(() => {
@@ -38,6 +40,49 @@ export function CarePlanManager({ client }) {
       dispatch(fetchCarePlanHistory(client._id));
     }
   }, [client._id, dispatch]);
+
+  // Close notification dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showNotifications &&
+        !event.target.closest(".notification-dropdown")
+      ) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showNotifications]);
+
+  // Calculate notifications for care plans due within 1 month
+  const getDueNotifications = () => {
+    const today = new Date();
+    const oneMonthFromNow = new Date();
+    oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+
+    const notifications = [];
+
+    // Check active care plan
+    if (activeCarePlan?.reviewDate) {
+      const reviewDate = new Date(activeCarePlan.reviewDate);
+      if (reviewDate >= today && reviewDate <= oneMonthFromNow) {
+        notifications.push({
+          id: activeCarePlan._id,
+          type: "Active Care Plan",
+          reviewDate: activeCarePlan.reviewDate,
+          status: activeCarePlan.status,
+        });
+      }
+    }
+
+    return notifications;
+  };
+
+  const dueNotifications = getDueNotifications();
 
   useEffect(() => {
     if (activeCarePlan?._id) {
@@ -104,6 +149,17 @@ export function CarePlanManager({ client }) {
     );
   }
 
+  // Show loading before showing createCarePlan card
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div className="text-center text-blue-600 font-medium text-lg">
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
   if (!activeCarePlan) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
@@ -115,13 +171,92 @@ export function CarePlanManager({ client }) {
           <p className="text-gray-600 mb-4">
             No care plan has been created for this client yet.
           </p>
-          <button
-            onClick={() => setView("edit")}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mx-auto transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create Care Plan</span>
-          </button>
+          <div className="flex items-center justify-center space-x-3">
+            {/* Notification Icon */}
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className={`p-2 rounded-lg transition-colors ${
+                  dueNotifications.length > 0
+                    ? "bg-red-100 text-red-600 hover:bg-red-200"
+                    : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                }`}
+                title={
+                  dueNotifications.length > 0
+                    ? `${dueNotifications.length} care plan(s) due soon`
+                    : "No notifications"
+                }
+              >
+                <Bell className="w-5 h-5" />
+                {dueNotifications.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                    {dueNotifications.length}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Dropdown */}
+              {showNotifications && dueNotifications.length > 0 && (
+                <div className="notification-dropdown absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="p-4">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                      Care Plans Due Soon
+                    </h4>
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {dueNotifications.map((notification) => {
+                        const reviewDate = new Date(notification.reviewDate);
+                        const daysUntilDue = Math.ceil(
+                          (reviewDate - new Date()) / (1000 * 60 * 60 * 24)
+                        );
+
+                        return (
+                          <div
+                            key={notification.id}
+                            className="p-3 bg-red-50 rounded-lg border border-red-200"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h5 className="text-sm font-medium text-red-900">
+                                  {notification.type}
+                                </h5>
+                                <p className="text-xs text-red-700 mt-1">
+                                  Due: {reviewDate.toLocaleDateString()}
+                                  {daysUntilDue === 0 && " (Today)"}
+                                  {daysUntilDue === 1 && " (Tomorrow)"}
+                                  {daysUntilDue > 1 &&
+                                    ` (in ${daysUntilDue} days)`}
+                                </p>
+                                <p className="text-xs text-gray-600 mt-1">
+                                  Status: {notification.status}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  setShowNotifications(false);
+                                  setView("edit");
+                                }}
+                                className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 transition-colors"
+                              >
+                                Review
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => setView("edit")}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Care Plan</span>
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -138,6 +273,83 @@ export function CarePlanManager({ client }) {
         </div>
 
         <div className="flex items-center space-x-3">
+          {/* Notification Icon */}
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className={`p-2 rounded-lg transition-colors ${
+                dueNotifications.length > 0
+                  ? "bg-red-100 text-red-600 hover:bg-red-200"
+                  : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+              }`}
+              title={
+                dueNotifications.length > 0
+                  ? `${dueNotifications.length} care plan(s) due soon`
+                  : "No notifications"
+              }
+            >
+              <Bell className="w-5 h-5" />
+              {dueNotifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                  {dueNotifications.length}
+                </span>
+              )}
+            </button>
+
+            {/* Notification Dropdown */}
+            {showNotifications && dueNotifications.length > 0 && (
+              <div className="notification-dropdown absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div className="p-4">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                    Care Plans Due Soon
+                  </h4>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {dueNotifications.map((notification) => {
+                      const reviewDate = new Date(notification.reviewDate);
+                      const daysUntilDue = Math.ceil(
+                        (reviewDate - new Date()) / (1000 * 60 * 60 * 24)
+                      );
+
+                      return (
+                        <div
+                          key={notification.id}
+                          className="p-3 bg-red-50 rounded-lg border border-red-200"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h5 className="text-sm font-medium text-red-900">
+                                {notification.type}
+                              </h5>
+                              <p className="text-xs text-red-700 mt-1">
+                                Due: {reviewDate.toLocaleDateString()}
+                                {daysUntilDue === 0 && " (Today)"}
+                                {daysUntilDue === 1 && " (Tomorrow)"}
+                                {daysUntilDue > 1 &&
+                                  ` (in ${daysUntilDue} days)`}
+                              </p>
+                              <p className="text-xs text-gray-600 mt-1">
+                                Status: {notification.status}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setShowNotifications(false);
+                                setView("edit");
+                              }}
+                              className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 transition-colors"
+                            >
+                              Review
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           <span
             className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
               activeCarePlan.status
@@ -187,9 +399,7 @@ export function CarePlanManager({ client }) {
       )}
 
       {/* Personal Care Tab */}
-      {activeTab === "personal-care" && (
-        <PersonalCareTab activeCarePlan={activeCarePlan} />
-      )}
+      {activeTab === "personal-care" && <PersonalTab client={client} />}
 
       {/* Daily Living Tab */}
       {activeTab === "daily-living" && (

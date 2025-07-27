@@ -95,31 +95,6 @@ export function PersonalTab({ client, onClientUpdate }) {
               <InfoBlock label="Ethnicity">
                 {client.personalDetails?.ethnicity || "Not specified"}
               </InfoBlock>
-              <InfoBlock label="Languages">
-                {Array.isArray(
-                  client?.preferences?.cultural?.languagePreferences
-                ) ? (
-                  client.preferences.cultural.languagePreferences.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {client.preferences.cultural.languagePreferences.map(
-                        (lang, idx) => (
-                          <span
-                            key={idx}
-                            className="mt-2 px-3 py-1 rounded-md border border-blue-500 bg-green-50 text-blue-500 text-sm font-medium"
-                          >
-                            {lang}
-                          </span>
-                        )
-                      )}
-                    </div>
-                  ) : (
-                    "Not specified"
-                  )
-                ) : (
-                  client?.preferences?.cultural?.languagePreferences ||
-                  "Not specified"
-                )}
-              </InfoBlock>
             </div>
             <div className="space-y-4">
               <InfoBlock label="Preferred Name">
@@ -127,9 +102,6 @@ export function PersonalTab({ client, onClientUpdate }) {
               </InfoBlock>
               <InfoBlock label="Marital Status">
                 {client.personalDetails?.relationshipStatus || "Not specified"}
-              </InfoBlock>
-              <InfoBlock label="Nationality">
-                {client.addressInformation?.country || "Not specified"}
               </InfoBlock>
             </div>
           </div>
@@ -157,6 +129,31 @@ export function PersonalTab({ client, onClientUpdate }) {
             </InfoBlock>
             <InfoBlock label="Access Instructions">
               {client.addressInformation?.accessInstructions || "Not specified"}
+            </InfoBlock>
+            <InfoBlock label="Languages">
+              {Array.isArray(
+                client?.preferences?.cultural?.languagePreferences
+              ) ? (
+                client.preferences.cultural.languagePreferences.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {client.preferences.cultural.languagePreferences.map(
+                      (lang, idx) => (
+                        <span
+                          key={idx}
+                          className="mt-2 px-3 py-1 rounded-md border border-blue-500 bg-green-50 text-blue-500 text-sm font-medium"
+                        >
+                          {lang}
+                        </span>
+                      )
+                    )}
+                  </div>
+                ) : (
+                  "Not specified"
+                )
+              ) : (
+                client?.preferences?.cultural?.languagePreferences ||
+                "Not specified"
+              )}
             </InfoBlock>
           </div>
         </div>

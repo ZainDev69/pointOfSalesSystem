@@ -24,13 +24,11 @@ export function OutcomeDetails({ outcome, onClose, onAddProgress }) {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case "not-started":
-        return <Clock className="w-5 h-5 text-gray-500" />;
       case "in-progress":
-        return <AlertCircle className="w-5 h-5 text-blue-500" />;
+        return <Clock className="w-5 h-5 text-blue-500" />;
       case "achieved":
         return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case "not-achieved":
+      case "unachieved":
         return <X className="w-5 h-5 text-red-500" />;
       case "modified":
         return <FileText className="w-5 h-5 text-yellow-500" />;
@@ -41,13 +39,11 @@ export function OutcomeDetails({ outcome, onClose, onAddProgress }) {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "not-started":
-        return "bg-gray-100 text-gray-800";
       case "in-progress":
         return "bg-blue-100 text-blue-800";
       case "achieved":
         return "bg-green-100 text-green-800";
-      case "not-achieved":
+      case "unachieved":
         return "bg-red-100 text-red-800";
       case "modified":
         return "bg-yellow-100 text-yellow-800";

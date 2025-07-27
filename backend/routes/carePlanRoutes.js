@@ -31,4 +31,18 @@ router.route('/outcomes/:id')
 router.route('/outcomes/:id/progress')
     .post(carePlanController.addOutcomeProgress);
 
+// Outcome options route
+router.route('/outcomes/options')
+    .get(carePlanController.getOutcomeOptions);
+
+// Outcome filter routes
+router.route('/care-plans/:carePlanId/outcomes/filter/category')
+    .get(carePlanController.filterOutcomesByCategory);
+
+router.route('/care-plans/:carePlanId/outcomes/filter/status')
+    .get(carePlanController.filterOutcomesByStatus);
+
+router.route('/care-plans/:carePlanId/outcomes/filter')
+    .get(carePlanController.filterOutcomes);
+
 module.exports = router; 

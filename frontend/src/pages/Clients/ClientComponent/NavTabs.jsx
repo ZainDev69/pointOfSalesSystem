@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   Calendar,
   History,
+  MessageSquare,
 } from "lucide-react";
 
 export function NavTabs({ activeTab, setActiveTab }) {
@@ -19,6 +20,8 @@ export function NavTabs({ activeTab, setActiveTab }) {
     { id: "risk-assessments", label: "Risk Assessments", icon: AlertTriangle },
     { id: "visits", label: "Visit Schedule", icon: Calendar },
     { id: "documents", label: "Documentation", icon: FileText },
+    { id: "communications", label: "Communication", icon: MessageSquare },
+
     { id: "compliance", label: "Compliance", icon: Shield },
     { id: "activity-log", label: "Activity Log", icon: History },
   ];

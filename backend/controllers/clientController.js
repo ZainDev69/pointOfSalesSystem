@@ -46,10 +46,48 @@ exports.getClient = catchAsync(async (req, res, next) => {
 
 
 exports.getClients = catchAsync(async (req, res, next) => {
-    const clients = await Client.find();
+    // Filtering
+    const queryObj = { ...req.query };
+    const excludeFields = ['sort', 'page', 'limit'];
+    excludeFields.forEach(el => delete queryObj[el]);
+
+    // For filtering by nested fields like personalDetails.fullName
+    let mongoQuery = {};
+    if (queryObj.fullName) {
+        mongoQuery['personalDetails.fullName'] = { $regex: queryObj.fullName, $options: 'i' };
+        delete queryObj.fullName;
+    }
+    if (queryObj.status) {
+        mongoQuery['status'] = queryObj.status;
+        delete queryObj.status;
+    }
+    // Add any other direct filters
+    Object.assign(mongoQuery, queryObj);
+
+    let query = Client.find(mongoQuery);
+
+    // Sorting
+    if (req.query.sort) {
+        query = query.sort(req.query.sort.split(',').join(' '));
+    } else {
+        query = query.sort('-createdAt');
+    }
+
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+    query = query.skip(skip).limit(limit);
+
+    const clients = await query;
+    const total = await Client.countDocuments(mongoQuery);
+
     res.status(200).json({
         status: 'Success',
         results: clients.length,
+        total,
+        page,
+        pages: Math.ceil(total / limit),
         data: clients
     });
 })
