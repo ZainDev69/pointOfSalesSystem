@@ -15,7 +15,8 @@ export function PersonalCareTab({ activeCarePlan }) {
   const renderCareSection = (section) => {
     const care = activeCarePlan.personalCare?.[section.key];
 
-    if (!care || typeof care !== "object") {
+    // Only show if required is true
+    if (!care || typeof care !== "object" || !care.required) {
       return null;
     }
 

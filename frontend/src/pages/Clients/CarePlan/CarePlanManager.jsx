@@ -22,6 +22,7 @@ import { getStatusColor } from "./CareComponents/StatusColor";
 import { CardsTab } from "./Cards/Cards";
 import { PersonalTab } from "../Personal/PersonalTab";
 import { Button } from "../../../components/ui/Button";
+import { PersonalCareTab } from "./PersonalCare/PersonalCare";
 
 export function CarePlanManager({ client }) {
   const [view, setView] = useState("view");
@@ -393,7 +394,9 @@ export function CarePlanManager({ client }) {
       )}
 
       {/* Personal Care Tab */}
-      {activeTab === "personal-care" && <PersonalTab client={client} />}
+      {activeTab === "personal-care" && (
+        <PersonalCareTab activeCarePlan={activeCarePlan} />
+      )}
 
       {/* Daily Living Tab */}
       {activeTab === "daily-living" && (
