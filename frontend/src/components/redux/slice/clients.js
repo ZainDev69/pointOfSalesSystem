@@ -2,6 +2,20 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_URL } from "../../../main";
 
+// Fetch enum options for form fields
+export const fetchEnumOptions = createAsyncThunk(
+    "clients/fetchEnumOptions",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(`${API_URL}/clients/enum-options`, {
+                withCredentials: true,
+            });
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue({ message: error.response?.data?.message || error.message });
+        }
+    }
+);
 
 export const createClient = createAsyncThunk(
     "clients/createClient",
@@ -118,9 +132,12 @@ export const checkClientId = createAsyncThunk(
     "clients/checkClientId",
     async (clientId, { rejectWithValue }) => {
         try {
+            console.log('Redux action: Checking client ID:', clientId);
             const response = await axios.get(`${API_URL}/clients/check-id?clientId=${clientId}`, { withCredentials: true });
+            console.log('Redux action: Response:', response.data);
             return response.data.data;
         } catch (error) {
+            console.error('Redux action: Error checking client ID:', error);
             return rejectWithValue({ message: error.response?.data?.message || "Unknown error" });
         }
     }
@@ -134,13 +151,42 @@ const initialState = {
     error: null,
     total: 0,
     page: 1,
-    pages: 1
+    pages: 1,
+    enumOptions: null
 }
 
 const clientSlice = createSlice({
     name: "clients",
     initialState,
     extraReducers: (builder) => {
+        // Fetch Enum Options
+        builder.addCase(fetchEnumOptions.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
+            .addCase(fetchEnumOptions.fulfilled, (state, action) => {
+                state.loading = false;
+                state.enumOptions = action.payload;
+            })
+            .addCase(fetchEnumOptions.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message || action.error?.message;
+            })
+
+            // Check Client ID
+            .addCase(checkClientId.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(checkClientId.fulfilled, (state) => {
+                state.loading = false;
+                // The result is returned directly, no state update needed
+            })
+            .addCase(checkClientId.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message || action.error?.message;
+            })
+
         // Client List
         builder.addCase(clientList.pending, (state) => {
             state.loading = true;
@@ -255,7 +301,8 @@ const clientSlice = createSlice({
 })
 
 
-export const getClients = (state) => state.clients.clients;
-export const getSingleClient = (state) => state.clients.client;
+export const getClients = (state) => state.client.clients;
+export const getSingleClient = (state) => state.client.client;
+export const getEnumOptions = (state) => state.client.enumOptions;
 
 export default clientSlice.reducer;

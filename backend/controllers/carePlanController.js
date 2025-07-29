@@ -2,7 +2,7 @@ const CarePlan = require('../models/carePlanModel');
 const Outcome = require('../models/outcomeModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const Client = require('../models/clientModel');
+const { Client } = require('../models/clientModel');
 const ActivityLog = require('../models/activityLogModel');
 
 // Get all care plans for a client
@@ -209,8 +209,8 @@ exports.getCarePlanHistory = catchAsync(async (req, res, next) => {
 
     const carePlans = await CarePlan.find({ clientId })
         .sort({ version: -1 })
-        .select('version status assessmentDate assessedBy reviewDate createdAt')
-        .limit(10);
+        .select('version status assessmentDate assessedBy reviewDate createdAt approvedBy')
+        .limit(20);
 
     res.status(200).json({
         status: 'Success',
@@ -222,9 +222,12 @@ exports.getCarePlanHistory = catchAsync(async (req, res, next) => {
 // Get outcomes for a care plan
 exports.getCarePlanOutcomes = catchAsync(async (req, res, next) => {
     const { carePlanId } = req.params;
+    console.log('Fetching outcomes for care plan:', carePlanId);
 
     const outcomes = await Outcome.find({ carePlanId })
         .sort({ createdAt: -1 });
+
+    console.log('Found outcomes:', outcomes.length);
 
     res.status(200).json({
         status: 'Success',
@@ -236,10 +239,13 @@ exports.getCarePlanOutcomes = catchAsync(async (req, res, next) => {
 // Create outcome
 exports.createOutcome = catchAsync(async (req, res, next) => {
     const { carePlanId } = req.params;
+    console.log('Creating outcome for care plan:', carePlanId);
+    console.log('Request body:', req.body);
 
     // Get the care plan to get the clientId
     const carePlan = await CarePlan.findById(carePlanId);
     if (!carePlan) {
+        console.log('Care plan not found with ID:', carePlanId);
         return next(new AppError('No care plan found with that ID', 404));
     }
 
@@ -248,8 +254,16 @@ exports.createOutcome = catchAsync(async (req, res, next) => {
         carePlanId,
         clientId: carePlan.clientId
     };
+    console.log('Outcome data to create:', outcomeData);
 
-    const newOutcome = await Outcome.create(outcomeData);
+    try {
+        const newOutcome = await Outcome.create(outcomeData);
+        console.log('Outcome created successfully:', newOutcome._id);
+        return newOutcome;
+    } catch (error) {
+        console.error('Error creating outcome:', error);
+        throw error;
+    }
 
     // Log activity
     const client = await Client.findById(carePlan.clientId);
@@ -325,102 +339,64 @@ exports.deleteOutcome = catchAsync(async (req, res, next) => {
     });
 });
 
-// Add progress to outcome
-exports.addOutcomeProgress = catchAsync(async (req, res, next) => {
+// Restore care plan (make it active)
+exports.restoreCarePlan = catchAsync(async (req, res, next) => {
     const { id } = req.params;
+    const { clientId } = req.body;
 
-    const outcome = await Outcome.findById(id);
-    if (!outcome) {
-        return next(new AppError('No outcome found with that ID', 404));
+    // Find the care plan to restore
+    const carePlanToRestore = await CarePlan.findById(id);
+    if (!carePlanToRestore) {
+        return next(new AppError('No care plan found with that ID', 404));
     }
 
-    outcome.progress.push(req.body);
-    await outcome.save();
+    // Check if it belongs to the client
+    if (carePlanToRestore.clientId.toString() !== clientId) {
+        return next(new AppError('Care plan does not belong to this client', 403));
+    }
 
-    res.status(200).json({
-        status: 'Success',
-        data: {
-            outcome
-        }
-    });
-});
+    // Deactivate current active care plan
+    await CarePlan.updateMany(
+        { clientId, status: 'active' },
+        { status: 'expired' }
+    );
 
-// Get outcome options for select dropdowns
-exports.getOutcomeOptions = catchAsync(async (req, res, next) => {
-    // Get the outcome schema to extract enum values
-    const Outcome = require('../models/outcomeModel');
-    const outcomeSchema = Outcome.schema;
+    // Get the latest version number
+    const latestVersion = await CarePlan.findOne({ clientId })
+        .sort({ version: -1 })
+        .select('version');
 
-    const options = {
-        status: outcomeSchema.path('status').enumValues || ['in-progress', 'achieved', 'unachieved', 'modified'],
-        priority: outcomeSchema.path('priority').enumValues || ['low', 'medium', 'high'],
-        category: outcomeSchema.path('category').enumValues || ['personal-care', 'daily-living', 'mobility', 'nutrition', 'social', 'medical', 'other']
+    const newVersion = latestVersion ? latestVersion.version + 1 : 1;
+
+    // Create a new version based on the restored care plan
+    const restoredCarePlanData = {
+        ...carePlanToRestore.toObject(),
+        _id: undefined, // Remove the original _id
+        version: newVersion,
+        status: 'active',
+        createdAt: new Date(),
+        updatedAt: new Date()
     };
 
-    res.status(200).json({
-        status: 'Success',
-        data: options
-    });
-});
+    const restoredCarePlan = await CarePlan.create(restoredCarePlanData);
 
-// Filter outcomes by category
-exports.filterOutcomesByCategory = catchAsync(async (req, res, next) => {
-    const { carePlanId } = req.params;
-    const { category } = req.query;
-
-    if (!category) {
-        return next(new AppError('Category parameter is required', 400));
+    // Log activity
+    const client = await Client.findById(clientId);
+    if (client) {
+        ActivityLog.create({
+            client: client._id,
+            action: 'Care plan restored from version ' + carePlanToRestore.version,
+            user: 'Admin',
+        });
     }
 
-    const outcomes = await Outcome.find({
-        carePlanId,
-        category: category
-    }).sort({ createdAt: -1 });
-
     res.status(200).json({
         status: 'Success',
-        results: outcomes.length,
-        data: outcomes
+        data: restoredCarePlan
     });
 });
 
-// Filter outcomes by status
-exports.filterOutcomesByStatus = catchAsync(async (req, res, next) => {
-    const { carePlanId } = req.params;
-    const { status } = req.query;
 
-    if (!status) {
-        return next(new AppError('Status parameter is required', 400));
-    }
 
-    const outcomes = await Outcome.find({
-        carePlanId,
-        status: status
-    }).sort({ createdAt: -1 });
 
-    res.status(200).json({
-        status: 'Success',
-        results: outcomes.length,
-        data: outcomes
-    });
-});
 
-// Filter outcomes by multiple criteria
-exports.filterOutcomes = catchAsync(async (req, res, next) => {
-    const { carePlanId } = req.params;
-    const { category, status, priority } = req.query;
-
-    const filterCriteria = { carePlanId };
-
-    if (category) filterCriteria.category = category;
-    if (status) filterCriteria.status = status;
-    if (priority) filterCriteria.priority = priority;
-
-    const outcomes = await Outcome.find(filterCriteria).sort({ createdAt: -1 });
-
-    res.status(200).json({
-        status: 'Success',
-        results: outcomes.length,
-        data: outcomes
-    });
-});

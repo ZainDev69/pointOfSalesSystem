@@ -1,11 +1,10 @@
 const CarePlanDocument = require('../models/carePlanDocumentModel');
-const CarePlan = require('../models/carePlanModel');
-const Client = require('../models/clientModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const ActivityLog = require('../models/activityLogModel');
 const path = require('path');
 const multer = require('multer');
-const ActivityLog = require('../models/activityLogModel');
+
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -28,70 +27,62 @@ exports.getDocuments = catchAsync(async (req, res, next) => {
     res.status(200).json({ status: 'Success', data: docs });
 });
 
-exports.addDocument = catchAsync(async (req, res, next) => {
-    const { carePlanId } = req.params;
-    const doc = await CarePlanDocument.create({ ...req.body, carePlanId });
+
+
+exports.getAllDocumentsForClient = catchAsync(async (req, res, next) => {
+    const { clientId } = req.params;
+    const docs = await CarePlanDocument.find({ clientId });
+    res.status(200).json({ status: 'Success', data: docs });
+});
+
+exports.addDocumentForClient = catchAsync(async (req, res, next) => {
+    const { clientId } = req.params;
+    const doc = await CarePlanDocument.create({ ...req.body, clientId });
     // Log to client activity log
-    const carePlan = await CarePlan.findById(carePlanId);
-    if (carePlan && carePlan.clientId) {
-        const client = await Client.findById(carePlan.clientId);
-        if (client) {
-            await ActivityLog.create({
-                client: client._id,
-                action: `Care Plan Document added: ${doc.title} `,
-                user: 'Admin',
-            });
-        }
-    }
+    await ActivityLog.create({
+        client: clientId,
+        action: `Client Document added: ${doc.title}`,
+        user: 'Admin',
+    });
     res.status(201).json({ status: 'Success', data: doc });
 });
 
-exports.updateDocument = catchAsync(async (req, res, next) => {
-    const { carePlanId, docId } = req.params;
-    console.log("Updating carePlan document", req.body);
-    // Remove _id from update payload if present
+exports.updateDocumentForClient = catchAsync(async (req, res, next) => {
+    const { clientId, docId } = req.params;
     const updateData = { ...req.body, updatedAt: new Date() };
     delete updateData._id;
     const doc = await CarePlanDocument.findOneAndUpdate(
-        { _id: docId, carePlanId },
+        { _id: docId, clientId },
         updateData,
         { new: true }
     );
     if (!doc) return next(new AppError('Document not found', 404));
     // Log to client activity log
-    console.log("I am reached")
-    const carePlan = await CarePlan.findById(carePlanId);
-    if (carePlan && carePlan.clientId) {
-        const client = await Client.findById(carePlan.clientId);
-        if (client) {
-            await ActivityLog.create({
-                client: client._id,
-                action: `Care Plan Document updated: ${doc.title} `,
-                user: 'Admin',
-            });
-        }
-    }
+    await ActivityLog.create({
+        client: clientId,
+        action: `Client Document updated: ${doc.title}`,
+        user: 'Admin',
+    });
     res.status(200).json({ status: 'Success', data: doc });
 });
 
-exports.deleteDocument = catchAsync(async (req, res, next) => {
-    const { carePlanId, docId } = req.params;
-    const doc = await CarePlanDocument.findOneAndDelete({ _id: docId, carePlanId });
+exports.deleteDocumentForClient = catchAsync(async (req, res, next) => {
+    const { clientId, docId } = req.params;
+    const doc = await CarePlanDocument.findOneAndDelete({ _id: docId, clientId });
     if (!doc) return next(new AppError('Document not found', 404));
     // Log to client activity log
-    const carePlan = await CarePlan.findById(carePlanId);
-    if (carePlan && carePlan.clientId) {
-        const client = await Client.findById(carePlan.clientId);
-        if (client) {
-            await ActivityLog.create({
-                client: client._id,
-                action: `Care Plan Document deleted: ${doc.title} `,
-                user: 'Admin',
-            });
-        }
-    }
+    await ActivityLog.create({
+        client: clientId,
+        action: `Client Document deleted: ${doc.title}`,
+        user: 'Admin',
+    });
     res.status(204).json({ status: 'Success', data: null });
 });
+
+
+
+
+
 
 exports.uploadAttachmentHandler = catchAsync(async (req, res, next) => {
     console.log("Uploading attachment", req.file);
@@ -100,15 +91,6 @@ exports.uploadAttachmentHandler = catchAsync(async (req, res, next) => {
     res.status(201).json({ url: fileUrl, originalName: req.file.originalname });
 });
 
-exports.getAllDocumentsForClient = catchAsync(async (req, res, next) => {
-    const { clientId } = req.params;
-    // Find all care plans for this client
-    const carePlans = await CarePlan.find({ clientId });
-    const carePlanIds = carePlans.map(cp => cp._id);
-    // Find all documents for these care plans
-    const docs = await CarePlanDocument.find({ carePlanId: { $in: carePlanIds } });
-    res.status(200).json({ status: 'Success', data: docs });
-});
 
 
 

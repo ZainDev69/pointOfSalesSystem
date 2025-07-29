@@ -9,6 +9,7 @@ import {
   Calendar,
   Shield,
 } from "lucide-react";
+import { Button } from "../../../components/ui/Button";
 
 export function PersonalDetailsEditModal({
   isOpen,
@@ -50,6 +51,8 @@ export function PersonalDetailsEditModal({
       photoConsent: false,
       dataProcessingConsent: false,
     },
+    startDate: "",
+    reviewDate: "",
   });
 
   useEffect(() => {
@@ -92,6 +95,12 @@ export function PersonalDetailsEditModal({
           photoConsent: consent.photoConsent || false,
           dataProcessingConsent: consent.dataProcessingConsent || false,
         },
+        startDate: personalDetails.startDate
+          ? new Date(personalDetails.startDate).toISOString().split("T")[0]
+          : "",
+        reviewDate: personalDetails.reviewDate
+          ? new Date(personalDetails.reviewDate).toISOString().split("T")[0]
+          : "",
       });
     }
   }, [personalDetails, addressInformation, contactInformation, consent]);
@@ -280,6 +289,32 @@ export function PersonalDetailsEditModal({
                     handleChange("personalDetails", "ethnicity", e.target.value)
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={formData.startDate || ""}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
+                  title="Start date is automatically set when client is created"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Review Date
+                </label>
+                <input
+                  type="date"
+                  value={formData.reviewDate || ""}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
+                  title="Review date is automatically set to 6 months after start date or update date"
                 />
               </div>
             </div>
@@ -568,14 +603,9 @@ export function PersonalDetailsEditModal({
           >
             Cancel
           </button>
-          <button
-            onClick={handleSave}
-            disabled={isLoading}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Save className="w-4 h-4" />
-            <span>{isLoading ? "Saving..." : "Save Changes"}</span>
-          </button>
+          <Button onClick={handleSave} disabled={isLoading} variant="default">
+            {isLoading ? "Saving..." : "Save Changes"}
+          </Button>
         </div>
       </div>
     </div>

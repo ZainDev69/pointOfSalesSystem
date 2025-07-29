@@ -4,7 +4,7 @@ const outcomeSchema = new mongoose.Schema({
     carePlanId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'CarePlan',
-        required: true
+        required: false
     },
     clientId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -39,8 +39,8 @@ const outcomeSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ['personal-care', 'daily-living', 'mobility', 'nutrition', 'social', 'medical', 'other'],
-        default: 'other'
+        enum: ['personal-care', 'daily-living', 'mobility', 'nutrition', 'social', 'medical'],
+        default: 'personal-care'
     },
     progress: [{
         date: {

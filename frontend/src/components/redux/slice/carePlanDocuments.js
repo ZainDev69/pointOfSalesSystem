@@ -3,61 +3,6 @@ import axios from 'axios';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-export const fetchCarePlanDocuments = createAsyncThunk(
-    'carePlanDocuments/fetchCarePlanDocuments',
-    async (carePlanId, { rejectWithValue }) => {
-        try {
-            console.log("Fetching the care plan documents", carePlanId);
-            const res = await axios.get(`${BACKEND_URL}/careplans/${carePlanId}/documents`, { withCredentials: true });
-            console.log("Care plan documents fetched", res.data.data);
-            return res.data.data;
-        } catch (error) {
-            return rejectWithValue(error.response?.data?.message || error.message);
-        }
-    }
-);
-
-export const addCarePlanDocument = createAsyncThunk(
-    'carePlanDocuments/addCarePlanDocument',
-    async ({ carePlanId, documentData }, { rejectWithValue }) => {
-        try {
-            console.log("Adding the care plan document", documentData);
-            const res = await axios.post(`${BACKEND_URL}/careplans/${carePlanId}/documents`, documentData, { withCredentials: true });
-            console.log("Care plan document added", res.data.data);
-            return res.data.data;
-        } catch (error) {
-            return rejectWithValue(error.response?.data?.message || error.message);
-        }
-    }
-);
-
-export const updateCarePlanDocument = createAsyncThunk(
-    'carePlanDocuments/updateCarePlanDocument',
-    async ({ carePlanId, docId, documentData }, { rejectWithValue }) => {
-        try {
-            console.log("Updating the care plan document", carePlanId, docId, documentData);
-            const res = await axios.patch(`${BACKEND_URL}/careplans/${carePlanId}/documents/${docId}`, documentData, { withCredentials: true });
-            console.log("Care plan document updated", res.data.data);
-            return res.data.data;
-        } catch (error) {
-            return rejectWithValue(error.response?.data?.message || error.message);
-        }
-    }
-);
-
-export const deleteCarePlanDocument = createAsyncThunk(
-    'carePlanDocuments/deleteCarePlanDocument',
-    async ({ carePlanId, docId }, { rejectWithValue }) => {
-        try {
-            console.log("Deleting the care plan document", docId);
-            await axios.delete(`${BACKEND_URL}/careplans/${carePlanId}/documents/${docId}`, { withCredentials: true });
-            console.log("Care plan document deleted", docId);
-            return docId;
-        } catch (error) {
-            return rejectWithValue(error.response?.data?.message || error.message);
-        }
-    }
-);
 
 export const uploadCarePlanAttachment = createAsyncThunk(
     'carePlanDocuments/uploadCarePlanAttachment',
@@ -78,11 +23,49 @@ export const uploadCarePlanAttachment = createAsyncThunk(
     }
 );
 
-export const fetchAllCarePlanDocumentsForClient = createAsyncThunk(
-    'carePlanDocuments/fetchAllCarePlanDocumentsForClient',
+
+// Client-level document thunks
+export const addClientDocument = createAsyncThunk(
+    'carePlanDocuments/addClientDocument',
+    async ({ clientId, documentData }, { rejectWithValue }) => {
+        try {
+            const res = await axios.post(`${BACKEND_URL}/careplans/client/${clientId}/documents`, documentData, { withCredentials: true });
+            return res.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+);
+
+export const updateClientDocument = createAsyncThunk(
+    'carePlanDocuments/updateClientDocument',
+    async ({ clientId, docId, documentData }, { rejectWithValue }) => {
+        try {
+            const res = await axios.patch(`${BACKEND_URL}/careplans/client/${clientId}/documents/${docId}`, documentData, { withCredentials: true });
+            return res.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+);
+
+export const deleteClientDocument = createAsyncThunk(
+    'carePlanDocuments/deleteClientDocument',
+    async ({ clientId, docId }, { rejectWithValue }) => {
+        try {
+            await axios.delete(`${BACKEND_URL}/careplans/client/${clientId}/documents/${docId}`, { withCredentials: true });
+            return docId;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+);
+
+export const fetchAllClientDocuments = createAsyncThunk(
+    'carePlanDocuments/fetchAllClientDocuments',
     async (clientId, { rejectWithValue }) => {
         try {
-            const res = await axios.get(`${BACKEND_URL}/careplans/client/${clientId}/all-documents`, { withCredentials: true });
+            const res = await axios.get(`${BACKEND_URL}/careplans/client/${clientId}/documents`, { withCredentials: true });
             return res.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || error.message);
@@ -104,38 +87,26 @@ const carePlanDocumentsSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchCarePlanDocuments.pending, (state) => {
+            .addCase(fetchAllClientDocuments.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(fetchCarePlanDocuments.fulfilled, (state, action) => {
+            .addCase(fetchAllClientDocuments.fulfilled, (state, action) => {
                 state.loading = false;
-                state.items = action.payload;
+                state.items = action.payload; // array
             })
-            .addCase(fetchCarePlanDocuments.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-            .addCase(fetchAllCarePlanDocumentsForClient.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(fetchAllCarePlanDocumentsForClient.fulfilled, (state, action) => {
-                state.loading = false;
-                state.items = action.payload;
-            })
-            .addCase(fetchAllCarePlanDocumentsForClient.rejected, (state, action) => {
+            .addCase(fetchAllClientDocuments.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
-            .addCase(addCarePlanDocument.fulfilled, (state, action) => {
-                state.items.push(action.payload);
+            .addCase(addClientDocument.fulfilled, (state, action) => {
+                state.items.push(action.payload); // single doc
             })
-            .addCase(updateCarePlanDocument.fulfilled, (state, action) => {
+            .addCase(updateClientDocument.fulfilled, (state, action) => {
                 const idx = state.items.findIndex((d) => d._id === action.payload._id);
                 if (idx !== -1) state.items[idx] = action.payload;
             })
-            .addCase(deleteCarePlanDocument.fulfilled, (state, action) => {
+            .addCase(deleteClientDocument.fulfilled, (state, action) => {
                 state.items = state.items.filter((d) => d._id !== action.payload);
             });
     },

@@ -87,7 +87,7 @@ export function ClientProfileDetails({ client, onBack, onClientUpdate }) {
       {activeTab === "documents" && <DocumentationManager client={client} />}
 
       {activeTab === "communications" && (
-        <CommunicationTab clientId={client._id} />
+        <CommunicationTab clientId={client._id} client={client} />
       )}
 
       {activeTab === "compliance" && (

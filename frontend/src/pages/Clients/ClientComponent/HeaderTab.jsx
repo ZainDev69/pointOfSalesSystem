@@ -7,13 +7,16 @@ import {
   Clock,
   Zap,
 } from "lucide-react";
-import defaultClientImg from "../../../assets/default.jpg"; // Adjust path as needed
+import { getClientImage } from "../../../utils/avatarUtils";
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5500";
 
 export function HeaderTab({ client, onBack, setActiveTab }) {
-  const imageUrl = client.photo?.startsWith("/uploads/")
-    ? `${backendUrl}${client.photo}`
-    : client.photo || defaultClientImg;
+  const imageUrl = getClientImage(
+    client.photo,
+    client.personalDetails?.title,
+    client.personalDetails?.gender,
+    backendUrl
+  );
   return (
     <div className="flex items-center space-x-4">
       <button
@@ -37,8 +40,8 @@ export function HeaderTab({ client, onBack, setActiveTab }) {
                 <h2 className="text-2xl font-bold">
                   {client.personalDetails.fullName || "Client Name"}
                 </h2>
-                <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg border border-green-300 border-opacity-50 backdrop-blur-sm">
-                  <div className="w-1.5 h-1.5 bg-white rounded-full mr-1.5 animate-pulse shadow-sm"></div>
+                <div className="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg border border-green-300 border-opacity-50 backdrop-blur-sm">
+                  <div className="w-1.5 h-1.5 bg-white rounded-md mr-1.5 animate-pulse shadow-sm"></div>
                   <span className="text-white drop-shadow-sm">
                     {client.status || "No Status"}
                   </span>

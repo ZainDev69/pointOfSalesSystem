@@ -1,127 +1,94 @@
-import { Shield, Calendar, AlertTriangle } from "lucide-react";
+import React from "react";
+import { ArrowLeft, Calendar, User, AlertTriangle, Shield } from "lucide-react";
+
 export function RiskAssessmentDetails({ assessment, onBack }) {
-  // Function to calculate risk score
-  const calculateRiskScore = (likelihood, severity) => {
-    const likelihoodScores = {
-      "very-unlikely": 1,
-      unlikely: 2,
-      possible: 3,
-      likely: 4,
-      "very-likely": 5,
-    };
-
-    const severityScores = {
-      negligible: 1,
-      minor: 2,
-      moderate: 3,
-      major: 4,
-      catastrophic: 5,
-    };
-
-    const likelihoodScore = likelihoodScores[likelihood] || 1;
-    const severityScore = severityScores[severity] || 1;
-
-    return likelihoodScore * severityScore;
-  };
-
-  // Function to get likelihood display with score
   const getLikelihoodDisplay = (likelihood) => {
-    const displayMap = {
-      "very-unlikely": "Very Unlikely (1)",
-      unlikely: "Unlikely (2)",
-      possible: "Possible (3)",
-      likely: "Likely (4)",
-      "very-likely": "Very Likely (5)",
+    const likelihoodMap = {
+      "very-unlikely": "Very Unlikely",
+      unlikely: "Unlikely",
+      possible: "Possible",
+      likely: "Likely",
+      "very-likely": "Very Likely",
     };
-    return displayMap[likelihood] || likelihood;
+    return likelihoodMap[likelihood] || likelihood;
   };
 
-  // Function to get severity display with score
   const getSeverityDisplay = (severity) => {
-    const displayMap = {
-      negligible: "Negligible (1)",
-      minor: "Minor (2)",
-      moderate: "Moderate (3)",
-      major: "Major (4)",
-      catastrophic: "Catastrophic (5)",
+    const severityMap = {
+      negligible: "Negligible",
+      minor: "Minor",
+      moderate: "Moderate",
+      major: "Major",
+      catastrophic: "Catastrophic",
     };
-    return displayMap[severity] || severity;
+    return severityMap[severity] || severity;
   };
 
-  if (!assessment) return null;
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Shield className="w-7 h-7 text-blue-500 mr-2" />
-          Risk Assessment Details
-        </h3>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={onBack}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
-          >
-            Back to List
-          </button>
+    <div className="space-y-6">
+      <div className="flex items-center space-x-4">
+        <button
+          onClick={onBack}
+          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Risk Assessment Details
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Comprehensive risk assessment information
+          </p>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-          <div className="mb-2 text-lg font-semibold text-blue-800 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-blue-400" /> Assessment Info
+
+      {/* Assessment Overview */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <Shield className="w-5 h-5 text-gray-400" />
+          <h3 className="text-lg font-semibold text-gray-900">
+            Assessment Overview
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <strong>Type:</strong>{" "}
+            <span className="capitalize">
+              {assessment.type.replace(/-/g, " ")}
+            </span>
           </div>
-          <div className="space-y-1 text-blue-900">
-            <div>
-              <strong>Type:</strong> {assessment.type}
-            </div>
-            <div>
-              <strong>Assessment Date:</strong> {assessment.assessmentDate}
-            </div>
-            <div>
-              <strong>Assessed By:</strong> {assessment.assessedBy}
-            </div>
-            <div>
-              <strong>Review Date:</strong> {assessment.reviewDate}
-            </div>
-            <div>
-              <strong>Status:</strong>{" "}
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  assessment.status === "current"
-                    ? "bg-green-100 text-green-800"
-                    : assessment.status === "due"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : assessment.status === "overdue"
-                    ? "bg-red-100 text-red-800"
-                    : "bg-gray-100 text-gray-800"
-                }`}
-              >
-                {assessment.status.charAt(0).toUpperCase() +
-                  assessment.status.slice(1).toLowerCase()}
-              </span>
-            </div>
-            <div>
-              <strong>Overall Risk:</strong>{" "}
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  assessment.overallRisk === "high" ||
-                  assessment.overallRisk === "very-high"
-                    ? "bg-red-100 text-red-800"
-                    : assessment.overallRisk === "medium"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : "bg-green-100 text-green-800"
-                }`}
-              >
-                {assessment.overallRisk.charAt(0).toUpperCase() +
-                  assessment.overallRisk
-                    .slice(1)
-                    .toLowerCase()
-                    .replace("-", " ")}
-              </span>
-            </div>
-            <div className="text-sm text-gray-600">
-              <strong>Version:</strong> {assessment.version}
-            </div>
+          <div>
+            <strong>Assessment Date:</strong>{" "}
+            {new Date(assessment.assessmentDate).toLocaleDateString()}
+          </div>
+          <div>
+            <strong>Assessed By:</strong> {assessment.assessedBy}
+          </div>
+          <div>
+            <strong>Review Date:</strong>{" "}
+            {new Date(assessment.reviewDate).toLocaleDateString()}
+          </div>
+          <div>
+            <strong>Status:</strong>{" "}
+            <span
+              className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                assessment.status === "current"
+                  ? "bg-green-100 text-green-800"
+                  : assessment.status === "due"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : assessment.status === "overdue"
+                  ? "bg-red-100 text-red-800"
+                  : "bg-gray-100 text-gray-800"
+              }`}
+            >
+              {assessment.status.charAt(0).toUpperCase() +
+                assessment.status.slice(1).toLowerCase()}
+            </span>
+          </div>
+          <div className="text-sm text-gray-600">
+            <strong>Version:</strong> {assessment.version}
           </div>
         </div>
       </div>
@@ -138,7 +105,7 @@ export function RiskAssessmentDetails({ assessment, onBack }) {
                 className="bg-white border border-red-100 rounded-lg p-4 shadow-sm"
               >
                 <div className="font-semibold text-red-800 mb-1">
-                  Hazard: {risk.hazard}
+                  Description: {risk.hazard}
                 </div>
                 <div className="text-sm text-gray-700">
                   <div>
@@ -152,84 +119,12 @@ export function RiskAssessmentDetails({ assessment, onBack }) {
                     <strong>Severity:</strong>{" "}
                     {getSeverityDisplay(risk.severity)}
                   </div>
-                  <div>
-                    <strong>Risk Score:</strong>{" "}
-                    <span className="text-lg font-bold text-blue-600">
-                      {calculateRiskScore(risk.likelihood, risk.severity)}
-                    </span>
-                  </div>
-                  <div>
-                    <strong>Risk Level:</strong>{" "}
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        risk.riskLevel === "high" ||
-                        risk.riskLevel === "very-high"
-                          ? "bg-red-100 text-red-800"
-                          : risk.riskLevel === "medium"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {risk.riskLevel.charAt(0).toUpperCase() +
-                        risk.riskLevel.slice(1).toLowerCase().replace("-", " ")}
-                    </span>
-                  </div>
-                  <div>
-                    <strong>Existing Controls:</strong>{" "}
-                    {risk.existingControls?.join(", ")}
-                  </div>
-                  <div>
-                    <strong>Residual Risk:</strong> {risk.residualRisk}
-                  </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
           <div className="text-gray-500">No risks recorded.</div>
-        )}
-      </div>
-      {/* Control Measures */}
-      <div>
-        <div className="text-lg font-semibold text-indigo-700 mb-2 flex items-center gap-2">
-          <Shield className="w-5 h-5 text-indigo-400" /> Control Measures
-        </div>
-        {assessment.controlMeasures && assessment.controlMeasures.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {assessment.controlMeasures.map((cm, idx) => (
-              <div
-                key={cm.id || idx}
-                className="bg-white border border-indigo-100 rounded-lg p-4 shadow-sm"
-              >
-                <div className="font-semibold text-indigo-800 mb-1">
-                  Measure: {cm.measure}
-                </div>
-                <div className="text-sm text-gray-700">
-                  <div>
-                    <strong>Type:</strong> {cm.type}
-                  </div>
-                  <div>
-                    <strong>Responsibility:</strong> {cm.responsibility}
-                  </div>
-                  <div>
-                    <strong>Implementation Date:</strong>{" "}
-                    {cm.implementationDate}
-                  </div>
-                  <div>
-                    <strong>Review Date:</strong> {cm.reviewDate}
-                  </div>
-                  <div>
-                    <strong>Status:</strong> {cm.status}
-                  </div>
-                  <div>
-                    <strong>Effectiveness:</strong> {cm.effectiveness}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-gray-500">No control measures recorded.</div>
         )}
       </div>
     </div>

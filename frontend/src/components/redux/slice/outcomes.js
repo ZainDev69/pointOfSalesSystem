@@ -1,38 +1,41 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-
+import axios from 'axios';
 import { API_URL } from "../../../main";
 
 // Async thunks
-export const fetchCarePlanOutcomes = createAsyncThunk(
-    'outcomes/fetchCarePlanOutcomes',
-    async (carePlanId, { rejectWithValue }) => {
+export const fetchClientOutcomes = createAsyncThunk(
+    'outcomes/fetchClientOutcomes',
+    async (clientId, { rejectWithValue }) => {
         try {
-            const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes`);
-            const data = await response.json();
-            return data.data;
+            const response = await axios.get(`${API_URL}/outcomes/client/${clientId}`, {
+                withCredentials: true
+            });
+            return response.data.data;
         } catch (error) {
-            console.error('Error in fetchCarePlanOutcomes:', error);
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
 
 export const createOutcome = createAsyncThunk(
     'outcomes/createOutcome',
-    async ({ carePlanId, outcomeData }, { rejectWithValue }) => {
+    async ({ outcomeData }, { rejectWithValue }) => {
         try {
-            const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes`, {
-                method: 'POST',
+            console.log("Creating the outcome redux")
+            console.log("Outcome data being sent:", outcomeData);
+            const response = await axios.post(`${API_URL}/outcomes`, outcomeData, {
+                withCredentials: true,
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(outcomeData),
             });
-            const data = await response.json();
-            return data.data.outcome;
+            console.log("Outcome created", response.data.data.outcome)
+            return response.data.data.outcome;
         } catch (error) {
             console.error('Error in createOutcome:', error);
-            return rejectWithValue(error.message);
+            console.error('Error response:', error.response?.data);
+            console.error('Error status:', error.response?.status);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -41,18 +44,27 @@ export const updateOutcome = createAsyncThunk(
     'outcomes/updateOutcome',
     async ({ outcomeId, outcomeData }, { rejectWithValue }) => {
         try {
-            const response = await fetch(`${API_URL}/outcomes/${outcomeId}`, {
-                method: 'PATCH',
+            console.log('=== UPDATE OUTCOME REDUX THUNK CALLED ===');
+            console.log('Outcome ID:', outcomeId);
+            console.log('Outcome data:', outcomeData);
+            console.log('API URL:', `${API_URL}/outcomes/${outcomeId}`);
+
+            const response = await axios.patch(`${API_URL}/outcomes/${outcomeId}`, outcomeData, {
+                withCredentials: true,
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(outcomeData),
             });
-            const data = await response.json();
-            return data.data.outcome;
+
+            console.log('Update outcome response:', response.data);
+            return response.data.data.outcome;
         } catch (error) {
-            console.error('Error in updateOutcome:', error);
-            return rejectWithValue(error.message);
+            console.error('=== ERROR IN UPDATE OUTCOME ===');
+            console.error('Error object:', error);
+            console.error('Error response:', error.response?.data);
+            console.error('Error status:', error.response?.status);
+            console.error('Error message:', error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -61,13 +73,14 @@ export const deleteOutcome = createAsyncThunk(
     'outcomes/deleteOutcome',
     async (outcomeId, { rejectWithValue }) => {
         try {
-            await fetch(`${API_URL}/outcomes/${outcomeId}`, {
-                method: 'DELETE',
+            console.log("In delete Outcome ", outcomeId)
+            await axios.delete(`${API_URL}/outcomes/${outcomeId}`, {
+                withCredentials: true
             });
             return outcomeId;
         } catch (error) {
             console.error('Error in deleteOutcome:', error);
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -76,18 +89,16 @@ export const addOutcomeProgress = createAsyncThunk(
     'outcomes/addOutcomeProgress',
     async ({ outcomeId, progressData }, { rejectWithValue }) => {
         try {
-            const response = await fetch(`${API_URL}/outcomes/${outcomeId}/progress`, {
-                method: 'POST',
+            const response = await axios.post(`${API_URL}/outcomes/${outcomeId}/progress`, progressData, {
+                withCredentials: true,
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(progressData),
             });
-            const data = await response.json();
-            return data.data.outcome;
+            return response.data.data.outcome;
         } catch (error) {
             console.error('Error in addOutcomeProgress:', error);
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -96,12 +107,16 @@ export const fetchOutcomeOptions = createAsyncThunk(
     'outcomes/fetchOutcomeOptions',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await fetch(`${API_URL}/outcomes/options`);
-            const data = await response.json();
-            return data.data;
+            console.log('Fetching outcome options from:', `${API_URL}/outcomes/options/all`);
+            const response = await axios.get(`${API_URL}/outcomes/options/all`, {
+                withCredentials: true
+            });
+            console.log('Outcome options response:', response.data);
+            return response.data.data;
         } catch (error) {
             console.error('Error in fetchOutcomeOptions:', error);
-            return rejectWithValue(error.message);
+            console.error('Error details:', error.response?.data);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -110,12 +125,13 @@ export const filterOutcomesByCategory = createAsyncThunk(
     'outcomes/filterOutcomesByCategory',
     async ({ carePlanId, category }, { rejectWithValue }) => {
         try {
-            const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes/filter/category?category=${category}`);
-            const data = await response.json();
-            return data.data;
+            const response = await axios.get(`${API_URL}/care-plans/${carePlanId}/outcomes/filter/category?category=${category}`, {
+                withCredentials: true
+            });
+            return response.data.data;
         } catch (error) {
             console.error('Error in filterOutcomesByCategory:', error);
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -124,12 +140,13 @@ export const filterOutcomesByStatus = createAsyncThunk(
     'outcomes/filterOutcomesByStatus',
     async ({ carePlanId, status }, { rejectWithValue }) => {
         try {
-            const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes/filter/status?status=${status}`);
-            const data = await response.json();
-            return data.data;
+            const response = await axios.get(`${API_URL}/care-plans/${carePlanId}/outcomes/filter/status?status=${status}`, {
+                withCredentials: true
+            });
+            return response.data.data;
         } catch (error) {
             console.error('Error in filterOutcomesByStatus:', error);
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -139,12 +156,13 @@ export const filterOutcomes = createAsyncThunk(
     async ({ carePlanId, filters }, { rejectWithValue }) => {
         try {
             const queryParams = new URLSearchParams(filters).toString();
-            const response = await fetch(`${API_URL}/care-plans/${carePlanId}/outcomes/filter?${queryParams}`);
-            const data = await response.json();
-            return data.data;
+            const response = await axios.get(`${API_URL}/care-plans/${carePlanId}/outcomes/filter?${queryParams}`, {
+                withCredentials: true
+            });
+            return response.data.data;
         } catch (error) {
             console.error('Error in filterOutcomes:', error);
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -206,15 +224,15 @@ const outcomesSlice = createSlice({
     extraReducers: (builder) => {
         builder
             // Fetch care plan outcomes
-            .addCase(fetchCarePlanOutcomes.pending, (state) => {
+            .addCase(fetchClientOutcomes.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(fetchCarePlanOutcomes.fulfilled, (state, action) => {
+            .addCase(fetchClientOutcomes.fulfilled, (state, action) => {
                 state.loading = false;
                 state.items = action.payload;
             })
-            .addCase(fetchCarePlanOutcomes.rejected, (state, action) => {
+            .addCase(fetchClientOutcomes.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

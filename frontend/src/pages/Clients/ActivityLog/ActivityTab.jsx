@@ -70,7 +70,7 @@ export function ActivityTab({ client }) {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-          <History className="w-5 h-5 text-blue-600" />
+          <History className="w-5 h-5 text-black" />
           <span>Activity Log</span>
         </h3>
         <div className="flex items-center space-x-2">

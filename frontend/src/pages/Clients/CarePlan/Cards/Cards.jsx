@@ -14,59 +14,73 @@ const formatReviewDateTime = (dateString) => {
 
 export function CardsTab({ activeCarePlan, outcomes }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
       {/* Version Card */}
-      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 px-3 py-2 hover:shadow-md transition-all duration-200 flex items-center justify-between min-h-[60px]">
+      <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 rounded-2xl border border-slate-200/60 px-5 py-4 hover:shadow-xl hover:shadow-blue-100/40 hover:scale-105 transition-all duration-300 flex items-center justify-between min-h-[80px] shadow-lg shadow-slate-100/50 backdrop-blur-sm">
         <div>
-          <p className="text-lg font-bold text-blue-900 mb-0.5">
+          <p className="text-2xl font-bold text-slate-800 mb-1">
             v{activeCarePlan.version}
           </p>
-          <p className="text-xs text-blue-700 font-medium">Version</p>
+          <p className="text-sm text-slate-600 font-medium">Version</p>
         </div>
-        <FileText className="w-5 h-5 text-blue-500" />
+        <div className="p-2 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl">
+          <FileText className="w-6 h-6 text-blue-600" />
+        </div>
       </div>
+
       {/* Assessed By Card */}
-      <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-lg border border-cyan-200 px-3 py-2 hover:shadow-md transition-all duration-200 flex items-center justify-between min-h-[60px]">
+      <div className="bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 rounded-2xl border border-slate-200/60 px-5 py-4 hover:shadow-xl hover:shadow-emerald-100/40 hover:scale-105 transition-all duration-300 flex items-center justify-between min-h-[80px] shadow-lg shadow-slate-100/50 backdrop-blur-sm">
         <div>
-          <p className="text-lg font-bold text-cyan-900 mb-0.5">
+          <p className="text-xl font-bold text-slate-800 mb-1">
             {activeCarePlan.assessedBy || "-"}
           </p>
-          <p className="text-xs text-cyan-700 font-medium">Assessed By</p>
+          <p className="text-sm text-slate-600 font-medium">Assessed By</p>
         </div>
-        <User className="w-5 h-5 text-cyan-500" />
+        <div className="p-2 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl">
+          <User className="w-6 h-6 text-emerald-600" />
+        </div>
       </div>
+
       {/* Assessment Date Card */}
-      <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200 px-3 py-2 hover:shadow-md transition-all duration-200 flex items-center justify-between min-h-[60px]">
+      <div className="bg-gradient-to-br from-slate-50 via-purple-50 to-violet-50 rounded-2xl border border-slate-200/60 px-5 py-4 hover:shadow-xl hover:shadow-purple-100/40 hover:scale-105 transition-all duration-300 flex items-center justify-between min-h-[80px] shadow-lg shadow-slate-100/50 backdrop-blur-sm">
         <div>
-          <p className="text-lg font-bold text-green-900 mb-0.5">
+          <p className="text-lg font-bold text-slate-800 mb-1">
             {new Date(activeCarePlan.assessmentDate).toLocaleDateString()}
           </p>
-          <p className="text-xs text-green-700 font-medium">Assessment Date</p>
+          <p className="text-sm text-slate-600 font-medium">Assessment Date</p>
         </div>
-        <Calendar className="w-5 h-5 text-green-500" />
+        <div className="p-2 bg-gradient-to-br from-purple-100 to-violet-100 rounded-xl">
+          <Calendar className="w-6 h-6 text-purple-600" />
+        </div>
       </div>
+
       {/* Review Due Card */}
-      <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 px-3 py-2 hover:shadow-md transition-all duration-200 flex items-center justify-between min-h-[60px]">
+      <div className="bg-gradient-to-br from-slate-50 via-amber-50 to-orange-50 rounded-2xl border border-slate-200/60 px-5 py-4 hover:shadow-xl hover:shadow-amber-100/40 hover:scale-105 transition-all duration-300 flex items-center justify-between min-h-[80px] shadow-lg shadow-slate-100/50 backdrop-blur-sm">
         <div>
           <p
-            className="text-base font-bold text-purple-900 mb-0.5 truncate"
-            style={{ maxWidth: "160px" }}
+            className="text-base font-bold text-slate-800 mb-1 truncate"
+            style={{ maxWidth: "140px" }}
           >
             {formatReviewDateTime(activeCarePlan.reviewDate)}
           </p>
-          <p className="text-xs text-purple-700 font-medium">Review Due</p>
+          <p className="text-sm text-slate-600 font-medium">Review Due</p>
         </div>
-        <Clock className="w-5 h-5 text-purple-500" />
+        <div className="p-2 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl">
+          <Clock className="w-6 h-6 text-amber-600" />
+        </div>
       </div>
+
       {/* Outcomes Card */}
-      <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200 px-3 py-2 hover:shadow-md transition-all duration-200 flex items-center justify-between min-h-[60px]">
+      <div className="bg-gradient-to-br from-slate-50 via-rose-50 to-pink-50 rounded-2xl border border-slate-200/60 px-5 py-4 hover:shadow-xl hover:shadow-rose-100/40 hover:scale-105 transition-all duration-300 flex items-center justify-between min-h-[80px] shadow-lg shadow-slate-100/50 backdrop-blur-sm">
         <div>
-          <p className="text-lg font-bold text-amber-900 mb-0.5">
+          <p className="text-2xl font-bold text-slate-800 mb-1">
             {outcomes.length}
           </p>
-          <p className="text-xs text-amber-700 font-medium">Outcomes</p>
+          <p className="text-sm text-slate-600 font-medium">Outcomes</p>
         </div>
-        <Target className="w-5 h-5 text-amber-500" />
+        <div className="p-2 bg-gradient-to-br from-rose-100 to-pink-100 rounded-xl">
+          <Target className="w-6 h-6 text-rose-600" />
+        </div>
       </div>
     </div>
   );

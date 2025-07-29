@@ -19,30 +19,9 @@ router.route('/care-plans/:id')
     .patch(carePlanController.updateCarePlan)
     .delete(carePlanController.deleteCarePlan);
 
-// Outcome routes
-router.route('/care-plans/:carePlanId/outcomes')
-    .get(carePlanController.getCarePlanOutcomes)
-    .post(carePlanController.createOutcome);
+router.route('/care-plans/:id/restore')
+    .post(carePlanController.restoreCarePlan);
 
-router.route('/outcomes/:id')
-    .patch(carePlanController.updateOutcome)
-    .delete(carePlanController.deleteOutcome);
 
-router.route('/outcomes/:id/progress')
-    .post(carePlanController.addOutcomeProgress);
-
-// Outcome options route
-router.route('/outcomes/options')
-    .get(carePlanController.getOutcomeOptions);
-
-// Outcome filter routes
-router.route('/care-plans/:carePlanId/outcomes/filter/category')
-    .get(carePlanController.filterOutcomesByCategory);
-
-router.route('/care-plans/:carePlanId/outcomes/filter/status')
-    .get(carePlanController.filterOutcomesByStatus);
-
-router.route('/care-plans/:carePlanId/outcomes/filter')
-    .get(carePlanController.filterOutcomes);
 
 module.exports = router; 

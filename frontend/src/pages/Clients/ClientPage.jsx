@@ -30,7 +30,8 @@ import { ClientProfileForm } from "./ClientProfileForm";
 import { ClientProfileDetails } from "./ClientProfileDetails/ClientProfileDetails";
 import toast from "react-hot-toast";
 import { confirmAlert } from "react-confirm-alert";
-import defaultClientImg from "../../assets/default.jpg";
+import { getClientImage } from "../../utils/avatarUtils";
+import { Button } from "../../components/ui/Button";
 
 export default function Clients() {
   const [view, setView] = useState("list");
@@ -255,13 +256,9 @@ export default function Clients() {
             Manage your clients and care services
           </p>
         </div>
-        <button
-          onClick={handleAddClient}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Client</span>
-        </button>
+        <Button onClick={handleAddClient} icon={Plus} variant="default">
+          Add New Client
+        </Button>
       </div>
 
       {/* Stats */}
@@ -517,11 +514,12 @@ export default function Clients() {
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-200 shadow flex items-center justify-center bg-blue-50">
                           <img
-                            src={
-                              client.photo?.startsWith("/uploads/")
-                                ? `${backendUrl}${client.photo}`
-                                : client.photo || defaultClientImg
-                            }
+                            src={getClientImage(
+                              client.photo,
+                              client.personalDetails?.title,
+                              client.personalDetails?.gender,
+                              backendUrl
+                            )}
                             alt="Client"
                             className="w-full h-full object-cover rounded-full"
                           />

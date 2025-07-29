@@ -19,6 +19,8 @@ const upload = multer({ storage });
 
 const router = express.Router();
 
+// Get enum options for form fields
+router.get('/enum-options', clientController.getEnumOptions);
 
 router.get('/check-id', clientController.checkClientId);
 

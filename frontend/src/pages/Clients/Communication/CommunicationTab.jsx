@@ -5,6 +5,7 @@ import {
   fetchCommunicationCategories,
   fetchCommunications,
   fetchCommunicationStatuses,
+  deleteCommunication,
 } from "../../../components/redux/slice/communications";
 import {
   Plus,
@@ -23,20 +24,18 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { CommunicationForm } from "./CommunicationForm";
+import { Button } from "../../../components/ui/Button";
 
 // Icon and color mapping for communication types
 const typeIconMap = {
   phone: { icon: Phone, color: "bg-blue-500" },
   email: { icon: Mail, color: "bg-green-500" },
-  "in-person": { icon: Users, color: "bg-yellow-500" },
   "video-call": { icon: Video, color: "bg-purple-500" },
-  letter: { icon: FileText, color: "bg-pink-500" },
+
   sms: { icon: MessageCircle, color: "bg-indigo-500" },
-  "face to face": { icon: User, color: "bg-orange-500" },
-  other: { icon: HelpCircle, color: "bg-gray-400" },
 };
 
-export function CommunicationTab({ clientId }) {
+export function CommunicationTab({ clientId, client }) {
   const dispatch = useDispatch();
   const communicationType = useSelector(
     (state) => state.communications.communicationType
@@ -53,6 +52,7 @@ export function CommunicationTab({ clientId }) {
   const limit = 10;
   const [showForm, setShowForm] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [viewData, setViewData] = useState(null);
 
   useEffect(() => {
     if (!communicationType.length) {
@@ -90,11 +90,20 @@ export function CommunicationTab({ clientId }) {
   };
   const handleEdit = (comm) => {
     setEditData(comm);
+    setViewData(null);
     setShowForm(true);
   };
+
+  const handleView = (comm) => {
+    setViewData(comm);
+    setEditData(null);
+    setShowForm(true);
+  };
+
   const handleFormClose = () => {
     setShowForm(false);
     setEditData(null);
+    setViewData(null);
     // Optionally refresh list
     dispatch(
       fetchCommunications({
@@ -105,6 +114,32 @@ export function CommunicationTab({ clientId }) {
         limit,
       })
     );
+  };
+
+  const handleDelete = async (comm) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this communication? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await dispatch(deleteCommunication(comm._id)).unwrap();
+      // Refresh the list after deletion
+      dispatch(
+        fetchCommunications({
+          clientId,
+          type: filterType,
+          category: filterCategory,
+          page: currentPage,
+          limit,
+        })
+      );
+    } catch (error) {
+      console.error("Failed to delete communication:", error);
+    }
   };
 
   // Card stats by type
@@ -196,15 +231,16 @@ export function CommunicationTab({ clientId }) {
           </select>
         </div>
       </div>
-      {/* Inline CommunicationForm for add/edit */}
+      {/* Inline CommunicationForm for add/edit/view */}
       {showForm && (
         <div className="mb-6">
           <CommunicationForm
-            initialData={editData}
+            initialData={editData || viewData}
             onSave={handleFormClose}
             onCancel={handleFormClose}
-            mode={editData ? "edit" : "add"}
+            mode={viewData ? "view" : editData ? "edit" : "add"}
             clientId={clientId}
+            client={client}
           />
         </div>
       )}
@@ -214,13 +250,9 @@ export function CommunicationTab({ clientId }) {
           <h3 className="text-lg font-semibold text-gray-900">
             Communication History
           </h3>
-          <button
-            onClick={handleAdd}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Communication</span>
-          </button>
+          <Button onClick={handleAdd} icon={Plus} variant="default">
+            New Communication
+          </Button>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
@@ -298,6 +330,7 @@ export function CommunicationTab({ clientId }) {
                       <td className="px-3 py-2">{comm.status}</td>
                       <td className="px-3 py-2 flex items-center gap-2">
                         <button
+                          onClick={() => handleView(comm)}
                           className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="View"
                         >
@@ -311,6 +344,7 @@ export function CommunicationTab({ clientId }) {
                           <Edit3 className="w-4 h-4" />
                         </button>
                         <button
+                          onClick={() => handleDelete(comm)}
                           className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete"
                         >
@@ -328,17 +362,14 @@ export function CommunicationTab({ clientId }) {
         {pages > 1 && (
           <div className="flex justify-center mt-4 space-x-2 px-6 pb-6">
             {Array.from({ length: pages }, (_, i) => (
-              <button
+              <Button
                 key={i}
                 onClick={() => setCurrentPage(i + 1)}
-                className={`px-3 py-1 rounded ${
-                  currentPage === i + 1
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700"
-                }`}
+                variant={currentPage === i + 1 ? "default" : "secondary"}
+                size="sm"
               >
                 {i + 1}
-              </button>
+              </Button>
             ))}
           </div>
         )}

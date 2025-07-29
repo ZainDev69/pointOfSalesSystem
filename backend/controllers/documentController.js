@@ -1,5 +1,5 @@
 const Document = require('../models/documentModel');
-const Client = require('../models/clientModel');
+const { Client } = require('../models/clientModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const ActivityLog = require('../models/activityLogModel');

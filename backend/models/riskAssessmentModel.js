@@ -25,62 +25,6 @@ const RiskSchema = new mongoose.Schema({
         ],
         required: true
     },
-    riskLevel: {
-        type: String,
-        enum: [
-            'very-low',
-            'low',
-            'medium',
-            'high',
-            'very-high'
-        ],
-        required: true
-    },
-    existingControls: [String],
-    residualRisk: String,
-});
-
-const ControlMeasureSchema = new mongoose.Schema({
-    riskId: String,
-    measure: String,
-    type: {
-        type: String,
-        enum: [
-            'elimination',
-            'substitution',
-            'engineering',
-            'administrative',
-            'ppe',
-            'training',
-            'monitoring',
-            'emergency-response'
-        ],
-        required: true
-    },
-    responsibility: String,
-    implementationDate: String,
-    reviewDate: String,
-    status: {
-        type: String,
-        enum: [
-            'not-started',
-            'in-progress',
-            'completed',
-            'on-hold',
-            'cancelled'
-        ],
-        default: 'not-started'
-    },
-    effectiveness: {
-        type: String,
-        enum: [
-            'not-effective',
-            'partially-effective',
-            'effective',
-            'highly-effective'
-        ],
-        default: 'not-effective'
-    },
 });
 
 const RiskAssessmentSchema = new mongoose.Schema({
@@ -92,16 +36,22 @@ const RiskAssessmentSchema = new mongoose.Schema({
     type: {
         type: String,
         enum: [
-            "environmental",
-            "moving-handling",
+            "allergies",
+            "continence",
+            "eating and drinking",
             "falls",
-            "medication",
-            "skin-integrity",
-            "nutrition-hydration",
-            "mental-capacity",
-            "infection-control",
-            "fire-safety",
-            "personal-safety"
+            "fire",
+            "health",
+            "medications",
+            "mobility,moving & handling",
+            "outings",
+            "pets",
+            "property & premises",
+            "skin care",
+            "sleep",
+            "washing and bathing",
+            "waste disposal",
+            "other/general",
         ],
         required: true
     },
@@ -119,19 +69,7 @@ const RiskAssessmentSchema = new mongoose.Schema({
         ],
         default: 'current'
     },
-    overallRisk: {
-        type: String,
-        enum: [
-            'very-low',
-            'low',
-            'medium',
-            'high',
-            'very-high'
-        ],
-        default: 'low'
-    },
     risks: [RiskSchema],
-    controlMeasures: [ControlMeasureSchema],
     version: { type: Number, default: 1 },
 }, { timestamps: true });
 

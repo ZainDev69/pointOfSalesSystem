@@ -32,6 +32,7 @@ const visitScheduleRoutes = require('./routes/visitScheduleRoutes');
 const carePlanDocumentRoutes = require('./routes/carePlanDocumentRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const communicationRoutes = require('./routes/communicationRoutes');
+const outcomeRoutes = require('./routes/outcomeRoutes');
 
 app.use((req, res, next) => {
     console.log(`[${req.method}] ${req.originalUrl}`);
@@ -48,6 +49,7 @@ app.use('/risk-assessments', riskAssessmentRoutes);
 app.use('/documents', documentRoutes);
 app.use('/careplans', carePlanDocumentRoutes);
 app.use('/communications', communicationRoutes);
+app.use('/outcomes', outcomeRoutes);
 app.use('/activity-logs', require('./routes/activityLogRoutes'));
 
 

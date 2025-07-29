@@ -7,11 +7,13 @@ export const fetchRiskAssessments = createAsyncThunk(
     'riskAssessments/fetchRiskAssessments',
     async (clientId, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${API_URL}/risk-assessments/client/${clientId}`);
+            const response = await axios.get(`${API_URL}/risk-assessments/client/${clientId}`, {
+                withCredentials: true
+            });
             return response.data.data;
         } catch (error) {
             console.error('Error in fetchRiskAssessments:', error);
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -21,11 +23,21 @@ export const addRiskAssessment = createAsyncThunk(
     'riskAssessments/addRiskAssessment',
     async (assessment, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`${API_URL}/risk-assessments`, assessment);
+            console.log('=== ADD RISK ASSESSMENT REDUX THUNK CALLED ===');
+            console.log('Assessment data being sent:', assessment);
+            console.log('API URL:', `${API_URL}/risk-assessments`);
+
+            const response = await axios.post(`${API_URL}/risk-assessments`, assessment, {
+                withCredentials: true
+            });
             return response.data.data;
         } catch (error) {
-            console.error('Error in addRiskAssessment:', error);
-            return rejectWithValue(error.message);
+            console.error('=== ERROR IN ADD RISK ASSESSMENT ===');
+            console.error('Error object:', error);
+            console.error('Error response:', error.response?.data);
+            console.error('Error status:', error.response?.status);
+            console.error('Error message:', error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -35,11 +47,13 @@ export const editRiskAssessment = createAsyncThunk(
     'riskAssessments/editRiskAssessment',
     async ({ id, assessment }, { rejectWithValue }) => {
         try {
-            const response = await axios.put(`${API_URL}/risk-assessments/${id}`, assessment);
+            const response = await axios.put(`${API_URL}/risk-assessments/${id}`, assessment, {
+                withCredentials: true
+            });
             return response.data.data;
         } catch (error) {
             console.error('Error in editRiskAssessment:', error);
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -49,11 +63,23 @@ export const deleteRiskAssessment = createAsyncThunk(
     'riskAssessments/deleteRiskAssessment',
     async (id, { rejectWithValue }) => {
         try {
-            await axios.delete(`${API_URL}/risk-assessments/${id}`);
+            console.log('=== DELETE RISK ASSESSMENT REDUX THUNK CALLED ===');
+            console.log('Assessment ID:', id);
+            console.log('API URL:', `${API_URL}/risk-assessments/${id}`);
+
+            const response = await axios.delete(`${API_URL}/risk-assessments/${id}`, {
+                withCredentials: true
+            });
+
+            console.log('Delete response:', response);
             return id;
         } catch (error) {
-            console.error('Error in deleteRiskAssessment:', error);
-            return rejectWithValue(error.message);
+            console.error('=== ERROR IN DELETE RISK ASSESSMENT ===');
+            console.error('Error object:', error);
+            console.error('Error response:', error.response?.data);
+            console.error('Error status:', error.response?.status);
+            console.error('Error message:', error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -63,11 +89,13 @@ export const fetchRiskAssessmentTypes = createAsyncThunk(
     'riskAssessments/fetchRiskAssessmentTypes',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${API_URL}/risk-assessments/types`);
+            const response = await axios.get(`${API_URL}/risk-assessments/types`, {
+                withCredentials: true
+            });
             return response.data.data;
         } catch (error) {
             console.error('Error in fetchRiskAssessmentTypes:', error);
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -77,11 +105,13 @@ export const fetchLikelihoodOptions = createAsyncThunk(
     'riskAssessments/fetchLikelihoodOptions',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${API_URL}/risk-assessments/likelihood-options`);
+            const response = await axios.get(`${API_URL}/risk-assessments/likelihood-options`, {
+                withCredentials: true
+            });
             return response.data.data;
         } catch (error) {
             console.error('Error in fetchLikelihoodOptions:', error);
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -91,39 +121,13 @@ export const fetchSeverityOptions = createAsyncThunk(
     'riskAssessments/fetchSeverityOptions',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${API_URL}/risk-assessments/severity-options`);
+            const response = await axios.get(`${API_URL}/risk-assessments/severity-options`, {
+                withCredentials: true
+            });
             return response.data.data;
         } catch (error) {
             console.error('Error in fetchSeverityOptions:', error);
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
-// Fetch risk level options
-export const fetchRiskLevelOptions = createAsyncThunk(
-    'riskAssessments/fetchRiskLevelOptions',
-    async (_, { rejectWithValue }) => {
-        try {
-            const response = await axios.get(`${API_URL}/risk-assessments/risk-level-options`);
-            return response.data.data;
-        } catch (error) {
-            console.error('Error in fetchRiskLevelOptions:', error);
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
-// Fetch overall risk options
-export const fetchOverallRiskOptions = createAsyncThunk(
-    'riskAssessments/fetchOverallRiskOptions',
-    async (_, { rejectWithValue }) => {
-        try {
-            const response = await axios.get(`${API_URL}/risk-assessments/overall-risk-options`);
-            return response.data.data;
-        } catch (error) {
-            console.error('Error in fetchOverallRiskOptions:', error);
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -133,53 +137,13 @@ export const fetchAssessmentStatusOptions = createAsyncThunk(
     'riskAssessments/fetchAssessmentStatusOptions',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${API_URL}/risk-assessments/assessment-status-options`);
+            const response = await axios.get(`${API_URL}/risk-assessments/assessment-status-options`, {
+                withCredentials: true
+            });
             return response.data.data;
         } catch (error) {
             console.error('Error in fetchAssessmentStatusOptions:', error);
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
-// Fetch control measure type options
-export const fetchControlMeasureTypeOptions = createAsyncThunk(
-    'riskAssessments/fetchControlMeasureTypeOptions',
-    async (_, { rejectWithValue }) => {
-        try {
-            const response = await axios.get(`${API_URL}/risk-assessments/control-measure-type-options`);
-            return response.data.data;
-        } catch (error) {
-            console.error('Error in fetchControlMeasureTypeOptions:', error);
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
-// Fetch control measure status options
-export const fetchControlMeasureStatusOptions = createAsyncThunk(
-    'riskAssessments/fetchControlMeasureStatusOptions',
-    async (_, { rejectWithValue }) => {
-        try {
-            const response = await axios.get(`${API_URL}/risk-assessments/control-measure-status-options`);
-            return response.data.data;
-        } catch (error) {
-            console.error('Error in fetchControlMeasureStatusOptions:', error);
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
-// Fetch control measure effectiveness options
-export const fetchControlMeasureEffectivenessOptions = createAsyncThunk(
-    'riskAssessments/fetchControlMeasureEffectivenessOptions',
-    async (_, { rejectWithValue }) => {
-        try {
-            const response = await axios.get(`${API_URL}/risk-assessments/control-measure-effectiveness-options`);
-            return response.data.data;
-        } catch (error) {
-            console.error('Error in fetchControlMeasureEffectivenessOptions:', error);
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
@@ -199,24 +163,9 @@ const riskAssessmentsSlice = createSlice({
         severityOptions: [],
         severityOptionsLoading: false,
         severityOptionsError: null,
-        riskLevelOptions: [],
-        riskLevelOptionsLoading: false,
-        riskLevelOptionsError: null,
-        overallRiskOptions: [],
-        overallRiskOptionsLoading: false,
-        overallRiskOptionsError: null,
         assessmentStatusOptions: [],
         assessmentStatusOptionsLoading: false,
         assessmentStatusOptionsError: null,
-        controlMeasureTypeOptions: [],
-        controlMeasureTypeOptionsLoading: false,
-        controlMeasureTypeOptionsError: null,
-        controlMeasureStatusOptions: [],
-        controlMeasureStatusOptionsLoading: false,
-        controlMeasureStatusOptionsError: null,
-        controlMeasureEffectivenessOptions: [],
-        controlMeasureEffectivenessOptionsLoading: false,
-        controlMeasureEffectivenessOptionsError: null,
     },
     reducers: {
         clearRiskAssessments: (state) => {
@@ -232,24 +181,9 @@ const riskAssessmentsSlice = createSlice({
             state.severityOptions = [];
             state.severityOptionsLoading = false;
             state.severityOptionsError = null;
-            state.riskLevelOptions = [];
-            state.riskLevelOptionsLoading = false;
-            state.riskLevelOptionsError = null;
-            state.overallRiskOptions = [];
-            state.overallRiskOptionsLoading = false;
-            state.overallRiskOptionsError = null;
             state.assessmentStatusOptions = [];
             state.assessmentStatusOptionsLoading = false;
             state.assessmentStatusOptionsError = null;
-            state.controlMeasureTypeOptions = [];
-            state.controlMeasureTypeOptionsLoading = false;
-            state.controlMeasureTypeOptionsError = null;
-            state.controlMeasureStatusOptions = [];
-            state.controlMeasureStatusOptionsLoading = false;
-            state.controlMeasureStatusOptionsError = null;
-            state.controlMeasureEffectivenessOptions = [];
-            state.controlMeasureEffectivenessOptionsLoading = false;
-            state.controlMeasureEffectivenessOptionsError = null;
         },
     },
     extraReducers: (builder) => {
@@ -312,30 +246,6 @@ const riskAssessmentsSlice = createSlice({
                 state.severityOptionsLoading = false;
                 state.severityOptionsError = action.error.message;
             })
-            .addCase(fetchRiskLevelOptions.pending, (state) => {
-                state.riskLevelOptionsLoading = true;
-                state.riskLevelOptionsError = null;
-            })
-            .addCase(fetchRiskLevelOptions.fulfilled, (state, action) => {
-                state.riskLevelOptionsLoading = false;
-                state.riskLevelOptions = action.payload;
-            })
-            .addCase(fetchRiskLevelOptions.rejected, (state, action) => {
-                state.riskLevelOptionsLoading = false;
-                state.riskLevelOptionsError = action.error.message;
-            })
-            .addCase(fetchOverallRiskOptions.pending, (state) => {
-                state.overallRiskOptionsLoading = true;
-                state.overallRiskOptionsError = null;
-            })
-            .addCase(fetchOverallRiskOptions.fulfilled, (state, action) => {
-                state.overallRiskOptionsLoading = false;
-                state.overallRiskOptions = action.payload;
-            })
-            .addCase(fetchOverallRiskOptions.rejected, (state, action) => {
-                state.overallRiskOptionsLoading = false;
-                state.overallRiskOptionsError = action.error.message;
-            })
             .addCase(fetchAssessmentStatusOptions.pending, (state) => {
                 state.assessmentStatusOptionsLoading = true;
                 state.assessmentStatusOptionsError = null;
@@ -347,42 +257,6 @@ const riskAssessmentsSlice = createSlice({
             .addCase(fetchAssessmentStatusOptions.rejected, (state, action) => {
                 state.assessmentStatusOptionsLoading = false;
                 state.assessmentStatusOptionsError = action.error.message;
-            })
-            .addCase(fetchControlMeasureTypeOptions.pending, (state) => {
-                state.controlMeasureTypeOptionsLoading = true;
-                state.controlMeasureTypeOptionsError = null;
-            })
-            .addCase(fetchControlMeasureTypeOptions.fulfilled, (state, action) => {
-                state.controlMeasureTypeOptionsLoading = false;
-                state.controlMeasureTypeOptions = action.payload;
-            })
-            .addCase(fetchControlMeasureTypeOptions.rejected, (state, action) => {
-                state.controlMeasureTypeOptionsLoading = false;
-                state.controlMeasureTypeOptionsError = action.error.message;
-            })
-            .addCase(fetchControlMeasureStatusOptions.pending, (state) => {
-                state.controlMeasureStatusOptionsLoading = true;
-                state.controlMeasureStatusOptionsError = null;
-            })
-            .addCase(fetchControlMeasureStatusOptions.fulfilled, (state, action) => {
-                state.controlMeasureStatusOptionsLoading = false;
-                state.controlMeasureStatusOptions = action.payload;
-            })
-            .addCase(fetchControlMeasureStatusOptions.rejected, (state, action) => {
-                state.controlMeasureStatusOptionsLoading = false;
-                state.controlMeasureStatusOptionsError = action.error.message;
-            })
-            .addCase(fetchControlMeasureEffectivenessOptions.pending, (state) => {
-                state.controlMeasureEffectivenessOptionsLoading = true;
-                state.controlMeasureEffectivenessOptionsError = null;
-            })
-            .addCase(fetchControlMeasureEffectivenessOptions.fulfilled, (state, action) => {
-                state.controlMeasureEffectivenessOptionsLoading = false;
-                state.controlMeasureEffectivenessOptions = action.payload;
-            })
-            .addCase(fetchControlMeasureEffectivenessOptions.rejected, (state, action) => {
-                state.controlMeasureEffectivenessOptionsLoading = false;
-                state.controlMeasureEffectivenessOptionsError = action.error.message;
             });
     },
 });

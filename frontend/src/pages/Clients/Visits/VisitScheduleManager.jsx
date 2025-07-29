@@ -19,6 +19,7 @@ import {
   updateVisit,
   deleteVisit,
 } from "../../../components/redux/slice/visitSchedules";
+import { Button } from "../../../components/ui/Button";
 
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
@@ -258,17 +259,17 @@ export function VisitScheduleManager({ clientId }) {
             Manage client visits and care delivery
           </p>
         </div>
-        <button
+        <Button
           onClick={() => {
             setSelectedVisit(null);
             setView("form");
           }}
-          className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-6 py-2 rounded-full shadow-lg flex items-center space-x-2 text-base font-semibold transition-all duration-200"
+          variant="default"
+          icon={Plus}
           style={{ minWidth: 180 }}
         >
-          <Plus className="w-5 h-5" />
-          <span>Schedule Visit</span>
-        </button>
+          Schedule Visit
+        </Button>
       </div>
       <div className="mb-6" />
 

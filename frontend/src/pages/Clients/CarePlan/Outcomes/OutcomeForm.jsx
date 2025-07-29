@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  ArrowLeft,
-  Target,
-  Save,
-  X,
-  Calendar,
-  User,
-  Clock,
-  FileText,
-} from "lucide-react";
+import { ArrowLeft, Target, X, Clock, FileText } from "lucide-react";
 import { fetchOutcomeOptions } from "../../../../components/redux/slice/outcomes";
+import { Button } from "../../../../components/ui/Button";
 
 export function OutcomeForm({ outcome, onBack, onSave }) {
   const dispatch = useDispatch();
@@ -23,7 +15,7 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
     timeframe: "",
     status: "in-progress",
     priority: "medium",
-    category: "other",
+    category: "personal-care",
     notes: "",
   });
 
@@ -44,7 +36,7 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
         timeframe: outcome.timeframe || "",
         status: outcome.status || "in-progress",
         priority: outcome.priority || "medium",
-        category: outcome.category || "other",
+        category: outcome.category || "personal-care",
         notes: outcome.notes || "",
       });
     }
@@ -324,13 +316,9 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
           >
             Cancel
           </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center space-x-2 transition-colors"
-          >
-            <Save className="w-4 h-4" />
-            <span>{outcome ? "Update Outcome" : "Create Outcome"}</span>
-          </button>
+          <Button type="submit" variant="default" style={{ minWidth: 180 }}>
+            {outcome ? "Update Outcome" : "Create Outcome"}
+          </Button>
         </div>
       </form>
     </div>

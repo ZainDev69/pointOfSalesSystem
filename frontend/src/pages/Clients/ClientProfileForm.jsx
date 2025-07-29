@@ -13,9 +13,19 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import defaultClientImg from "../../assets/default.jpg";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchEnumOptions,
+  getEnumOptions,
+  checkClientId,
+} from "../../components/redux/slice/clients";
+import { getClientImage } from "../../utils/avatarUtils";
+import { Button } from "../../components/ui/Button";
 
 export function ClientProfileForm({ client, onBack, onSave }) {
+  const dispatch = useDispatch();
+  const enumOptions = useSelector(getEnumOptions);
+  const loading = useSelector((state) => state.client.loading);
   const [activeTab, setActiveTab] = useState("personal");
   const isEditing = !!client;
   const [isPvt, setIsPvt] = useState(false);
@@ -189,24 +199,54 @@ export function ClientProfileForm({ client, onBack, onSave }) {
     },
   });
 
+  // Fetch enum options on component mount
+  useEffect(() => {
+    if (!enumOptions) {
+      dispatch(fetchEnumOptions());
+    }
+  }, [dispatch, enumOptions]);
+
   // Real-time check for Client ID existence
   useEffect(() => {
     const id = formData.clientId;
     if (!id || isEditing) {
       setClientIdExists(false);
+      setCheckingClientId(false);
       return;
     }
+
     setCheckingClientId(true);
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/clients?clientId=${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setClientIdExists(
-          Array.isArray(data.data) && data.data.some((c) => c.ClientID === id)
-        );
+    const timeoutId = setTimeout(async () => {
+      try {
+        const result = await dispatch(checkClientId(id)).unwrap();
+        setClientIdExists(Array.isArray(result) && result.length > 0);
+      } catch (error) {
+        console.error("Error checking client ID:", error);
+        setClientIdExists(false);
+      } finally {
         setCheckingClientId(false);
-      })
-      .catch(() => setCheckingClientId(false));
-  }, [formData.clientId, isEditing]);
+      }
+    }, 500); // Debounce the check
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.clientId, isEditing, dispatch]);
+
+  // Provide fallback values for enum options
+  const getEnumValue = (key, fallback) => {
+    return enumOptions?.[key] || fallback || [];
+  };
+
+  // Show loading state if enum options are being fetched
+  if (loading && !enumOptions) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading form options...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Handle checkbox toggle
   const handlePvtToggle = (checked) => {
@@ -249,6 +289,21 @@ export function ClientProfileForm({ client, onBack, onSave }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check if client ID already exists (only for new clients)
+    if (!isEditing && clientIdExists) {
+      toast.error(
+        "This Client ID already exists. Please choose a different one."
+      );
+      return;
+    }
+
+    // Check if client ID is empty
+    if (!formData.clientId.trim()) {
+      toast.error("Client ID is required.");
+      return;
+    }
+
     try {
       let photoUrl = formData.photo || "";
       if (photoFile) {
@@ -432,9 +487,12 @@ export function ClientProfileForm({ client, onBack, onSave }) {
     import.meta.env.VITE_BACKEND_URL || "http://localhost:5500";
   const imageUrl = photoPreview
     ? photoPreview
-    : client?.photo?.startsWith("/uploads/")
-    ? `${backendUrl}${client.photo}`
-    : client?.photo || defaultClientImg;
+    : getClientImage(
+        client?.photo,
+        formData.personalDetails?.title,
+        formData.personalDetails?.gender,
+        backendUrl
+      );
 
   return (
     <div className="space-y-6">
@@ -487,7 +545,7 @@ export function ClientProfileForm({ client, onBack, onSave }) {
             alt="Client"
             className="w-32 h-32 rounded-full object-cover border-2 border-gray-200 shadow mb-2"
           />
-          <label className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full shadow cursor-pointer">
+          <label className="bg-black hover:bg-gray-600 text-white px-4 py-2 rounded-md shadow cursor-pointer">
             Change Photo
             <input
               type="file"
@@ -564,7 +622,15 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                   onChange={(val) =>
                     handleChange("personalDetails", "title", val)
                   }
-                  options={["Mr", "Mrs", "Miss", "Ms", "Dr", "Prof", "Rev"]}
+                  options={getEnumValue("TITLES", [
+                    "Mr",
+                    "Mrs",
+                    "Miss",
+                    "Ms",
+                    "Dr",
+                    "Prof",
+                    "Rev",
+                  ])}
                 />
                 <Input
                   label="Full Name"
@@ -604,13 +670,13 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                   onChange={(val) =>
                     handleChange("personalDetails", "gender", val)
                   }
-                  options={[
+                  options={getEnumValue("GENDERS", [
                     "Male",
                     "Female",
                     "Non-binary",
                     "Other",
                     "Prefer not to say",
-                  ]}
+                  ])}
                 />
                 <Select
                   label="Relationship Status"
@@ -618,7 +684,7 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                   onChange={(val) =>
                     handleChange("personalDetails", "relationshipStatus", val)
                   }
-                  options={[
+                  options={getEnumValue("RELATIONSHIP_STATUSES", [
                     "Single",
                     "Married",
                     "Civil Partnership",
@@ -627,7 +693,7 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                     "Separated",
                     "Other",
                     "Prefer Not to Say",
-                  ]}
+                  ])}
                 />
                 <Select
                   label="Ethnicity"
@@ -635,7 +701,7 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                   onChange={(val) =>
                     handleChange("personalDetails", "ethnicity", val)
                   }
-                  options={[
+                  options={getEnumValue("ETHNICITIES", [
                     "White British",
                     "White Irish",
                     "White Other",
@@ -652,13 +718,20 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                     "Other Asian",
                     "Other",
                     "Prefer Not to Say",
-                  ]}
+                  ])}
                 />
                 <Select
                   label="Status"
                   value={formData.status}
-                  onChange={(val) => handleChange("status", "status", val)}
-                  options={["Active", "Inactive", "hospitalized", "carehome"]}
+                  onChange={(val) =>
+                    setFormData((prev) => ({ ...prev, status: val }))
+                  }
+                  options={getEnumValue("STATUSES", [
+                    "Active",
+                    "Inactive",
+                    "Hospitalized",
+                    "Care Home",
+                  ])}
                 />
               </div>
             </Section>
@@ -704,13 +777,19 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                     handleChange("addressInformation", "postCode", val)
                   }
                 />
-                <Input
+                <Select
                   label="Country"
-                  type="text"
                   value={formData.addressInformation.country}
                   onChange={(val) =>
                     handleChange("addressInformation", "country", val)
                   }
+                  options={getEnumValue("COUNTRIES", [
+                    "United Kingdom",
+                    "England",
+                    "Scotland",
+                    "Wales",
+                    "Northern Ireland",
+                  ])}
                 />
                 <Input
                   label="Access Instructions"
@@ -771,7 +850,12 @@ export function ClientProfileForm({ client, onBack, onSave }) {
                       val
                     )
                   }
-                  options={["Phone", "Email", "Post", "In Person"]}
+                  options={getEnumValue("CONTACT_METHODS", [
+                    "Phone",
+                    "Email",
+                    "Post",
+                    "In Person",
+                  ])}
                 />
                 <Input
                   label="Best Time to Contact"
@@ -981,14 +1065,15 @@ Consent to photography for care documentation"
                 <h3 className="text-lg font-semibold text-gray-900">
                   Medical Conditions
                 </h3>
-                <button
+                <Button
                   type="button"
                   onClick={addMedicalCondition}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center space-x-1"
+                  variant="default"
+                  icon={Plus}
+                  style={{ minWidth: 180 }}
                 >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Condition</span>
-                </button>
+                  Add Condition
+                </Button>
               </div>
 
               <div className="space-y-4">
@@ -1032,9 +1117,17 @@ Consent to photography for care documentation"
                             }
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           >
-                            <option value="mild">Mild</option>
-                            <option value="moderate">Moderate</option>
-                            <option value="severe">Severe</option>
+                            <option value="">Select Severity</option>
+                            {getEnumValue("SEVERITY_LEVELS", [
+                              "mild",
+                              "moderate",
+                              "severe",
+                            ]).map((severity) => (
+                              <option key={severity} value={severity}>
+                                {severity.charAt(0).toUpperCase() +
+                                  severity.slice(1)}
+                              </option>
+                            ))}
                           </select>
                         </div>
 
@@ -1053,9 +1146,17 @@ Consent to photography for care documentation"
                             }
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           >
-                            <option value="active">Active</option>
-                            <option value="resolved">Resolved</option>
-                            <option value="chronic">Chronic</option>
+                            <option value="">Select Status</option>
+                            {getEnumValue("CONDITION_STATUSES", [
+                              "active",
+                              "resolved",
+                              "chronic",
+                            ]).map((status) => (
+                              <option key={status} value={status}>
+                                {status.charAt(0).toUpperCase() +
+                                  status.slice(1)}
+                              </option>
+                            ))}
                           </select>
                         </div>
 
@@ -1125,14 +1226,15 @@ Consent to photography for care documentation"
                 <h3 className="text-lg font-semibold text-gray-900">
                   Allergies
                 </h3>
-                <button
+                <Button
                   type="button"
                   onClick={addAllergy}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center space-x-1"
+                  variant="default"
+                  icon={Plus}
+                  style={{ minWidth: 180 }}
                 >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Allergy</span>
-                </button>
+                  Add Allergy
+                </Button>
               </div>
 
               <div className="space-y-4">
@@ -1181,12 +1283,20 @@ Consent to photography for care documentation"
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
-                          <option value="mild">Mild</option>
-                          <option value="moderate">Moderate</option>
-                          <option value="severe">Severe</option>
-                          <option value="life-threatening">
-                            Life-threatening
-                          </option>
+                          <option value="">Select Severity</option>
+                          {getEnumValue("SEVERITY_LEVELS", [
+                            "mild",
+                            "moderate",
+                            "severe",
+                            "life-threatening",
+                          ]).map((severity) => (
+                            <option key={severity} value={severity}>
+                              {severity === "life-threatening"
+                                ? "Life-threatening"
+                                : severity.charAt(0).toUpperCase() +
+                                  severity.slice(1)}
+                            </option>
+                          ))}
                         </select>
                       </div>
 
@@ -1232,14 +1342,14 @@ Consent to photography for care documentation"
                 <h3 className="text-lg font-semibold text-gray-900">
                   Current Medications
                 </h3>
-                <button
+                <Button
                   type="button"
                   onClick={addMedication}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center space-x-1"
+                  variant="default"
+                  icon={Plus}
                 >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Medication</span>
-                </button>
+                  Add Medication
+                </Button>
               </div>
 
               <div className="space-y-4">
@@ -1308,12 +1418,18 @@ Consent to photography for care documentation"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           >
                             <option value="">Select Route</option>
-                            <option value="Oral">Oral</option>
-                            <option value="Topical">Topical</option>
-                            <option value="Injection">Injection</option>
-                            <option value="Inhaled">Inhaled</option>
-                            <option value="Eye drops">Eye drops</option>
-                            <option value="Ear drops">Ear drops</option>
+                            {getEnumValue("MEDICATION_ROUTES", [
+                              "Oral",
+                              "Topical",
+                              "Injection",
+                              "Inhaled",
+                              "Eye drops",
+                              "Ear drops",
+                            ]).map((route) => (
+                              <option key={route} value={route}>
+                                {route}
+                              </option>
+                            ))}
                           </select>
                         </div>
 
@@ -1788,10 +1904,17 @@ Consent to photography for care documentation"
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="non-practicing">Non-practicing</option>
-                    <option value="occasional">Occasional</option>
-                    <option value="regular">Regular</option>
-                    <option value="devout">Devout</option>
+                    <option value="">Select Practice Level</option>
+                    {getEnumValue("PRACTICE_LEVELS", [
+                      "non-practicing",
+                      "occasional",
+                      "regular",
+                      "devout",
+                    ]).map((level) => (
+                      <option key={level} value={level}>
+                        {level.charAt(0).toUpperCase() + level.slice(1)}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -1883,12 +2006,21 @@ Consent to photography for care documentation"
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="independent">Independent</option>
-                    <option value="supervision">Supervision</option>
-                    <option value="partial-assistance">
-                      Partial Assistance
-                    </option>
-                    <option value="full-assistance">Full Assistance</option>
+                    <option value="">Select Assistance Level</option>
+                    {getEnumValue("ASSISTANCE_LEVELS", [
+                      "independent",
+                      "supervision",
+                      "partial-assistance",
+                      "full-assistance",
+                    ]).map((level) => (
+                      <option key={level} value={level}>
+                        {level === "partial-assistance"
+                          ? "Partial Assistance"
+                          : level === "full-assistance"
+                          ? "Full Assistance"
+                          : level.charAt(0).toUpperCase() + level.slice(1)}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -2081,13 +2213,14 @@ Consent to photography for care documentation"
             <span>Cancel</span>
           </button>
 
-          <button
+          <Button
             type="submit"
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+            variant="default"
+            icon={Save}
+            style={{ minWidth: 180 }}
           >
-            <Save className="w-4 h-4" />
-            <span>{isEditing ? "Update Profile" : "Create Profile"}</span>
-          </button>
+            {isEditing ? "Update Profile" : "Create Profile"}
+          </Button>
         </div>
       </form>
     </div>

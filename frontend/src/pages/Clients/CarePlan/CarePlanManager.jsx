@@ -10,7 +10,7 @@ import {
   updateCarePlan,
   deleteCarePlan,
 } from "../../../components/redux/slice/carePlans";
-import { fetchCarePlanOutcomes } from "../../../components/redux/slice/outcomes";
+import { fetchClientOutcomes } from "../../../components/redux/slice/outcomes";
 import toast from "react-hot-toast";
 import { CarePlanDocumentManager } from "./CarePlanDocumentation/CarePlanDocumentManager";
 import { DailyLivingTab } from "./DailyLiving/DailyLiving";
@@ -21,6 +21,7 @@ import { CareNavTab } from "./CareComponents/CareNavTab";
 import { getStatusColor } from "./CareComponents/StatusColor";
 import { CardsTab } from "./Cards/Cards";
 import { PersonalTab } from "../Personal/PersonalTab";
+import { Button } from "../../../components/ui/Button";
 
 export function CarePlanManager({ client }) {
   const [view, setView] = useState("view");
@@ -30,9 +31,9 @@ export function CarePlanManager({ client }) {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const dispatch = useDispatch();
+  const { items: outcomes } = useSelector((state) => state.outcomes);
 
   const { activeCarePlan, loading } = useSelector((state) => state.carePlans);
-  const { items: outcomes } = useSelector((state) => state.outcomes);
 
   useEffect(() => {
     if (client._id) {
@@ -86,7 +87,7 @@ export function CarePlanManager({ client }) {
 
   useEffect(() => {
     if (activeCarePlan?._id) {
-      dispatch(fetchCarePlanOutcomes(activeCarePlan._id));
+      dispatch(fetchClientOutcomes(client._id));
     }
   }, [activeCarePlan, dispatch]);
 
@@ -249,13 +250,13 @@ export function CarePlanManager({ client }) {
               )}
             </div>
 
-            <button
+            <Button
               onClick={() => setView("edit")}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+              variant="default"
+              style={{ minWidth: 180 }}
             >
-              <Plus className="w-4 h-4" />
-              <span>Create Care Plan</span>
-            </button>
+              Create Care Plan
+            </Button>
           </div>
         </div>
       </div>
@@ -357,22 +358,20 @@ export function CarePlanManager({ client }) {
           >
             {activeCarePlan.status?.toUpperCase()}
           </span>
-          <button
+          <Button
             onClick={() => setShowHistory(true)}
-            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 py-2 rounded-full flex items-center space-x-3 shadow-md transition-all duration-200 transform hover:scale-105 border border-blue-200"
-            style={{ fontWeight: 600, letterSpacing: "0.03em" }}
+            variant="default"
+            style={{ minWidth: 180 }}
           >
-            <History className="w-5 h-5 mr-1 text-white drop-shadow" />
-            <span className="tracking-wide text-base">History</span>
-          </button>
-          <button
+            History
+          </Button>
+          <Button
             onClick={() => setView("edit")}
-            className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-4 py-2 rounded-full flex items-center space-x-3 shadow-md transition-all duration-200 transform hover:scale-105 border border-green-200"
-            style={{ fontWeight: 600, letterSpacing: "0.03em" }}
+            variant="default"
+            style={{ minWidth: 180 }}
           >
-            <Edit3 className="w-5 h-5 mr-1 text-white drop-shadow" />
-            <span className="tracking-wide text-base">Edit Plan</span>
-          </button>
+            Edit Plan
+          </Button>
         </div>
       </div>
 
@@ -387,15 +386,10 @@ export function CarePlanManager({ client }) {
         <OverviewTab activeCarePlan={activeCarePlan} />
       )}
 
-      {activeTab === "outcomes" && (
-        <OutcomesTab outcomes={outcomes} activeCarePlan={activeCarePlan} />
-      )}
+      {activeTab === "outcomes" && <OutcomesTab clientId={client._id} />}
 
       {activeTab === "documents" && (
-        <CarePlanDocumentManager
-          carePlanId={activeCarePlan._id}
-          clientId={client._id}
-        />
+        <CarePlanDocumentManager clientId={client._id} />
       )}
 
       {/* Personal Care Tab */}
@@ -407,7 +401,9 @@ export function CarePlanManager({ client }) {
       )}
 
       {/* History Modal */}
-      {showHistory && <HistoryTab setShowHistory={setShowHistory} />}
+      {showHistory && (
+        <HistoryTab setShowHistory={setShowHistory} client={client} />
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (

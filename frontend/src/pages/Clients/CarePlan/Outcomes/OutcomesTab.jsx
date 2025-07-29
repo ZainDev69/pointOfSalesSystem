@@ -11,16 +11,19 @@ import {
   setFilter,
   clearFilters,
   resetToOriginalItems,
+  fetchClientOutcomes,
 } from "../../../../components/redux/slice/outcomes";
 
 import toast from "react-hot-toast";
 import { Eye, Plus, Edit3, Trash } from "lucide-react";
 import { OutcomeForm } from "./OutcomeForm";
 import { OutcomeDetails } from "./OutcomeDetails";
+import { Button } from "../../../../components/ui/Button";
 
-export function OutcomesTab({ outcomes, activeCarePlan }) {
+export function OutcomesTab({ clientId }) {
   const dispatch = useDispatch();
   const {
+    items: outcomes,
     options,
     optionsLoading,
     filters,
@@ -29,6 +32,18 @@ export function OutcomesTab({ outcomes, activeCarePlan }) {
     loading,
   } = useSelector((state) => state.outcomes);
 
+  // Debug logging
+  useEffect(() => {
+    console.log("Outcomes state:", {
+      options,
+      optionsLoading,
+      outcomes,
+      loading,
+    });
+    console.log("Options data:", options);
+    console.log("Options loading:", optionsLoading);
+  }, [options, optionsLoading, outcomes, loading]);
+
   const [selectedOutcome, setSelectedOutcome] = useState(null);
   const [outcomeView, setOutcomeView] = useState("list");
   const [showOutcomeDetails, setShowOutcomeDetails] = useState(false);
@@ -36,8 +51,22 @@ export function OutcomesTab({ outcomes, activeCarePlan }) {
 
   // Fetch outcome options on component mount
   useEffect(() => {
-    dispatch(fetchOutcomeOptions());
-  }, [dispatch]);
+    if (
+      !options ||
+      Object.keys(options).length === 0 ||
+      !options.status ||
+      options.status.length === 0
+    ) {
+      dispatch(fetchOutcomeOptions());
+    }
+  }, [dispatch, options]);
+
+  // Fetch client outcomes on component mount
+  useEffect(() => {
+    if (clientId) {
+      dispatch(fetchClientOutcomes(clientId));
+    }
+  }, [dispatch, clientId]);
 
   // Helper function to format option labels
   const formatOptionLabel = (value) => {
@@ -77,12 +106,23 @@ export function OutcomesTab({ outcomes, activeCarePlan }) {
 
   const handleCreateOutcome = async (outcomeData) => {
     try {
+      console.log("handleCreateOutcome called with:", outcomeData);
+      console.log("clientId:", clientId);
+      // Add required fields for outcome creation
+      const outcomeWithRequiredFields = {
+        ...outcomeData,
+        clientId: clientId,
+      };
+      console.log("Outcome with required fields:", outcomeWithRequiredFields);
+
       await dispatch(
-        createOutcome({ carePlanId: activeCarePlan._id, outcomeData })
+        createOutcome({ outcomeData: outcomeWithRequiredFields })
       ).unwrap();
       toast.success("Outcome created successfully");
+      await dispatch(fetchClientOutcomes(clientId));
       setOutcomeView("list");
-    } catch {
+    } catch (error) {
+      console.error("Error in handleCreateOutcome:", error);
       toast.error("Failed to create outcome");
     }
   };
@@ -94,6 +134,7 @@ export function OutcomesTab({ outcomes, activeCarePlan }) {
         updateOutcome({ outcomeId: selectedOutcome._id, outcomeData })
       ).unwrap();
       toast.success("Outcome updated successfully");
+      await dispatch(fetchClientOutcomes(clientId));
       setOutcomeView("list");
       setSelectedOutcome(null);
     } catch {
@@ -102,11 +143,18 @@ export function OutcomesTab({ outcomes, activeCarePlan }) {
   };
 
   const handleDeleteOutcome = async (outcomeId) => {
-    try {
-      await dispatch(deleteOutcome(outcomeId)).unwrap();
-      toast.success("Outcome deleted successfully");
-    } catch {
-      toast.error("Failed to delete outcome");
+    if (
+      window.confirm(
+        "Are you sure you want to delete this outcome? This action cannot be undone."
+      )
+    ) {
+      try {
+        await dispatch(deleteOutcome(outcomeId)).unwrap();
+        toast.success("Outcome deleted successfully");
+        await dispatch(fetchClientOutcomes(clientId));
+      } catch {
+        toast.error("Failed to delete outcome");
+      }
     }
   };
 
@@ -143,7 +191,7 @@ export function OutcomesTab({ outcomes, activeCarePlan }) {
     try {
       await dispatch(
         filterOutcomes({
-          carePlanId: activeCarePlan._id,
+          carePlanId: "all", // Use a default value or get from context/props
           filters: activeFilters,
         })
       ).unwrap();
@@ -349,16 +397,17 @@ export function OutcomesTab({ outcomes, activeCarePlan }) {
             <h3 className="text-lg font-semibold text-gray-900">
               Care Outcomes
             </h3>
-            <button
+            <Button
               onClick={() => {
                 setSelectedOutcome(null);
                 setOutcomeView("form");
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center space-x-1"
+              variant="default"
+              style={{ minWidth: 180 }}
+              icon={Plus}
             >
-              <Plus className="w-4 h-4" />
-              <span>Add Outcome</span>
-            </button>
+              Add Outcome
+            </Button>
           </div>
         </div>
 
@@ -445,16 +494,16 @@ export function OutcomesTab({ outcomes, activeCarePlan }) {
               <p className="text-gray-600 mb-4">
                 Add measurable outcomes to track care plan effectiveness.
               </p>
-              <button
+              <Button
                 onClick={() => {
                   setSelectedOutcome(null);
                   setOutcomeView("form");
                 }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mx-auto"
+                variant="default"
+                style={{ minWidth: 180 }}
               >
-                <Plus className="w-4 h-4" />
-                <span>Add First Outcome</span>
-              </button>
+                Add First Outcome
+              </Button>
             </div>
           )}
         </div>

@@ -1,5 +1,5 @@
 const RiskAssessment = require('../models/riskAssessmentModel');
-const Client = require('../models/clientModel');
+const { Client } = require('../models/clientModel');
 const ActivityLog = require('../models/activityLogModel');
 
 // Helper function to get enum values from schema
@@ -19,7 +19,14 @@ const createOptions = (values) => {
 // Create a new risk assessment
 exports.createRiskAssessment = async (req, res) => {
     try {
+        console.log('=== CREATE RISK ASSESSMENT CONTROLLER CALLED ===');
+        console.log('Request body:', req.body);
+        console.log('Request headers:', req.headers);
+
         const assessment = await RiskAssessment.create(req.body);
+
+        console.log('Assessment created successfully:', assessment);
+
         // Log activity
         const client = await Client.findById(assessment.clientId);
         if (client) {
@@ -31,6 +38,13 @@ exports.createRiskAssessment = async (req, res) => {
         }
         res.status(201).json({ success: true, data: assessment });
     } catch (err) {
+        console.error('=== ERROR IN CREATE RISK ASSESSMENT ===');
+        console.error('Error object:', err);
+        console.error('Error message:', err.message);
+        console.error('Error name:', err.name);
+        if (err.errors) {
+            console.error('Validation errors:', err.errors);
+        }
         res.status(400).json({ success: false, message: err.message });
     }
 };
@@ -70,7 +84,21 @@ exports.updateRiskAssessment = async (req, res) => {
 exports.deleteRiskAssessment = async (req, res) => {
     try {
         const { id } = req.params;
+        console.log("=== DELETE RISK ASSESSMENT CONTROLLER CALLED ===");
+        console.log("Method:", req.method);
+        console.log("URL:", req.originalUrl);
+        console.log("Assessment ID:", id);
+        console.log("Headers:", req.headers);
+
         const assessment = await RiskAssessment.findById(id);
+
+        if (!assessment) {
+            console.log("No assessment found with ID:", id);
+            return res.status(404).json({ success: false, message: 'Risk assessment not found' });
+        }
+
+        console.log("Assessment found:", assessment);
+
         // Log activity before deleting
         if (assessment) {
             const client = await Client.findById(assessment.clientId);
@@ -80,11 +108,16 @@ exports.deleteRiskAssessment = async (req, res) => {
                     action: `Risk Assessment deleted: ${assessment.type} ${assessment.assessmentDate}`,
                     user: 'Admin',
                 });
+                console.log("Activity logged for client:", client._id);
             }
         }
+
         await RiskAssessment.findByIdAndDelete(id);
+        console.log("Assessment deleted successfully");
+
         res.status(204).json({ success: true });
     } catch (err) {
+        console.error("Error in deleteRiskAssessment:", err);
         res.status(400).json({ success: false, message: err.message });
     }
 };
@@ -109,44 +142,9 @@ exports.getSeverityOptions = (req, res) => {
     res.status(200).json({ status: 'Success', data: options });
 };
 
-// Get risk level options
-exports.getRiskLevelOptions = (req, res) => {
-    const riskLevelValues = getEnumValues(RiskAssessment.schema.path('risks').schema, 'riskLevel');
-    const options = createOptions(riskLevelValues);
-    res.status(200).json({ status: 'Success', data: options });
-};
-
-// Get overall risk options
-exports.getOverallRiskOptions = (req, res) => {
-    const overallRiskValues = getEnumValues(RiskAssessment.schema, 'overallRisk');
-    const options = createOptions(overallRiskValues);
-    res.status(200).json({ status: 'Success', data: options });
-};
-
 // Get assessment status options
 exports.getAssessmentStatusOptions = (req, res) => {
     const statusValues = getEnumValues(RiskAssessment.schema, 'status');
     const options = createOptions(statusValues);
-    res.status(200).json({ status: 'Success', data: options });
-};
-
-// Get control measure type options
-exports.getControlMeasureTypeOptions = (req, res) => {
-    const typeValues = getEnumValues(RiskAssessment.schema.path('controlMeasures').schema, 'type');
-    const options = createOptions(typeValues);
-    res.status(200).json({ status: 'Success', data: options });
-};
-
-// Get control measure status options
-exports.getControlMeasureStatusOptions = (req, res) => {
-    const statusValues = getEnumValues(RiskAssessment.schema.path('controlMeasures').schema, 'status');
-    const options = createOptions(statusValues);
-    res.status(200).json({ status: 'Success', data: options });
-};
-
-// Get control measure effectiveness options
-exports.getControlMeasureEffectivenessOptions = (req, res) => {
-    const effectivenessValues = getEnumValues(RiskAssessment.schema.path('controlMeasures').schema, 'effectiveness');
-    const options = createOptions(effectivenessValues);
     res.status(200).json({ status: 'Success', data: options });
 }; 

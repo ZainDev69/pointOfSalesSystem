@@ -217,48 +217,10 @@ export const generateRiskAssessmentPDF = async (assessments, clientName) => {
                 const riskDetails = [
                     ['Who at Risk', risk.whoAtRisk?.join(', ') || 'Not specified'],
                     ['Likelihood', risk.likelihood],
-                    ['Severity', risk.severity],
-                    ['Risk Level', risk.riskLevel],
-                    ['Existing Controls', risk.existingControls?.join(', ') || 'None'],
-                    ['Residual Risk', risk.residualRisk || 'Not specified']
+                    ['Severity', risk.severity]
                 ];
 
                 yPosition = createTable(['Field', 'Value'], riskDetails, margin + 5, yPosition, [40, 110]);
-                yPosition += 8;
-            });
-        }
-
-        // Control Measures Section
-        if (assessment.controlMeasures && assessment.controlMeasures.length > 0) {
-            checkNewPage(40);
-            pdf.setFontSize(14);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(52, 73, 94);
-            pdf.text('Control Measures', margin, yPosition);
-            yPosition += 10;
-
-            assessment.controlMeasures.forEach((measure, measureIndex) => {
-                checkNewPage(50);
-
-                // Measure header
-                drawColoredRect(margin, yPosition, pageWidth - 2 * margin, 8, { r: 236, g: 240, b: 241 });
-                pdf.setTextColor(52, 73, 94);
-                pdf.setFontSize(11);
-                pdf.setFont('helvetica', 'bold');
-                pdf.text(`${measureIndex + 1}. ${measure.measure}`, margin + 2, yPosition + 6);
-                yPosition += 10;
-
-                // Measure details
-                const measureDetails = [
-                    ['Type', measure.type],
-                    ['Responsibility', measure.responsibility || 'Not specified'],
-                    ['Implementation Date', measure.implementationDate || 'Not specified'],
-                    ['Review Date', measure.reviewDate || 'Not specified'],
-                    ['Status', measure.status],
-                    ['Effectiveness', measure.effectiveness]
-                ];
-
-                yPosition = createTable(['Field', 'Value'], measureDetails, margin + 5, yPosition, [40, 110]);
                 yPosition += 8;
             });
         }

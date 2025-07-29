@@ -9,6 +9,7 @@ import {
   Clock,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { Button } from "../../../components/ui/Button";
 
 export function VisitForm({ visit, onBack, onSave }) {
   const isEditing = !!visit;
@@ -288,14 +289,15 @@ export function VisitForm({ visit, onBack, onSave }) {
                 Visit Tasks
               </h3>
             </div>
-            <button
+            <Button
               type="button"
               onClick={addTask}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center space-x-1"
+              variant="default"
+              icon={Plus}
+              style={{ minWidth: 180 }}
             >
-              <Plus className="w-4 h-4" />
-              <span>Add Task</span>
-            </button>
+              Add Task
+            </Button>
           </div>
 
           <div className="space-y-4">
@@ -474,13 +476,14 @@ export function VisitForm({ visit, onBack, onSave }) {
             <span>Cancel</span>
           </button>
 
-          <button
+          <Button
             type="submit"
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+            variant="default"
+            icon={Save}
+            style={{ minWidth: 180 }}
           >
-            <Save className="w-4 h-4" />
-            <span>{isEditing ? "Update Visit" : "Schedule Visit"}</span>
-          </button>
+            {isEditing ? "Update Visit" : "Schedule Visit"}
+          </Button>
         </div>
       </form>
     </div>

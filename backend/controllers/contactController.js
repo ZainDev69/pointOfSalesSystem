@@ -1,6 +1,6 @@
 const Contact = require("../models/contactModel");
 const { validationResult } = require("express-validator");
-const Client = require("../models/clientModel");
+const { Client } = require("../models/clientModel");
 const ActivityLog = require("../models/activityLogModel");
 
 // Get all contacts for a client
@@ -84,4 +84,10 @@ exports.getContactTypes = (req, res) => {
     // Get enum values from the model
     const contactTypes = Contact.schema.path('contactType').enumValues;
     res.status(200).json({ status: 'Success', data: contactTypes });
+};
+
+exports.getStatusOptions = (req, res) => {
+    // Get enum values from the model
+    const statusOptions = Contact.schema.path('status').enumValues;
+    res.status(200).json({ status: 'Success', data: statusOptions });
 };

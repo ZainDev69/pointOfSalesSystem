@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const carePlanDocumentSchema = new mongoose.Schema({
-    carePlanId: { type: mongoose.Schema.Types.ObjectId, ref: 'CarePlan', required: true },
+    clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
+    carePlanId: { type: mongoose.Schema.Types.ObjectId, ref: 'CarePlan', required: false },
     title: { type: String, required: true },
     attachments: [
         {

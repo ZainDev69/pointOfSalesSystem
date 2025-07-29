@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import { updateClient } from "../../../components/redux/slice/clients";
 import toast from "react-hot-toast";
 import { MedicalInfoEditModal } from "./MedicalInfoEditModal";
+import { Button } from "../../../components/ui/Button";
 
 export function MedicalTab({ client, onClientUpdate }) {
   const [showMedicalEditModal, setShowMedicalEditModal] = useState(false);
@@ -69,14 +70,14 @@ export function MedicalTab({ client, onClientUpdate }) {
         <h2 className="text-2xl font-bold text-gray-900">
           Medical Information
         </h2>
-        <button
+        <Button
           onClick={handleEditMedicalInfo}
-          className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-6 py-2 rounded-full shadow-lg flex items-center space-x-2 text-base font-semibold transition-all duration-200"
+          variant="default"
+          icon={Edit3}
           style={{ minWidth: 180 }}
         >
-          <Edit3 className="w-5 h-5" />
-          <span>Edit Medical Info</span>
-        </button>
+          Edit Medical Info
+        </Button>
       </div>
       <div className="mb-4" />
 

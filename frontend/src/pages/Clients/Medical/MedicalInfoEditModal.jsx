@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Save,
 } from "lucide-react";
+import { Button } from "../../../components/ui/Button";
 
 const toInputDate = (val) => {
   if (!val) return "";
@@ -260,14 +261,13 @@ export function MedicalInfoEditModal({
                   Medical Conditions
                 </h3>
               </div>
-              <button
-                type="button"
+              <Button
                 onClick={addCondition}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center space-x-1"
+                variant="default"
+                style={{ minWidth: 180 }}
               >
-                <Plus className="w-4 h-4" />
-                <span>Add Condition</span>
-              </button>
+                Add Condition
+              </Button>
             </div>
 
             <div className="space-y-4">
@@ -391,14 +391,13 @@ export function MedicalInfoEditModal({
                   Allergies
                 </h3>
               </div>
-              <button
-                type="button"
+              <Button
                 onClick={addAllergy}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center space-x-1"
+                variant="default"
+                style={{ minWidth: 180 }}
               >
-                <Plus className="w-4 h-4" />
-                <span>Add Allergy</span>
-              </button>
+                Add Allergy
+              </Button>
             </div>
 
             <div className="space-y-4">
@@ -512,14 +511,13 @@ export function MedicalInfoEditModal({
                   Current Medications
                 </h3>
               </div>
-              <button
-                type="button"
+              <Button
                 onClick={addMedication}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center space-x-1"
+                variant="default"
+                style={{ minWidth: 180 }}
               >
-                <Plus className="w-4 h-4" />
-                <span>Add Medication</span>
-              </button>
+                Add Medication
+              </Button>
             </div>
 
             <div className="space-y-4">
@@ -905,14 +903,9 @@ export function MedicalInfoEditModal({
           >
             Cancel
           </button>
-          <button
-            onClick={handleSave}
-            disabled={isLoading}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Save className="w-4 h-4" />
-            <span>{isLoading ? "Saving..." : "Save Changes"}</span>
-          </button>
+          <Button onClick={handleSave} disabled={isLoading} variant="default">
+            {isLoading ? "Saving..." : "Save Changes"}
+          </Button>
         </div>
       </div>
     </div>

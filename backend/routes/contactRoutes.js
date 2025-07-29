@@ -5,7 +5,7 @@ const { contactValidation } = require("../validators/contactValidator");
 
 
 router.get('/types', contactController.getContactTypes);
-
+router.get('/status', contactController.getStatusOptions);
 
 router.get("/", contactController.getContacts);
 

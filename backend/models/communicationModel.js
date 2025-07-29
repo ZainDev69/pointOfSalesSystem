@@ -9,12 +9,8 @@ const communicationSchema = new mongoose.Schema({
         enum: [
             'phone',
             'email',
-            'in-person',
             'video-call',
-            'letter',
             'sms',
-            'face to face',
-            'other',
         ],
         required: true,
     },

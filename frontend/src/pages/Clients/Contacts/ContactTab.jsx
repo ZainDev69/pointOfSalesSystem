@@ -23,8 +23,10 @@ import {
   editContact,
   deleteContact,
   fetchContactTypes,
+  fetchStatusOptions,
 } from "../../../components/redux/slice/contacts";
 import toast from "react-hot-toast";
+import { Button } from "../../../components/ui/Button";
 
 export function ContactTab({ client }) {
   const [contactFilter, setContactFilter] = useState("all");
@@ -39,12 +41,19 @@ export function ContactTab({ client }) {
   const contactTypesLoading = useSelector(
     (state) => state.contacts.contactTypesLoading
   );
+  const statusOptions = useSelector((state) => state.contacts.statusOptions);
+  const statusOptionsLoading = useSelector(
+    (state) => state.contacts.statusOptionsLoading
+  );
 
   useEffect(() => {
     if (!contactTypes || contactTypes.length === 0) {
       dispatch(fetchContactTypes());
     }
-  }, [dispatch, contactTypes]);
+    if (!statusOptions || statusOptions.length === 0) {
+      dispatch(fetchStatusOptions());
+    }
+  }, [dispatch, contactTypes, statusOptions]);
 
   const contactTypeIconMap = {
     family: { icon: Heart, bg: "bg-red-100", text: "text-red-600" },
@@ -158,6 +167,8 @@ export function ContactTab({ client }) {
         contact={selectedContact}
         onBack={handleBackToContactList}
         onSave={handleSaveContact}
+        statusOptions={statusOptions}
+        statusOptionsLoading={statusOptionsLoading}
       />
     );
   }
@@ -173,18 +184,12 @@ export function ContactTab({ client }) {
           undone.
         </p>
         <div className="flex justify-end space-x-2">
-          <button
-            onClick={cancelDeleteContact}
-            className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
-          >
+          <Button onClick={cancelDeleteContact} variant="secondary">
             Cancel
-          </button>
-          <button
-            onClick={confirmDeleteContact}
-            className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-          >
+          </Button>
+          <Button onClick={confirmDeleteContact} variant="destructive">
             Delete
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -276,14 +281,14 @@ export function ContactTab({ client }) {
                 Manage and connect with client contacts
               </p>
             </div>
-            <button
+            <Button
               onClick={handleAddContact}
-              className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-6 py-2 rounded-full shadow-lg flex items-center space-x-2 text-base font-semibold transition-all duration-200"
+              icon={Plus}
+              variant="default"
               style={{ minWidth: 180 }}
             >
-              <Plus className="w-5 h-5" />
-              <span>Add Contact</span>
-            </button>
+              Add Contact
+            </Button>
           </div>
           <div className="mb-6" />
           <div className="flex items-center gap-2 mb-4">
@@ -463,10 +468,6 @@ export function ContactTab({ client }) {
                     >
                       <Trash className="w-4 h-4" />
                     </button>
-
-                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
                   </div>
                 </div>
               </div>
@@ -484,13 +485,14 @@ export function ContactTab({ client }) {
                   ? "No family or friends contacts have been added yet."
                   : `No ${contactFilter} contacts found.`}
               </p>
-              <button
+              <Button
                 onClick={handleAddContact}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mx-auto transition-colors"
+                icon={Plus}
+                variant="default"
+                className="mx-auto"
               >
-                <Plus className="w-4 h-4" />
-                <span>Add First Contact</span>
-              </button>
+                Add First Contact
+              </Button>
             </div>
           )}
         </div>

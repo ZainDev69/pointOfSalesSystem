@@ -2,14 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Plus, Download, Edit3, Trash, Eye, X } from "lucide-react";
 import {
-  fetchAllCarePlanDocumentsForClient,
-  addCarePlanDocument,
-  updateCarePlanDocument,
-  deleteCarePlanDocument,
+  fetchAllClientDocuments,
   uploadCarePlanAttachment,
+  addClientDocument,
+  updateClientDocument,
+  deleteClientDocument,
 } from "../../../../components/redux/slice/carePlanDocuments";
 import { CarePlanDocumentForm } from "./CarePlanDocumentForm";
 import toast from "react-hot-toast";
+import { Button } from "../../../../components/ui/Button";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -27,27 +28,29 @@ export function CarePlanDocumentManager({ carePlanId, clientId }) {
 
   useEffect(() => {
     if (clientId) {
-      dispatch(fetchAllCarePlanDocumentsForClient(clientId));
+      dispatch(fetchAllClientDocuments(clientId));
     }
   }, [clientId, dispatch]);
 
   const handleAdd = async (doc) => {
-    await dispatch(addCarePlanDocument({ carePlanId, documentData: doc }))
+    await dispatch(addClientDocument({ clientId, documentData: doc }))
       .unwrap()
       .then(() => toast.success("Document added successfully"))
       .catch(() => {});
+
     setView("list");
   };
   const handleEdit = async (doc) => {
     setUpdating(true);
     try {
       await dispatch(
-        updateCarePlanDocument({
-          carePlanId: doc.carePlanId || carePlanId,
+        updateClientDocument({
+          clientId,
           docId: doc._id,
           documentData: doc,
         })
       ).unwrap();
+
       toast.success("Document updated successfully");
       setView("list");
       setSelectedDoc(null);
@@ -60,9 +63,7 @@ export function CarePlanDocumentManager({ carePlanId, clientId }) {
     }
   };
   const handleDelete = async (doc) => {
-    await dispatch(
-      deleteCarePlanDocument({ carePlanId: doc.carePlanId, docId: doc._id })
-    )
+    await dispatch(deleteClientDocument({ clientId, docId: doc._id }))
       .unwrap()
       .then(() => toast.success("Document deleted successfully"))
       .catch(() => {});
@@ -132,16 +133,17 @@ export function CarePlanDocumentManager({ carePlanId, clientId }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-900">Care Plan Documents</h2>
-        <button
+        <Button
           onClick={() => {
             setSelectedDoc(null);
             setView("form");
           }}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+          variant="default"
+          icon={Plus}
+          style={{ minWidth: 180 }}
         >
-          <Plus className="w-4 h-4" />
-          <span>Add Document</span>
-        </button>
+          Add Document
+        </Button>
       </div>
       {loading && <div>Loading...</div>}
       {error && <div className="text-red-600">{error}</div>}

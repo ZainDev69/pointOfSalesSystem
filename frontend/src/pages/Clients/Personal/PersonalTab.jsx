@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { updateClient } from "../../../components/redux/slice/clients";
 import toast from "react-hot-toast";
 import { InfoBlock } from "../../../components/layout/InfoBlock";
+import { Button } from "../../../components/ui/Button";
 
 export function PersonalTab({ client, onClientUpdate }) {
   const [showPersonalEditModal, setShowPersonalEditModal] = useState(false);
@@ -26,6 +27,8 @@ export function PersonalTab({ client, onClientUpdate }) {
         addressInformation: personalData.addressInformation,
         contactInformation: personalData.contactInformation,
         consent: personalData.consent,
+        startDate: personalData.startDate,
+        reviewDate: personalData.reviewDate,
       };
 
       const result = await dispatch(
@@ -64,14 +67,14 @@ export function PersonalTab({ client, onClientUpdate }) {
       {/* Header with Edit Button */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Personal Details</h2>
-        <button
+        <Button
           onClick={handleEditPersonalInfo}
-          className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-6 py-2 rounded-full shadow-lg flex items-center space-x-2 text-base font-semibold transition-all duration-200"
+          icon={Edit3}
+          variant="default"
           style={{ minWidth: 180 }}
         >
-          <Edit3 className="w-5 h-5" />
-          <span>Edit Personal Info</span>
-        </button>
+          Edit Personal Info
+        </Button>
       </div>
       <div className="mb-4" />
 
@@ -95,6 +98,11 @@ export function PersonalTab({ client, onClientUpdate }) {
               <InfoBlock label="Ethnicity">
                 {client.personalDetails?.ethnicity || "Not specified"}
               </InfoBlock>
+              <InfoBlock label="Start Date">
+                {client.startDate
+                  ? new Date(client.startDate).toLocaleDateString()
+                  : "Not specified"}
+              </InfoBlock>
             </div>
             <div className="space-y-4">
               <InfoBlock label="Preferred Name">
@@ -102,6 +110,11 @@ export function PersonalTab({ client, onClientUpdate }) {
               </InfoBlock>
               <InfoBlock label="Marital Status">
                 {client.personalDetails?.relationshipStatus || "Not specified"}
+              </InfoBlock>
+              <InfoBlock label="Review Date">
+                {client.reviewDate
+                  ? new Date(client.reviewDate).toLocaleDateString()
+                  : "Not specified"}
               </InfoBlock>
             </div>
           </div>
@@ -220,7 +233,11 @@ export function PersonalTab({ client, onClientUpdate }) {
         <PersonalDetailsEditModal
           isOpen={showPersonalEditModal}
           onClose={() => setShowPersonalEditModal(false)}
-          personalDetails={client.personalDetails}
+          personalDetails={{
+            ...client.personalDetails,
+            startDate: client.startDate,
+            reviewDate: client.reviewDate,
+          }}
           addressInformation={client.addressInformation}
           contactInformation={client.contactInformation}
           consent={client.consent}

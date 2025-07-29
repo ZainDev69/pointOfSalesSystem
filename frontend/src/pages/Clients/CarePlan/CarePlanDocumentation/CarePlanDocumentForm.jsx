@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeft, Save, Upload, X } from "lucide-react";
+import { Button } from "../../../../components/ui/Button";
 
 export function CarePlanDocumentForm({ document, onBack, onSave, onUpload }) {
   const isEditing = !!document;
@@ -153,13 +154,9 @@ export function CarePlanDocumentForm({ document, onBack, onSave, onUpload }) {
             <X className="w-4 h-4" />
             <span>Cancel</span>
           </button>
-          <button
-            type="submit"
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center space-x-2"
-          >
-            <Save className="w-4 h-4" />
-            <span>{isEditing ? "Update Document" : "Save Document"}</span>
-          </button>
+          <Button type="submit" variant="default" style={{ minWidth: 180 }}>
+            {isEditing ? "Update Document" : "Save Document"}
+          </Button>
         </div>
       </form>
     </div>

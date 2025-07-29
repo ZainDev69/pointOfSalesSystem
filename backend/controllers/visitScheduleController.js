@@ -1,6 +1,5 @@
 const VisitSchedule = require('../models/visitScheduleModel');
-const AppError = require('../utils/appError');
-const Client = require('../models/clientModel');
+const { Client } = require('../models/clientModel');
 const ActivityLog = require('../models/activityLogModel');
 
 // Get all visits for a client

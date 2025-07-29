@@ -13,13 +13,9 @@ import {
   fetchRiskAssessmentTypes,
   fetchLikelihoodOptions,
   fetchSeverityOptions,
-  fetchRiskLevelOptions,
-  fetchOverallRiskOptions,
   fetchAssessmentStatusOptions,
-  fetchControlMeasureTypeOptions,
-  fetchControlMeasureStatusOptions,
-  fetchControlMeasureEffectivenessOptions,
 } from "../../../components/redux/slice/riskAssessments";
+import { Button } from "../../../components/ui/Button";
 
 export function RiskAssessmentForm({ assessment, onBack, onSave }) {
   const isEditing = !!assessment;
@@ -36,23 +32,8 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
   const severityOptions = useSelector(
     (state) => state.riskAssessments.severityOptions
   );
-  const riskLevelOptions = useSelector(
-    (state) => state.riskAssessments.riskLevelOptions
-  );
-  const overallRiskOptions = useSelector(
-    (state) => state.riskAssessments.overallRiskOptions
-  );
   const assessmentStatusOptions = useSelector(
     (state) => state.riskAssessments.assessmentStatusOptions
-  );
-  const controlMeasureTypeOptions = useSelector(
-    (state) => state.riskAssessments.controlMeasureTypeOptions
-  );
-  const controlMeasureStatusOptions = useSelector(
-    (state) => state.riskAssessments.controlMeasureStatusOptions
-  );
-  const controlMeasureEffectivenessOptions = useSelector(
-    (state) => state.riskAssessments.controlMeasureEffectivenessOptions
   );
 
   useEffect(() => {
@@ -65,63 +46,48 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
     if (!severityOptions || severityOptions.length === 0) {
       dispatch(fetchSeverityOptions());
     }
-    if (!riskLevelOptions || riskLevelOptions.length === 0) {
-      dispatch(fetchRiskLevelOptions());
-    }
-    if (!overallRiskOptions || overallRiskOptions.length === 0) {
-      dispatch(fetchOverallRiskOptions());
-    }
+
     if (!assessmentStatusOptions || assessmentStatusOptions.length === 0) {
       dispatch(fetchAssessmentStatusOptions());
-    }
-    if (!controlMeasureTypeOptions || controlMeasureTypeOptions.length === 0) {
-      dispatch(fetchControlMeasureTypeOptions());
-    }
-    if (
-      !controlMeasureStatusOptions ||
-      controlMeasureStatusOptions.length === 0
-    ) {
-      dispatch(fetchControlMeasureStatusOptions());
-    }
-    if (
-      !controlMeasureEffectivenessOptions ||
-      controlMeasureEffectivenessOptions.length === 0
-    ) {
-      dispatch(fetchControlMeasureEffectivenessOptions());
     }
   }, [
     dispatch,
     riskAssessmentTypes,
     likelihoodOptions,
     severityOptions,
-    riskLevelOptions,
-    overallRiskOptions,
     assessmentStatusOptions,
-    controlMeasureTypeOptions,
-    controlMeasureStatusOptions,
-    controlMeasureEffectivenessOptions,
   ]);
 
-  // Function to calculate review date (6 months from assessment date)
+  // Calculate review date (1 year from assessment date)
   const calculateReviewDate = (assessmentDate) => {
+    if (!assessmentDate) return "";
     const date = new Date(assessmentDate);
-    date.setMonth(date.getMonth() + 6);
+    date.setFullYear(date.getFullYear() + 1);
     return date.toISOString().split("T")[0];
   };
 
-  // Function to calculate risk score
+  // Calculate risk score based on likelihood and severity
   const calculateRiskScore = (likelihood, severity) => {
     const likelihoodOption = likelihoodOptions.find(
-      (opt) => opt.value === likelihood
+      (option) => option.value === likelihood
     );
     const severityOption = severityOptions.find(
-      (opt) => opt.value === severity
+      (option) => option.value === severity
     );
 
     const likelihoodScore = likelihoodOption?.score || 1;
     const severityScore = severityOption?.score || 1;
 
     return likelihoodScore * severityScore;
+  };
+
+  // Get risk score color based on score value
+  const getRiskScoreColor = (score) => {
+    if (score >= 16) return "bg-red-800 text-white"; // Dark red for high risk
+    if (score >= 12) return "bg-red-600 text-white"; // Red for high risk
+    if (score >= 8) return "bg-orange-500 text-white"; // Orange for medium risk
+    if (score >= 4) return "bg-yellow-500 text-white"; // Yellow for low risk
+    return "bg-green-500 text-white"; // Green for very low risk
   };
 
   // Calculate initial review date
@@ -134,15 +100,13 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
   };
 
   const [formData, setFormData] = useState({
-    type: assessment?.type || "environmental",
+    type: assessment?.type || "other/general",
     assessmentDate:
       assessment?.assessmentDate || new Date().toISOString().split("T")[0],
     assessedBy: assessment?.assessedBy || "",
     reviewDate: getInitialReviewDate(),
     status: assessment?.status || "current",
-    overallRisk: assessment?.overallRisk || "low",
     risks: assessment?.risks || [],
-    controlMeasures: assessment?.controlMeasures || [],
     version: assessment?.version || 1,
   });
 
@@ -178,9 +142,6 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
       whoAtRisk: [],
       likelihood: "unlikely",
       severity: "minor",
-      riskLevel: "low",
-      existingControls: [],
-      residualRisk: "low",
     };
 
     setFormData((prev) => ({
@@ -203,56 +164,6 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
       ...prev,
       risks: prev.risks.filter((_, i) => i !== index),
     }));
-  };
-
-  const addControlMeasure = () => {
-    const newMeasure = {
-      id: Date.now().toString(),
-      riskId: "",
-      measure: "",
-      type: "control",
-      responsibility: "",
-      implementationDate: "",
-      reviewDate: "",
-      status: "planned",
-      effectiveness: "not-assessed",
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      controlMeasures: [...prev.controlMeasures, newMeasure],
-    }));
-  };
-
-  const updateControlMeasure = (index, field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      controlMeasures: prev.controlMeasures.map((measure, i) =>
-        i === index ? { ...measure, [field]: value } : measure
-      ),
-    }));
-  };
-
-  const removeControlMeasure = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      controlMeasures: prev.controlMeasures.filter((_, i) => i !== index),
-    }));
-  };
-
-  const getRiskLevelColor = (level) => {
-    switch (level) {
-      case "low":
-        return "bg-green-100 text-green-800";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800";
-      case "high":
-        return "bg-orange-100 text-orange-800";
-      case "very-high":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
   };
 
   return (
@@ -301,12 +212,14 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
               >
                 {riskAssessmentTypesLoading ? (
                   <option disabled>Loading...</option>
-                ) : (
+                ) : riskAssessmentTypes && riskAssessmentTypes.length > 0 ? (
                   riskAssessmentTypes.map((type) => (
                     <option key={type.value} value={type.value}>
                       {type.label}
                     </option>
                   ))
+                ) : (
+                  <option value="other/general">Other/General</option>
                 )}
               </select>
             </div>
@@ -336,6 +249,7 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
               <input
                 type="text"
                 required
+                placeholder="Assessed by Staff"
                 value={formData.assessedBy}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -367,28 +281,6 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Overall Risk Level
-              </label>
-              <select
-                value={formData.overallRisk}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    overallRisk: e.target.value,
-                  }))
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {overallRiskOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Status
               </label>
               <select
@@ -398,33 +290,39 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                {assessmentStatusOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
+                {assessmentStatusOptions &&
+                assessmentStatusOptions.length > 0 ? (
+                  assessmentStatusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))
+                ) : (
+                  <option value="current">Current</option>
+                )}
               </select>
             </div>
           </div>
         </div>
 
-        {/* Risks */}
+        {/* Risks Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
               <AlertTriangle className="w-5 h-5 text-gray-400" />
               <h3 className="text-lg font-semibold text-gray-900">
                 Identified Risks
               </h3>
             </div>
-            <button
+            <Button
               type="button"
               onClick={addRisk}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center space-x-1"
+              variant="default"
+              icon={Plus}
+              style={{ minWidth: 180 }}
             >
-              <Plus className="w-4 h-4" />
-              <span>Add Risk</span>
-            </button>
+              Add Risk
+            </Button>
           </div>
 
           <div className="space-y-4">
@@ -438,14 +336,14 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Description
                     </label>
-                    <input
-                      type="text"
+                    <textarea
                       value={risk.hazard}
                       onChange={(e) =>
                         updateRisk(index, "hazard", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Describe the hazard or risk..."
+                      rows={4}
                     />
                   </div>
 
@@ -479,11 +377,15 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      {likelihoodOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label} ({option.score})
-                        </option>
-                      ))}
+                      {likelihoodOptions && likelihoodOptions.length > 0 ? (
+                        likelihoodOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label} ({option.score})
+                          </option>
+                        ))
+                      ) : (
+                        <option value="unlikely">Unlikely</option>
+                      )}
                     </select>
                   </div>
 
@@ -498,11 +400,15 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      {severityOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label} ({option.score})
-                        </option>
-                      ))}
+                      {severityOptions && severityOptions.length > 0 ? (
+                        severityOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label} ({option.score})
+                          </option>
+                        ))
+                      ) : (
+                        <option value="minor">Minor</option>
+                      )}
                     </select>
                   </div>
 
@@ -510,41 +416,21 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Risk Score
                     </label>
-                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-center">
-                      <span className="text-lg font-bold text-blue-600">
-                        {calculateRiskScore(risk.likelihood, risk.severity)}
+                    <div
+                      className={`w-full px-3 py-2 rounded-lg text-center ${getRiskScoreColor(
+                        calculateRiskScore(risk.likelihood, risk.severity)
+                      )}`}
+                    >
+                      <span className="text-lg font-bold">
+                        {Math.round(
+                          calculateRiskScore(risk.likelihood, risk.severity)
+                        )}
                       </span>
                     </div>
                   </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      How the risk will be Managed/Mitigated
-                    </label>
-                    <textarea
-                      value={risk.existingControls.join(", ")}
-                      onChange={(e) =>
-                        updateRisk(
-                          index,
-                          "existingControls",
-                          e.target.value.split(", ")
-                        )
-                      }
-                      rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="List existing control measures..."
-                    />
-                  </div>
                 </div>
 
-                <div className="flex justify-between items-center mt-4">
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${getRiskLevelColor(
-                      risk.riskLevel
-                    )}`}
-                  >
-                    {risk.riskLevel.replace("-", " ")} risk
-                  </span>
+                <div className="flex justify-end mt-3">
                   <button
                     type="button"
                     onClick={() => removeRisk(index)}
@@ -559,183 +445,7 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
 
             {formData.risks.length === 0 && (
               <p className="text-gray-500 text-center py-4">
-                No risks identified yet. Click "Add Risk" to get started.
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Control Measures */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Control Measures
-            </h3>
-            <button
-              type="button"
-              onClick={addControlMeasure}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center space-x-1"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Control</span>
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {formData.controlMeasures.map((measure, index) => (
-              <div
-                key={`measure-${index}`}
-                className="border border-gray-200 rounded-lg p-4"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Control Measure
-                    </label>
-                    <textarea
-                      value={measure.measure}
-                      onChange={(e) =>
-                        updateControlMeasure(index, "measure", e.target.value)
-                      }
-                      rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Describe the control measure..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Type
-                    </label>
-                    <select
-                      value={measure.type}
-                      onChange={(e) =>
-                        updateControlMeasure(index, "type", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      {controlMeasureTypeOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Responsibility
-                    </label>
-                    <input
-                      type="text"
-                      value={measure.responsibility}
-                      onChange={(e) =>
-                        updateControlMeasure(
-                          index,
-                          "responsibility",
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Implementation Date
-                    </label>
-                    <input
-                      type="date"
-                      value={measure.implementationDate}
-                      onChange={(e) =>
-                        updateControlMeasure(
-                          index,
-                          "implementationDate",
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Review Date
-                    </label>
-                    <input
-                      type="date"
-                      value={measure.reviewDate}
-                      onChange={(e) =>
-                        updateControlMeasure(
-                          index,
-                          "reviewDate",
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Status
-                    </label>
-                    <select
-                      value={measure.status}
-                      onChange={(e) =>
-                        updateControlMeasure(index, "status", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      {controlMeasureStatusOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Effectiveness
-                    </label>
-                    <select
-                      value={measure.effectiveness}
-                      onChange={(e) =>
-                        updateControlMeasure(
-                          index,
-                          "effectiveness",
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      {controlMeasureEffectivenessOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex justify-end mt-3">
-                  <button
-                    type="button"
-                    onClick={() => removeControlMeasure(index)}
-                    className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center space-x-1"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <span>Remove</span>
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            {formData.controlMeasures.length === 0 && (
-              <p className="text-gray-500 text-center py-4">
-                No control measures added yet. Click "Add Control" to get
-                started.
+                No risks added yet. Click "Add Risk" to get started.
               </p>
             )}
           </div>
@@ -752,13 +462,14 @@ export function RiskAssessmentForm({ assessment, onBack, onSave }) {
             <span>Cancel</span>
           </button>
 
-          <button
+          <Button
             type="submit"
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+            variant="default"
+            icon={Save}
+            style={{ minWidth: 180 }}
           >
-            <Save className="w-4 h-4" />
-            <span>{isEditing ? "Update Assessment" : "Save Assessment"}</span>
-          </button>
+            {isEditing ? "Update Assessment" : "Save Assessment"}
+          </Button>
         </div>
       </form>
     </div>

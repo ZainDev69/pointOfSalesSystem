@@ -27,6 +27,7 @@ import {
 } from "../../../components/redux/slice/riskAssessments";
 import { downloadRiskAssessmentPDF } from "../../../utils/pdfGenerator";
 import toast from "react-hot-toast";
+import { Button } from "../../../components/ui/Button";
 
 export function RiskAssessmentManager({ clientId, clientName = "Client" }) {
   const [view, setView] = useState("list");
@@ -193,21 +194,6 @@ export function RiskAssessmentManager({ clientId, clientName = "Client" }) {
     },
   ];
 
-  const getRiskLevelColor = (level) => {
-    switch (level) {
-      case "low":
-        return "bg-green-100 text-green-800";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800";
-      case "high":
-        return "bg-orange-100 text-orange-800";
-      case "very-high":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
   const getStatusColor = (status) => {
     switch (status) {
       case "current":
@@ -258,6 +244,15 @@ export function RiskAssessmentManager({ clientId, clientName = "Client" }) {
     return totalScore / assessment.risks.length; // Average risk score
   };
 
+  // Get risk score color based on score value
+  const getRiskScoreColor = (score) => {
+    if (score >= 16) return "bg-red-800 text-white"; // Dark red for high risk
+    if (score >= 12) return "bg-red-600 text-white"; // Red for high risk
+    if (score >= 8) return "bg-orange-500 text-white"; // Orange for medium risk
+    if (score >= 4) return "bg-yellow-500 text-white"; // Yellow for low risk
+    return "bg-green-500 text-white"; // Green for very low risk
+  };
+
   // Sort assessments by risk score in descending order
   const sortedAssessments = [...assessments].sort((a, b) => {
     const scoreA = calculateOverallRiskScore(a);
@@ -289,9 +284,8 @@ export function RiskAssessmentManager({ clientId, clientName = "Client" }) {
     current: assessments.filter((a) => a.status === "current").length,
     due: assessments.filter((a) => a.status === "due").length,
     overdue: assessments.filter((a) => a.status === "overdue").length,
-    highRisk: assessments.filter(
-      (a) => a.overallRisk === "high" || a.overallRisk === "very-high"
-    ).length,
+    highRisk: assessments.filter((a) => calculateOverallRiskScore(a) >= 12)
+      .length,
   };
 
   if (view === "form") {
@@ -417,17 +411,17 @@ export function RiskAssessmentManager({ clientId, clientName = "Client" }) {
             )}
           </div>
 
-          <button
+          <Button
             onClick={() => {
               setSelectedAssessment(null);
               setView("form");
             }}
-            className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-6 py-2 rounded-full shadow-lg flex items-center space-x-2 text-base font-semibold transition-all duration-200"
+            variant="default"
+            icon={Plus}
             style={{ minWidth: 180 }}
           >
-            <Plus className="w-5 h-5" />
-            <span>New Assessment</span>
-          </button>
+            New Assessment
+          </Button>
         </div>
       </div>
       {/* Statistics */}
@@ -641,11 +635,12 @@ export function RiskAssessmentManager({ clientId, clientName = "Client" }) {
                             {assessment.status}
                           </span>
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getRiskLevelColor(
-                              assessment.overallRisk
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getRiskScoreColor(
+                              calculateOverallRiskScore(assessment)
                             )}`}
                           >
-                            {assessment.overallRisk.replace("-", " ")} risk
+                            {Math.round(calculateOverallRiskScore(assessment))}{" "}
+                            risk score
                           </span>
                         </div>
 

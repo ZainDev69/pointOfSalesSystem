@@ -1,4 +1,4 @@
-const Client = require('./../models/clientModel');
+const { Client, ENUMS } = require('./../models/clientModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const Contact = require('../models/contactModel');
@@ -20,10 +20,31 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// New endpoint to get enum options
+exports.getEnumOptions = catchAsync(async (req, res, next) => {
+    res.status(200).json({
+        status: 'Success',
+        data: ENUMS
+    });
+});
+
 
 exports.createClient = catchAsync(async (req, res, next) => {
     console.log("📦 Incoming Client Payload:", req.body);
-    const newClient = await Client.create(req.body);
+
+    // Set start date to current date if not provided
+    const clientData = {
+        ...req.body,
+        startDate: req.body.startDate || new Date(),
+    };
+
+    // Calculate review date as 6 months after start date
+    const startDate = new Date(clientData.startDate);
+    const reviewDate = new Date(startDate);
+    reviewDate.setMonth(reviewDate.getMonth() + 6);
+    clientData.reviewDate = reviewDate;
+
+    const newClient = await Client.create(clientData);
     res.status(201).json({
         status: 'Success',
         data: {
@@ -99,7 +120,6 @@ exports.updateClient = catchAsync(async (req, res, next) => {
     if (!oldClient) return next(new AppError('No Client found with that ID', 404));
 
     // Merge nested objects
-    console.log("Updating client");
     const updateData = { ...req.body };
     for (const key of Object.keys(req.body)) {
         if (typeof req.body[key] === 'object' && req.body[key] !== null && oldClient[key]) {
@@ -107,11 +127,16 @@ exports.updateClient = catchAsync(async (req, res, next) => {
         }
     }
 
-    console.log("After merging nested objects")
+    // Calculate new review date as 6 months from current date when client is updated
+    const currentDate = new Date();
+    const newReviewDate = new Date(currentDate);
+    newReviewDate.setMonth(newReviewDate.getMonth() + 6);
+    updateData.reviewDate = newReviewDate;
+
     // I removed runValidators: true because it was causing the validation errors
     console.log("updateData", updateData)
     const client = await Client.findByIdAndUpdate(id, updateData, { new: true });
-    console.log("After findByIdAndUpdate")
+
     if (client) {
         // High-level change detection
         let section = null;

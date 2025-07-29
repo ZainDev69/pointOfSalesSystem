@@ -9,7 +9,7 @@ exports.createCommunication = async (req, res, next) => {
         await ActivityLog.create({
             client: comm.client,
             action: `Communication created: ${comm.subject}`,
-            user: req.body.initiatorName || 'Unknown',
+            user: req.body.initiatorName,
         });
         res.status(201).json({ status: 'Success', data: comm });
     } catch (err) {

@@ -24,6 +24,7 @@ import {
   fetchDocuments,
 } from "../../../components/redux/slice/documents";
 import toast from "react-hot-toast";
+import { Button } from "../../../components/ui/Button";
 
 // Add your backend base URL here
 const BACKEND_URL = "http://localhost:5500";
@@ -280,17 +281,17 @@ export function DocumentationManager({ client }) {
             Client records, reports, and care documentation
           </p>
         </div>
-        <button
+        <Button
           onClick={() => {
             setSelectedDocument(null);
             setView("form");
           }}
-          className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-6 py-2 rounded-full shadow-lg flex items-center space-x-2 text-base font-semibold transition-all duration-200"
+          variant="default"
+          icon={Plus}
           style={{ minWidth: 160 }}
         >
-          <Plus className="w-5 h-5" />
-          <span>New Document</span>
-        </button>
+          New Document
+        </Button>
       </div>
       <div className="mb-6" />
       {/* The search/filter controls remain below, with their own margin-top for separation */}

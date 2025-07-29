@@ -12,8 +12,15 @@ import {
   Users,
   Home,
 } from "lucide-react";
+import { Button } from "../../../components/ui/Button";
 
-export function ContactForm({ contact, onBack, onSave }) {
+export function ContactForm({
+  contact,
+  onBack,
+  onSave,
+  statusOptions = [],
+  statusOptionsLoading = false,
+}) {
   const isEditing = !!contact;
 
   const [formData, setFormData] = useState({
@@ -180,10 +187,20 @@ export function ContactForm({ contact, onBack, onSave }) {
                 value={formData.status}
                 onChange={(e) => handleChange("status", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={statusOptionsLoading}
               >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="no-contact">No Contact</option>
+                {statusOptionsLoading ? (
+                  <option>Loading...</option>
+                ) : statusOptions && statusOptions.length > 0 ? (
+                  statusOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option.charAt(0).toUpperCase() +
+                        option.slice(1).replace(/-/g, " ")}
+                    </option>
+                  ))
+                ) : (
+                  <option value="">No options</option>
+                )}
               </select>
             </div>
           </div>
@@ -533,13 +550,14 @@ export function ContactForm({ contact, onBack, onSave }) {
             <span>Cancel</span>
           </button>
 
-          <button
+          <Button
             type="submit"
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+            variant="default"
+            style={{ minWidth: 180 }}
+            icon={Save}
           >
-            <Save className="w-4 h-4" />
-            <span>{isEditing ? "Update Contact" : "Save Contact"}</span>
-          </button>
+            {isEditing ? "Update Contact" : "Save Contact"}
+          </Button>
         </div>
       </form>
     </div>

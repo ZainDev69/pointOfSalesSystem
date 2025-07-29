@@ -75,6 +75,22 @@ export const fetchContactTypes = createAsyncThunk(
     }
 );
 
+// Fetch status options
+export const fetchStatusOptions = createAsyncThunk(
+    "contacts/fetchStatusOptions",
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await axios.get(`${API_URL}/contacts/status`, { withCredentials: true });
+            return res.data.data;
+        } catch (error) {
+            console.error('Error in fetchStatusOptions:', error);
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+
+
 const contactsSlice = createSlice({
     name: "contacts",
     initialState: {
@@ -84,6 +100,9 @@ const contactsSlice = createSlice({
         contactTypes: [],
         contactTypesLoading: false,
         contactTypesError: null,
+        statusOptions: [],
+        statusOptionsLoading: false,
+        statusOptionsError: null,
     },
     reducers: {
         clearContacts: (state) => {
@@ -93,6 +112,9 @@ const contactsSlice = createSlice({
             state.contactTypes = [];
             state.contactTypesLoading = false;
             state.contactTypesError = null;
+            state.statusOptions = [];
+            state.statusOptionsLoading = false;
+            state.statusOptionsError = null;
         },
     },
     extraReducers: (builder) => {
@@ -130,6 +152,18 @@ const contactsSlice = createSlice({
             .addCase(fetchContactTypes.rejected, (state, action) => {
                 state.contactTypesLoading = false;
                 state.contactTypesError = action.error.message;
+            })
+            .addCase(fetchStatusOptions.pending, (state) => {
+                state.statusOptionsLoading = true;
+                state.statusOptionsError = null;
+            })
+            .addCase(fetchStatusOptions.fulfilled, (state, action) => {
+                state.statusOptionsLoading = false;
+                state.statusOptions = action.payload;
+            })
+            .addCase(fetchStatusOptions.rejected, (state, action) => {
+                state.statusOptionsLoading = false;
+                state.statusOptionsError = action.error.message;
             });
     },
 });

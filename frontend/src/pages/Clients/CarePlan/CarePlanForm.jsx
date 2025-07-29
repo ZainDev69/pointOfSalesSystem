@@ -49,7 +49,9 @@ export function CarePlanForm({ carePlan, onBack, onSave }) {
     assessmentDate: formatDateForInput(carePlan?.assessmentDate),
     assessedBy: carePlan?.assessedBy || "",
     approvedBy: carePlan?.approvedBy || "",
-    startDate: formatDateForInput(carePlan?.startDate),
+    startDate: isEditing
+      ? formatDateForInput(carePlan?.startDate)
+      : new Date().toISOString().split("T")[0], // Auto-set to current date for new care plans
     reviewDate: isEditing
       ? formatDateTimeLocal(carePlan?.reviewDate)
       : calculateReviewDate(formatDateForInput(carePlan?.assessmentDate)),
@@ -449,7 +451,17 @@ export function CarePlanForm({ carePlan, onBack, onSave }) {
                         startDate: e.target.value,
                       }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={!isEditing}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      !isEditing
+                        ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                        : ""
+                    }`}
+                    title={
+                      !isEditing
+                        ? "Start date is automatically set to current date for new care plans"
+                        : ""
+                    }
                   />
                 </div>
 

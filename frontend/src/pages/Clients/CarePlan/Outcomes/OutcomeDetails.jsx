@@ -11,6 +11,7 @@ import {
   User,
   Plus,
 } from "lucide-react";
+import { Button } from "../../../../components/ui/Button";
 
 export function OutcomeDetails({ outcome, onClose, onAddProgress }) {
   const [showProgressForm, setShowProgressForm] = useState(false);
@@ -353,13 +354,14 @@ export function OutcomeDetails({ outcome, onClose, onAddProgress }) {
                   >
                     Cancel
                   </button>
-                  <button
+                  <Button
                     type="button"
                     onClick={handleAddProgress}
-                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
+                    variant="default"
+                    style={{ minWidth: 180 }}
                   >
                     Add Progress
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
