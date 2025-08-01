@@ -9,6 +9,7 @@ import documentsReducer from "./slice/documents";
 import carePlanDocumentsReducer from "./slice/carePlanDocuments";
 import activityLogsReducer from './slice/activityLogs';
 import communicationsReducer from './slice/communications';
+import visitTypesReducer from './slice/visitTypes';
 const store = configureStore({
     reducer: {
         client: clientReducer,
@@ -21,6 +22,7 @@ const store = configureStore({
         carePlanDocuments: carePlanDocumentsReducer,
         activityLogs: activityLogsReducer,
         communications: communicationsReducer,
+        visitTypes: visitTypesReducer,
     }
 });
 

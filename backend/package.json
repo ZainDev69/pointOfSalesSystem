@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "env-cmd -f .env nodemon server.js"
+    "dev": "env-cmd -f .env nodemon server.js",
+    "seed": "node seedTaskOptions.js"
   },
   "author": "Zain Ul Abideen",
   "license": "ISC",

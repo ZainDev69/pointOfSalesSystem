@@ -8,6 +8,7 @@ import {
   Zap,
 } from "lucide-react";
 import { getClientImage } from "../../../utils/avatarUtils";
+import { Button } from "../../../components/ui/Button";
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5500";
 
 export function HeaderTab({ client, onBack, setActiveTab }) {
@@ -76,49 +77,52 @@ export function HeaderTab({ client, onBack, setActiveTab }) {
             </div>
             <div className="flex flex-wrap gap-2 justify-end">
               {/* Schedule Visit */}
-              <button
+              <Button
+                variant="sky"
+                size="sm"
                 onClick={() => setActiveTab("visits")}
-                className="group relative inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg border border-emerald-400 border-opacity-50 backdrop-blur-sm transform hover:scale-105 hover:from-emerald-600 hover:to-teal-600 transition-all duration-200 hover:shadow-xl"
+                icon={Calendar}
                 title="Schedule Visit (Alt + V)"
+                className="text-xs"
               >
-                <Calendar className="w-3 h-3 mr-1.5 group-hover:animate-pulse" />
-                <span>Schedule Visit</span>
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 rounded-lg transition-opacity duration-200"></div>
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-ping opacity-75"></div>
-              </button>
+                Schedule Visit
+              </Button>
 
               {/* Update Care Plan */}
-              <button
+              <Button
+                variant="sky"
+                size="sm"
                 onClick={() => setActiveTab("care-plan")}
-                className="group relative inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg border border-blue-400 border-opacity-50 backdrop-blur-sm transform hover:scale-105 hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 hover:shadow-xl"
+                icon={FileText}
                 title="Update Care Plan (Alt + C)"
+                className="text-xs"
               >
-                <FileText className="w-3 h-3 mr-1.5 group-hover:animate-pulse" />
-                <span>Update Care Plan</span>
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 rounded-lg transition-opacity duration-200"></div>
-              </button>
+                Update Care Plan
+              </Button>
 
               {/* Generate Report */}
-              <button
+              <Button
+                variant="sky"
+                size="sm"
                 onClick={() => setActiveTab("documents")}
-                className="group relative inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg border border-purple-400 border-opacity-50 backdrop-blur-sm transform hover:scale-105 hover:from-purple-600 hover:to-pink-600 transition-all duration-200 hover:shadow-xl"
+                icon={BarChart3}
                 title="Generate Report (Alt + R)"
+                className="text-xs"
               >
-                <BarChart3 className="w-3 h-3 mr-1.5 group-hover:animate-pulse" />
-                <span>Generate Report</span>
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 rounded-lg transition-opacity duration-200"></div>
-              </button>
+                Generate Report
+              </Button>
 
               {/* Contact Family */}
-              <button
+              <Button
+                variant="sky"
+                size="sm"
                 onClick={() => setActiveTab("contacts")}
-                className="group relative inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg border border-orange-400 border-opacity-50 backdrop-blur-sm transform hover:scale-105 hover:from-orange-600 hover:to-red-600 transition-all duration-200 hover:shadow-xl"
+                icon={Phone}
                 title="Contact Family (Alt + F)"
+                className="text-xs"
               >
-                <Phone className="w-3 h-3 mr-1.5 group-hover:animate-pulse" />
-                <span>Contact Family</span>
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 rounded-lg transition-opacity duration-200"></div>
-              </button>
+                Contact Family
+              </Button>
             </div>
           </div>
         </div>

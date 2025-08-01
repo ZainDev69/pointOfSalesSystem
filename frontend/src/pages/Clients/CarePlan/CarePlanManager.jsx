@@ -23,6 +23,7 @@ import { CardsTab } from "./Cards/Cards";
 import { PersonalTab } from "../Personal/PersonalTab";
 import { Button } from "../../../components/ui/Button";
 import { PersonalCareTab } from "./PersonalCare/PersonalCare";
+import { VisitTypeManager } from "./VisitTypes/VisitTypeManager";
 
 export function CarePlanManager({ client }) {
   const [view, setView] = useState("view");
@@ -401,6 +402,11 @@ export function CarePlanManager({ client }) {
       {/* Daily Living Tab */}
       {activeTab === "daily-living" && (
         <DailyLivingTab activeCarePlan={activeCarePlan} />
+      )}
+
+      {/* Visit Types Tab */}
+      {activeTab === "visit-types" && (
+        <VisitTypeManager clientId={client._id} />
       )}
 
       {/* History Modal */}

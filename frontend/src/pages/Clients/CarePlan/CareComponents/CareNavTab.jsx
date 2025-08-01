@@ -1,4 +1,4 @@
-import { Shield, User, Target, FileText } from "lucide-react";
+import { Shield, User, Target, FileText, Calendar } from "lucide-react";
 
 export function CareNavTab({ activeTab, setActiveTab }) {
   const tabs = [
@@ -7,6 +7,7 @@ export function CareNavTab({ activeTab, setActiveTab }) {
     { id: "daily-living", label: "Daily Living", icon: FileText },
     { id: "outcomes", label: "Outcomes", icon: Target },
     { id: "documents", label: "Documents", icon: FileText },
+    { id: "visit-types", label: "Visit Types", icon: Calendar },
   ];
   return (
     <div className="border-b border-gray-200">

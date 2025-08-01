@@ -20,7 +20,7 @@ const Button = React.forwardRef(
       "inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
 
     const variants = {
-      default: "bg-black hover:bg-gray-800 text-white",
+      default: "bg-sky-500 hover:bg-sky-600 text-white cursor-pointer",
       secondary: "bg-gray-100 hover:bg-gray-200 text-gray-900",
       outline: "border border-gray-300 bg-white hover:bg-gray-50 text-gray-900",
       ghost: "hover:bg-gray-100 text-gray-900",
@@ -28,6 +28,7 @@ const Button = React.forwardRef(
       success: "bg-green-600 hover:bg-green-700 text-white",
       warning: "bg-yellow-600 hover:bg-yellow-700 text-white",
       info: "bg-blue-600 hover:bg-blue-700 text-white",
+      sky: "bg-sky-500 hover:bg-sky-600 text-white",
     };
 
     const sizes = {
