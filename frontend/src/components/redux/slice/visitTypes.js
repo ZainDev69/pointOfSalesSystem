@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5500';
-console.log('Backend URL:', backendUrl);
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 // Async thunks
 export const fetchClientVisitTypes = createAsyncThunk(
@@ -10,7 +9,6 @@ export const fetchClientVisitTypes = createAsyncThunk(
     async (clientId) => {
         const response = await fetch(`${backendUrl}/clients/${clientId}/visit-types`);
         const data = await response.json();
-        console.log("Visit types are: ", data.data.visitTypes);
         return data.data.visitTypes;
     }
 );
@@ -18,11 +16,11 @@ export const fetchClientVisitTypes = createAsyncThunk(
 export const fetchRequiredTaskOptions = createAsyncThunk(
     'visitTypes/fetchRequiredTaskOptions',
     async () => {
-        console.log('Fetching required task options...');
+
         const response = await fetch(`${backendUrl}/visit-types/options`);
         console.log('Response status:', response.status);
         const data = await response.json();
-        console.log('Response data:', data);
+
         return data.data.requiredTasks;
     }
 );
@@ -31,8 +29,7 @@ export const createVisitType = createAsyncThunk(
     'visitTypes/createVisitType',
     async ({ clientId, visitTypeData }, { rejectWithValue }) => {
         try {
-            console.log('Creating visit type for client:', clientId);
-            console.log('Visit type data:', visitTypeData);
+
 
             const response = await fetch(`${backendUrl}/clients/${clientId}/visit-types`, {
                 method: 'POST',
@@ -42,7 +39,7 @@ export const createVisitType = createAsyncThunk(
                 body: JSON.stringify(visitTypeData),
             });
 
-            console.log('Response status:', response.status);
+
 
             if (!response.ok) {
                 const errorData = await response.json();
@@ -51,7 +48,7 @@ export const createVisitType = createAsyncThunk(
             }
 
             const data = await response.json();
-            console.log('Success response:', data);
+
             return data.data.visitType;
         } catch (error) {
             console.error('Network error:', error);

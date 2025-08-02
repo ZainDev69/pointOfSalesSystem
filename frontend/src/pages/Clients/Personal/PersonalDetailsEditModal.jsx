@@ -1,15 +1,17 @@
+// Entry Point of the File
 import React, { useState, useEffect } from "react";
-import {
-  X,
-  Save,
-  User,
-  MapPin,
-  Phone,
-  Mail,
-  Calendar,
-  Shield,
-} from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
+import { useDispatch } from "react-redux";
+import { fetchClientOptions } from "../../../components/redux/slice/clients";
+import { PersonalInfo } from "./PersonalInfo";
+import { AddressInfo } from "./AddressInfo";
+import { CultureInfo } from "./CultureInfo";
+import { ReligionInfo } from "./ReligionInfo";
+import { ContactInfo } from "./ContactInfo";
+import { DietaryInfo } from "./DietaryInfo";
+import { PersonalPrefInfo } from "./PersonalPrefInfo";
+import { ConsentInfo } from "./ConsentInfo";
 
 export function PersonalDetailsEditModal({
   isOpen,
@@ -17,6 +19,7 @@ export function PersonalDetailsEditModal({
   personalDetails,
   addressInformation,
   contactInformation,
+  preferences,
   consent,
   onSave,
   isLoading = false,
@@ -31,6 +34,7 @@ export function PersonalDetailsEditModal({
       nhsNumber: "",
       relationshipStatus: "",
       ethnicity: "",
+      historyandBackground: "",
     },
     addressInformation: {
       address: "",
@@ -51,15 +55,52 @@ export function PersonalDetailsEditModal({
       photoConsent: false,
       dataProcessingConsent: false,
     },
+    preferences: {
+      cultural: {
+        background: "",
+        languagePreferences: [],
+        culturalNeeds: [],
+      },
+      religious: {
+        religion: "",
+        denomination: "",
+        practiceLevel: "",
+        religiousNeeds: [],
+        prayerRequirements: "",
+        spiritualSupport: false,
+      },
+      dietary: {
+        dietType: [],
+        dislikes: [],
+        preferences: [],
+        textureModification: false,
+        fluidThickening: false,
+        assistanceLevel: "",
+      },
+      personal: {
+        wakeUpTime: "",
+        bedTime: "",
+        mobilityAids: [],
+        likesAndDislikes: [],
+        hobbies: [],
+      },
+    },
     startDate: "",
     reviewDate: "",
   });
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchClientOptions());
+  }, [dispatch]);
 
   useEffect(() => {
     if (
       personalDetails &&
       addressInformation &&
       contactInformation &&
+      preferences &&
       consent
     ) {
       setFormData({
@@ -74,6 +115,7 @@ export function PersonalDetailsEditModal({
           nhsNumber: personalDetails.nhsNumber || "",
           relationshipStatus: personalDetails.relationshipStatus || "",
           ethnicity: personalDetails.ethnicity || "",
+          historyandBackground: personalDetails.historyandBackground || "",
         },
         addressInformation: {
           address: addressInformation.address || "",
@@ -91,6 +133,44 @@ export function PersonalDetailsEditModal({
             contactInformation.preferredContactMethod || "",
           bestTimeToContact: contactInformation.bestTimeToContact || "",
         },
+        preferences: {
+          cultural: {
+            background: preferences.cultural.background || "",
+            languagePreferences: preferences.cultural.languagePreferences || [
+              "English",
+            ],
+            culturalNeeds: preferences.cultural.culturalNeeds || [],
+          },
+          religious: {
+            religion: preferences.religious.religion || "",
+            denomination: preferences.religious.denomination || "",
+            practiceLevel:
+              preferences.religious.practiceLevel || "non-practicing",
+            religiousNeeds: preferences.religious.religiousNeeds || [],
+            prayerRequirements: preferences.religious.prayerRequirements || "",
+            dietaryRestrictions:
+              preferences.religious.dietaryRestrictions || [],
+            spiritualSupport: preferences.religious.spiritualSupport || false,
+          },
+          dietary: {
+            dietType: preferences.dietary.dietType || [],
+            dislikes: preferences.dietary.dislikes || [],
+            preferences: preferences.dietary.preferences || [],
+            textureModification:
+              preferences.dietary.textureModification || false,
+            fluidThickening: preferences.dietary.fluidThickening || false,
+            assistanceLevel:
+              preferences.dietary.assistanceLevel || "independent",
+          },
+          personal: {
+            wakeUpTime: preferences.personal?.wakeUpTime || "",
+            bedTime: preferences.personal.bedTime || "",
+            mobilityAids: preferences.personal.mobilityAids || [],
+            likesAndDislikes: preferences.personal.likesAndDislikes || [],
+            hobbies: preferences.personal.hobbies || [],
+          },
+        },
+
         consent: {
           photoConsent: consent.photoConsent || false,
           dataProcessingConsent: consent.dataProcessingConsent || false,
@@ -103,7 +183,13 @@ export function PersonalDetailsEditModal({
           : "",
       });
     }
-  }, [personalDetails, addressInformation, contactInformation, consent]);
+  }, [
+    personalDetails,
+    addressInformation,
+    contactInformation,
+    consent,
+    preferences,
+  ]);
 
   const handleChange = (section, field, value) => {
     setFormData((prev) => ({
@@ -111,6 +197,19 @@ export function PersonalDetailsEditModal({
       [section]: {
         ...prev[section],
         [field]: value,
+      },
+    }));
+  };
+
+  const handleNestedChange = (section, subsection, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [subsection]: {
+          ...prev[section][subsection],
+          [field]: value,
+        },
       },
     }));
   };
@@ -140,458 +239,37 @@ export function PersonalDetailsEditModal({
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Personal Details */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center space-x-2 mb-4">
-              <User className="w-5 h-5 text-blue-500" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                Personal Information
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Title
-                </label>
-                <select
-                  value={formData.personalDetails.title}
-                  onChange={(e) =>
-                    handleChange("personalDetails", "title", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Title</option>
-                  <option value="Mr">Mr</option>
-                  <option value="Mrs">Mrs</option>
-                  <option value="Miss">Miss</option>
-                  <option value="Ms">Ms</option>
-                  <option value="Dr">Dr</option>
-                  <option value="Prof">Prof</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.personalDetails.fullName}
-                  onChange={(e) =>
-                    handleChange("personalDetails", "fullName", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Preferred Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.personalDetails.preferredName}
-                  onChange={(e) =>
-                    handleChange(
-                      "personalDetails",
-                      "preferredName",
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Date of Birth
-                </label>
-                <input
-                  type="date"
-                  value={formData.personalDetails.dateOfBirth}
-                  onChange={(e) =>
-                    handleChange(
-                      "personalDetails",
-                      "dateOfBirth",
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Gender
-                </label>
-                <select
-                  value={formData.personalDetails.gender}
-                  onChange={(e) =>
-                    handleChange("personalDetails", "gender", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Non-Binary">Non-Binary</option>
-                  <option value="Other">Other</option>
-                  <option value="Prefer Not to Say">Prefer Not to Say</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  NHS Number
-                </label>
-                <input
-                  type="text"
-                  value={formData.personalDetails.nhsNumber}
-                  onChange={(e) =>
-                    handleChange("personalDetails", "nhsNumber", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Marital Status
-                </label>
-                <select
-                  value={formData.personalDetails.relationshipStatus}
-                  onChange={(e) =>
-                    handleChange(
-                      "personalDetails",
-                      "relationshipStatus",
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Status</option>
-                  <option value="Single">Single</option>
-                  <option value="Married">Married</option>
-                  <option value="Divorced">Divorced</option>
-                  <option value="Widowed">Widowed</option>
-                  <option value="Civil Partnership">Civil Partnership</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ethnicity
-                </label>
-                <input
-                  type="text"
-                  value={formData.personalDetails.ethnicity}
-                  onChange={(e) =>
-                    handleChange("personalDetails", "ethnicity", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.startDate || ""}
-                  disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
-                  title="Start date is automatically set when client is created"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Review Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.reviewDate || ""}
-                  disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
-                  title="Review date is automatically set to 6 months after start date or update date"
-                />
-              </div>
-            </div>
-          </div>
+          <PersonalInfo formData={formData} handleChange={handleChange} />
 
           {/* Address Information */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center space-x-2 mb-4">
-              <MapPin className="w-5 h-5 text-green-500" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                Address Information
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Address
-                </label>
-                <input
-                  type="text"
-                  value={formData.addressInformation.address}
-                  onChange={(e) =>
-                    handleChange(
-                      "addressInformation",
-                      "address",
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  City
-                </label>
-                <input
-                  type="text"
-                  value={formData.addressInformation.city}
-                  onChange={(e) =>
-                    handleChange("addressInformation", "city", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  County
-                </label>
-                <input
-                  type="text"
-                  value={formData.addressInformation.county}
-                  onChange={(e) =>
-                    handleChange("addressInformation", "county", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Post Code
-                </label>
-                <input
-                  type="text"
-                  value={formData.addressInformation.postCode}
-                  onChange={(e) =>
-                    handleChange(
-                      "addressInformation",
-                      "postCode",
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Country
-                </label>
-                <input
-                  type="text"
-                  value={formData.addressInformation.country}
-                  onChange={(e) =>
-                    handleChange(
-                      "addressInformation",
-                      "country",
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Access Instructions
-                </label>
-                <textarea
-                  value={formData.addressInformation.accessInstructions}
-                  onChange={(e) =>
-                    handleChange(
-                      "addressInformation",
-                      "accessInstructions",
-                      e.target.value
-                    )
-                  }
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Any special instructions for accessing the property..."
-                />
-              </div>
-            </div>
-          </div>
+          <AddressInfo formData={formData} handleChange={handleChange} />
 
           {/* Contact Information */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center space-x-2 mb-4">
-              <Phone className="w-5 h-5 text-purple-500" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                Contact Information
-              </h3>
-            </div>
+          <ContactInfo formData={formData} handleChange={handleChange} />
+          {/* Cultural Prefrences */}
+          <CultureInfo
+            formData={formData}
+            handleNestedChange={handleNestedChange}
+          />
+          {/* Religious Prefrences */}
+          <ReligionInfo
+            formData={formData}
+            handleNestedChange={handleNestedChange}
+          />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Primary Phone
-                </label>
-                <input
-                  type="tel"
-                  value={formData.contactInformation.primaryPhone}
-                  onChange={(e) =>
-                    handleChange(
-                      "contactInformation",
-                      "primaryPhone",
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Secondary Phone
-                </label>
-                <input
-                  type="tel"
-                  value={formData.contactInformation.secondaryPhone}
-                  onChange={(e) =>
-                    handleChange(
-                      "contactInformation",
-                      "secondaryPhone",
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={formData.contactInformation.email}
-                  onChange={(e) =>
-                    handleChange("contactInformation", "email", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Preferred Contact Method
-                </label>
-                <select
-                  value={formData.contactInformation.preferredContactMethod}
-                  onChange={(e) =>
-                    handleChange(
-                      "contactInformation",
-                      "preferredContactMethod",
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Method</option>
-                  <option value="Phone">Phone</option>
-                  <option value="Email">Email</option>
-                  <option value="Text">Text</option>
-                  <option value="Post">Post</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Best Time to Contact
-                </label>
-                <select
-                  value={formData.contactInformation.bestTimeToContact}
-                  onChange={(e) =>
-                    handleChange(
-                      "contactInformation",
-                      "bestTimeToContact",
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Time</option>
-                  <option value="Morning">Morning</option>
-                  <option value="Afternoon">Afternoon</option>
-                  <option value="Evening">Evening</option>
-                  <option value="Any Time">Any Time</option>
-                </select>
-              </div>
-            </div>
-          </div>
+          {/* Dietary Requirements */}
+          <DietaryInfo
+            formData={formData}
+            handleNestedChange={handleNestedChange}
+          />
+          {/* Personal Prefrences */}
+          <PersonalPrefInfo
+            formData={formData}
+            handleNestedChange={handleNestedChange}
+          />
 
           {/* Consent & Permissions */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center space-x-2 mb-4">
-              <Shield className="w-5 h-5 text-amber-500" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                Consent & Permissions
-              </h3>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="photoConsent"
-                  checked={formData.consent.photoConsent}
-                  onChange={(e) =>
-                    handleChange("consent", "photoConsent", e.target.checked)
-                  }
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label
-                  htmlFor="photoConsent"
-                  className="ml-2 block text-sm text-gray-900"
-                >
-                  Photo Consent - Client consents to having their photo taken
-                </label>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="dataProcessingConsent"
-                  checked={formData.consent.dataProcessingConsent}
-                  onChange={(e) =>
-                    handleChange(
-                      "consent",
-                      "dataProcessingConsent",
-                      e.target.checked
-                    )
-                  }
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label
-                  htmlFor="dataProcessingConsent"
-                  className="ml-2 block text-sm text-gray-900"
-                >
-                  Data Processing Consent - Client consents to data processing
-                </label>
-              </div>
-            </div>
-          </div>
+          <ConsentInfo formData={formData} handleChange={handleChange} />
         </div>
 
         {/* Footer */}

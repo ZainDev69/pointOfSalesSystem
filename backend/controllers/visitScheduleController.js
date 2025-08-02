@@ -1,6 +1,21 @@
-const VisitSchedule = require('../models/visitScheduleModel');
+const { VisitSchedule } = require('../models/visitScheduleModel');
 const { Client } = require('../models/clientModel');
 const ActivityLog = require('../models/activityLogModel');
+
+
+
+exports.getVisitOptions = async (req, res, next) => {
+    const options = {
+        status: VisitSchedule.schema.path('visits.status').enumValues,
+        priority: VisitSchedule.schema.path('visits.priority').enumValues,
+        taskCategory: VisitSchedule.schema.path('visits.tasks.category').enumValues,
+        taskPriority: VisitSchedule.schema.path('visits.tasks.priority').enumValues,
+    };
+    res.status(200).json({
+        status: 'Success',
+        data: options
+    });
+};
 
 // Get all visits for a client
 exports.getVisitSchedule = async (req, res) => {
@@ -94,12 +109,5 @@ exports.deleteVisit = async (req, res) => {
     }
 };
 
-exports.getVisitStatusTypes = (req, res) => {
-    const statusTypes = VisitSchedule.schema.path('visits').schema.path('status').enumValues;
-    res.status(200).json({ status: 'Success', data: statusTypes });
-};
 
-exports.getVisitPriorityTypes = (req, res) => {
-    const priorityTypes = VisitSchedule.schema.path('visits').schema.path('priority').enumValues;
-    res.status(200).json({ status: 'Success', data: priorityTypes });
-}; 
+

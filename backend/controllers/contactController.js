@@ -2,6 +2,23 @@ const Contact = require("../models/contactModel");
 const { validationResult } = require("express-validator");
 const { Client } = require("../models/clientModel");
 const ActivityLog = require("../models/activityLogModel");
+const catchAsync = require('./../utils/catchAsync');
+
+
+
+exports.getContactOptions = catchAsync(async (req, res, next) => {
+    const options = {
+        status: Contact.schema.path('status').enumValues,
+        types: Contact.schema.path('contactType').enumValues,
+    }
+    res.status(200).json({
+        status: 'Success',
+        data: options
+    });
+
+});
+
+
 
 // Get all contacts for a client
 exports.getContacts = async (req, res, next) => {
@@ -13,6 +30,9 @@ exports.getContacts = async (req, res, next) => {
         next(err);
     }
 };
+
+
+
 
 // Add a contact
 exports.addContact = async (req, res, next) => {
@@ -80,14 +100,5 @@ exports.deleteContact = async (req, res, next) => {
     }
 };
 
-exports.getContactTypes = (req, res) => {
-    // Get enum values from the model
-    const contactTypes = Contact.schema.path('contactType').enumValues;
-    res.status(200).json({ status: 'Success', data: contactTypes });
-};
 
-exports.getStatusOptions = (req, res) => {
-    // Get enum values from the model
-    const statusOptions = Contact.schema.path('status').enumValues;
-    res.status(200).json({ status: 'Success', data: statusOptions });
-};
+

@@ -1,18 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchContacts } from "../../../components/redux/slice/contacts";
-import {
-  Calendar,
-  MapPin,
-  Phone,
-  Mail,
-  Heart,
-  User,
-  Shield,
-  Users,
-  Activity,
-  Clock,
-} from "lucide-react";
+import {Calendar,MapPin,Phone,Mail,Heart,User,Shield,Users} from "lucide-react";
 
 export function OverviewTab({ client }) {
   const dispatch = useDispatch();
@@ -181,7 +170,7 @@ export function OverviewTab({ client }) {
 
         {/* Side Panel */}
         <div className="space-y-6">
-          {/* Next of Kin */}
+          {/* Emergency Contact */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center space-x-2 mb-4">
               <Heart className="w-5 h-5 text-red-500" />

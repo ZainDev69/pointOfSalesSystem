@@ -40,12 +40,8 @@ exports.getOutcomesByClient = catchAsync(async (req, res, next) => {
 
 // Create outcome (not tied to care plan)
 exports.createOutcome = catchAsync(async (req, res, next) => {
-    console.log("Creating outcome with data:", req.body);
     const outcomeData = { ...req.body };
-    console.log("Outcome data to create:", outcomeData);
     const newOutcome = await Outcome.create(outcomeData);
-    console.log("Outcome created successfully:", newOutcome);
-    // Log activity if clientId is present
     if (newOutcome.clientId) {
         await ActivityLog.create({
             client: newOutcome.clientId,
@@ -62,12 +58,6 @@ exports.createOutcome = catchAsync(async (req, res, next) => {
 // Update outcome
 exports.updateOutcome = catchAsync(async (req, res, next) => {
     const { id } = req.params;
-    console.log("=== UPDATE OUTCOME CONTROLLER CALLED ===");
-    console.log("Method:", req.method);
-    console.log("URL:", req.originalUrl);
-    console.log("Outcome ID:", id);
-    console.log("Request body:", req.body);
-    console.log("Headers:", req.headers);
 
     const outcome = await Outcome.findByIdAndUpdate(id, req.body, {
         new: true,
@@ -75,11 +65,8 @@ exports.updateOutcome = catchAsync(async (req, res, next) => {
     });
 
     if (!outcome) {
-        console.log("No outcome found with ID:", id);
         return next(new AppError('No outcome found with that ID', 404));
     }
-
-    console.log("Outcome updated successfully:", outcome);
 
     // Log activity
     if (outcome.clientId) {

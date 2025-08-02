@@ -12,7 +12,7 @@ import { clientList } from "../../components/redux/slice/clients";
 
 export function StatsGrid() {
   const dispatch = useDispatch();
-  const clientData = useSelector((state) => state.client.clients) || [];
+  const clientData = useSelector((state) => state.clients.clients);
 
   useEffect(() => {
     dispatch(clientList());

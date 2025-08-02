@@ -8,7 +8,7 @@ import { AuthProvider } from "./components/Context/AuthContext.jsx";
 import { AppProvider } from "./components/Context/AppContext.jsx";
 import "react-confirm-alert/src/react-confirm-alert.css";
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 if (!import.meta.env.VITE_BACKEND_URL) {
   console.warn("VITE_BACKEND_URL is not set. Using default:", API_URL);
 }

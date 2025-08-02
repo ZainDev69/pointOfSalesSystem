@@ -2,12 +2,13 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_URL } from "../../../main";
 
-// Fetch enum options for form fields
-export const fetchEnumOptions = createAsyncThunk(
-    "clients/fetchEnumOptions",
+
+
+export const fetchClientOptions = createAsyncThunk(
+    "clients/fetchClientOptions",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${API_URL}/clients/enum-options`, {
+            const response = await axios.get(`${API_URL}/clients/client-options`, {
                 withCredentials: true,
             });
             return response.data.data;
@@ -21,14 +22,10 @@ export const createClient = createAsyncThunk(
     "clients/createClient",
     async (clientData, { rejectWithValue }) => {
         try {
-            console.log("Calling the createClient")
-
             const response = await axios.post(`${API_URL}/clients`, clientData, {
-                withCredentials: true, headers: {
-                    'Content-Type': 'application/json',
-                },
+                withCredentials: true,
+                headers: { 'Content-Type': 'application/json' },
             });
-            console.log("The Client is Saved into DB")
             return response.data.data;
         } catch (error) {
             if (error.response?.status === 400) {
@@ -39,12 +36,10 @@ export const createClient = createAsyncThunk(
     }
 );
 
-
 export const clientList = createAsyncThunk(
     "clients/getClients",
     async (params = {}, { rejectWithValue }) => {
         try {
-            // params: { page, limit, sort, fullName, status, ... }
             const query = new URLSearchParams(params).toString();
             const response = await axios.get(`${API_URL}/clients?${query}`, { withCredentials: true });
             return response.data;
@@ -52,7 +47,7 @@ export const clientList = createAsyncThunk(
             return rejectWithValue({ message: error.response?.data?.message || error.message });
         }
     }
-)
+);
 
 export const getClient = createAsyncThunk(
     "clients/getClient",
@@ -63,11 +58,10 @@ export const getClient = createAsyncThunk(
             });
             return response.data.data;
         } catch (error) {
-            return rejectWithValue({ message: error.response.data.message });
+            return rejectWithValue({ message: error.response?.data?.message || error.message });
         }
     }
 );
-
 
 export const deleteClient = createAsyncThunk(
     "clients/deleteClient",
@@ -76,26 +70,24 @@ export const deleteClient = createAsyncThunk(
             await axios.delete(`${API_URL}/clients/${clientId}`, { withCredentials: true });
             return clientId;
         } catch (error) {
-            return rejectWithValue({ message: error.response.data.message });
+            return rejectWithValue({ message: error.response?.data?.message || error.message });
         }
     }
-)
-
+);
 
 export const updateClient = createAsyncThunk(
     "clients/updateClient",
     async ({ clientId, clientData }, { rejectWithValue }) => {
         try {
-            console.log("Calling the updateClient", clientId)
-            const response = await axios.patch(`${API_URL}/clients/${clientId}`, clientData, { withCredentials: true });
-            console.log("The Client is updated")
+            const response = await axios.patch(`${API_URL}/clients/${clientId}`, clientData, {
+                withCredentials: true,
+            });
             return response.data;
         } catch (error) {
-            console.log("Error in updateClient:", error);
-            return rejectWithValue({ message: error.response?.data?.message || error.message || 'Unknown error' });
+            return rejectWithValue({ message: error.response?.data?.message || error.message });
         }
     }
-)
+);
 
 export const archiveClient = createAsyncThunk(
     "clients/archiveClient",
@@ -108,7 +100,7 @@ export const archiveClient = createAsyncThunk(
             );
             return response.data.data;
         } catch (error) {
-            return rejectWithValue({ message: error.response.data.message });
+            return rejectWithValue({ message: error.response?.data?.message || error.message });
         }
     }
 );
@@ -128,21 +120,22 @@ export const unarchiveClient = createAsyncThunk(
         }
     }
 );
+
 export const checkClientId = createAsyncThunk(
     "clients/checkClientId",
     async (clientId, { rejectWithValue }) => {
         try {
-            console.log('Redux action: Checking client ID:', clientId);
-            const response = await axios.get(`${API_URL}/clients/check-id?clientId=${clientId}`, { withCredentials: true });
-            console.log('Redux action: Response:', response.data);
+            const response = await axios.get(`${API_URL}/clients/check-id?clientId=${clientId}`, {
+                withCredentials: true,
+            });
             return response.data.data;
         } catch (error) {
-            console.error('Redux action: Error checking client ID:', error);
             return rejectWithValue({ message: error.response?.data?.message || "Unknown error" });
         }
     }
 );
 
+// Initial State
 
 const initialState = {
     clients: [],
@@ -152,25 +145,44 @@ const initialState = {
     total: 0,
     page: 1,
     pages: 1,
-    enumOptions: null
-}
+    clientOptions: {
+        title: [],
+        gender: [],
+        relationshipStatus: [],
+        ethnicity: [],
+        status: [],
+        preferredContactMethod: [],
+        conditionSeverity: [],
+        conditionStatus: [],
+        allergySeverity: [],
+        medicationRoute: [],
+        medicationStatus: [],
+        religiousPracticeLevel: [],
+        dietaryAssistanceLevel: [],
+    },
+    clientOptionsLoading: false,
+    clientOptionsError: null,
+};
+
+// Slice
 
 const clientSlice = createSlice({
     name: "clients",
     initialState,
     extraReducers: (builder) => {
-        // Fetch Enum Options
-        builder.addCase(fetchEnumOptions.pending, (state) => {
-            state.loading = true;
-            state.error = null;
-        })
-            .addCase(fetchEnumOptions.fulfilled, (state, action) => {
-                state.loading = false;
-                state.enumOptions = action.payload;
+        builder
+            // Fetch Enum Options
+            .addCase(fetchClientOptions.pending, (state) => {
+                state.clientOptionsLoading = true;
+                state.clientOptionsError = null;
             })
-            .addCase(fetchEnumOptions.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload?.message || action.error?.message;
+            .addCase(fetchClientOptions.fulfilled, (state, action) => {
+                state.clientOptionsLoading = false;
+                state.clientOptions = action.payload;
+            })
+            .addCase(fetchClientOptions.rejected, (state, action) => {
+                state.clientOptionsLoading = false;
+                state.clientOptionsError = action.payload?.message || action.error?.message;
             })
 
             // Check Client ID
@@ -180,18 +192,17 @@ const clientSlice = createSlice({
             })
             .addCase(checkClientId.fulfilled, (state) => {
                 state.loading = false;
-                // The result is returned directly, no state update needed
             })
             .addCase(checkClientId.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload?.message || action.error?.message;
             })
 
-        // Client List
-        builder.addCase(clientList.pending, (state) => {
-            state.loading = true;
-            state.error = null;
-        })
+            // List Clients
+            .addCase(clientList.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
             .addCase(clientList.fulfilled, (state, action) => {
                 state.loading = false;
                 state.clients = action.payload.data;
@@ -203,7 +214,8 @@ const clientSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload?.message || action.error?.message;
             })
-            //Get Single Client
+
+            // Get Single Client
             .addCase(getClient.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -217,7 +229,7 @@ const clientSlice = createSlice({
                 state.error = action.payload?.message || action.error?.message;
             })
 
-            // Creating a new Client
+            // Create Client
             .addCase(createClient.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -231,78 +243,70 @@ const clientSlice = createSlice({
                 state.error = action.payload?.message || action.error?.message;
             })
 
-
-            // Updating the Client
+            // Update Client
             .addCase(updateClient.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(updateClient.fulfilled, (state, action) => {
                 state.loading = false;
-
-                const index = state.clients.findIndex((client) => client._id === action.payload._id);
-                if (index !== -1) {
-                    state.clients[index] = action.payload;
-                }
+                const index = state.clients.findIndex(c => c._id === action.payload._id);
+                if (index !== -1) state.clients[index] = action.payload;
             })
             .addCase(updateClient.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload?.message || action.error?.message;
             })
 
-            // Deleting the User
+            // Delete Client
             .addCase(deleteClient.pending, (state) => {
                 state.loading = true;
-            }).addCase(deleteClient.fulfilled, (state, action) => {
+            })
+            .addCase(deleteClient.fulfilled, (state, action) => {
                 state.loading = false;
-                const deletedClientId = action.payload;
-                state.clients = state.clients.filter((client) => client._id !== deletedClientId);
-
-            }).addCase(deleteClient.rejected, (state, action) => {
+                state.clients = state.clients.filter(c => c._id !== action.payload);
+            })
+            .addCase(deleteClient.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload?.message || action.error?.message;
             })
-            // Archiving the Clients 
+
+            // Archive Client
             .addCase(archiveClient.pending, (state) => {
                 state.loading = true;
             })
             .addCase(archiveClient.fulfilled, (state, action) => {
                 state.loading = false;
-                const updatedClient = action.payload;
-                const index = state.clients.findIndex((client) => client._id === updatedClient._id);
-                if (index !== -1) {
-                    state.clients[index] = updatedClient;
-                }
+                const index = state.clients.findIndex(c => c._id === action.payload._id);
+                if (index !== -1) state.clients[index] = action.payload;
             })
             .addCase(archiveClient.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload?.message || action.error?.message;
             })
 
-            // Unarchiving the Clients
+            // Unarchive Client
             .addCase(unarchiveClient.pending, (state) => {
                 state.loading = true;
             })
             .addCase(unarchiveClient.fulfilled, (state, action) => {
                 state.loading = false;
-                const updatedClient = action.payload;
-                const index = state.clients.findIndex((c) => c._id === updatedClient._id);
-                if (index !== -1) {
-                    state.clients[index] = updatedClient;
-                }
+                const index = state.clients.findIndex(c => c._id === action.payload._id);
+                if (index !== -1) state.clients[index] = action.payload;
             })
             .addCase(unarchiveClient.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload?.message || action.error?.message;
             });
-
-
     }
-})
+});
 
+// Selectors
 
-export const getClients = (state) => state.client.clients;
-export const getSingleClient = (state) => state.client.client;
-export const getEnumOptions = (state) => state.client.enumOptions;
+export const getClients = (state) => state.clients.clients;
+export const getSingleClient = (state) => state.clients.client;
+export const getClientOptions = (state) => state.clients.clientOptions;
+
+// Export Reducer
 
 export default clientSlice.reducer;

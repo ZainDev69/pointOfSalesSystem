@@ -120,9 +120,6 @@ exports.updateCarePlan = catchAsync(async (req, res, next) => {
         return next(new AppError('No care plan found with that ID', 404));
     }
 
-    // Get all outcomes from the current care plan
-    const existingOutcomes = await Outcome.find({ carePlanId: id });
-
     // Archive the current plan
     await CarePlan.findByIdAndUpdate(id, { status: 'expired' });
 
@@ -144,18 +141,6 @@ exports.updateCarePlan = catchAsync(async (req, res, next) => {
 
     const updatedCarePlan = await CarePlan.create(carePlanData);
 
-    // Copy all outcomes to the new care plan
-    if (existingOutcomes.length > 0) {
-        const outcomeCopies = existingOutcomes.map(outcome => ({
-            ...outcome.toObject(),
-            _id: undefined, // Remove the old _id so MongoDB creates a new one
-            carePlanId: updatedCarePlan._id,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        }));
-
-        await Outcome.insertMany(outcomeCopies);
-    }
 
     // Log activity
     const client = await Client.findById(clientId);
@@ -219,125 +204,6 @@ exports.getCarePlanHistory = catchAsync(async (req, res, next) => {
     });
 });
 
-// Get outcomes for a care plan
-exports.getCarePlanOutcomes = catchAsync(async (req, res, next) => {
-    const { carePlanId } = req.params;
-    console.log('Fetching outcomes for care plan:', carePlanId);
-
-    const outcomes = await Outcome.find({ carePlanId })
-        .sort({ createdAt: -1 });
-
-    console.log('Found outcomes:', outcomes.length);
-
-    res.status(200).json({
-        status: 'Success',
-        results: outcomes.length,
-        data: outcomes
-    });
-});
-
-// Create outcome
-exports.createOutcome = catchAsync(async (req, res, next) => {
-    const { carePlanId } = req.params;
-    console.log('Creating outcome for care plan:', carePlanId);
-    console.log('Request body:', req.body);
-
-    // Get the care plan to get the clientId
-    const carePlan = await CarePlan.findById(carePlanId);
-    if (!carePlan) {
-        console.log('Care plan not found with ID:', carePlanId);
-        return next(new AppError('No care plan found with that ID', 404));
-    }
-
-    const outcomeData = {
-        ...req.body,
-        carePlanId,
-        clientId: carePlan.clientId
-    };
-    console.log('Outcome data to create:', outcomeData);
-
-    try {
-        const newOutcome = await Outcome.create(outcomeData);
-        console.log('Outcome created successfully:', newOutcome._id);
-        return newOutcome;
-    } catch (error) {
-        console.error('Error creating outcome:', error);
-        throw error;
-    }
-
-    // Log activity
-    const client = await Client.findById(carePlan.clientId);
-    if (client) {
-        ActivityLog.create({
-            client: client._id,
-            action: 'Outcome added',
-            user: 'Admin',
-        });
-    }
-
-    res.status(201).json({
-        status: 'Success',
-        data: {
-            outcome: newOutcome
-        }
-    });
-});
-
-// Update outcome
-exports.updateOutcome = catchAsync(async (req, res, next) => {
-    const { id } = req.params;
-
-    const outcome = await Outcome.findByIdAndUpdate(id, req.body, {
-        new: true,
-        runValidators: true
-    });
-
-    if (!outcome) {
-        return next(new AppError('No outcome found with that ID', 404));
-    }
-
-    // Log activity
-    const client = await Client.findById(outcome.clientId);
-    if (client) {
-        ActivityLog.create({
-            client: client._id,
-            action: 'Outcome updated',
-            user: 'Admin',
-        });
-    }
-
-    res.status(200).json({
-        status: 'Success',
-        data: {
-            outcome
-        }
-    });
-});
-
-// Delete outcome
-exports.deleteOutcome = catchAsync(async (req, res, next) => {
-    const { id } = req.params;
-
-    const outcome = await Outcome.findByIdAndDelete(id);
-    if (!outcome) {
-        return next(new AppError('No outcome found with that ID', 404));
-    }
-
-    // Log activity
-    const client = await Client.findById(outcome.clientId);
-    if (client) {
-        ActivityLog.create({
-            client: client._id,
-            action: 'Outcome deleted',
-            user: 'Admin',
-        });
-    }
-
-    res.status(204).json({
-        status: 'Success',
-        data: null
-    });
-});
 
 // Restore care plan (make it active)
 exports.restoreCarePlan = catchAsync(async (req, res, next) => {

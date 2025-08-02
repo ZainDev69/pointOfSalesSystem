@@ -2,7 +2,24 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { API_URL } from "../../../main";
 
-// Async thunks
+
+
+export const fetchOutcomeOptions = createAsyncThunk(
+    'outcomes/fetchOutcomeOptions',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(`${API_URL}/outcomes/options/all`, {
+                withCredentials: true
+            });
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue({ message: error.response?.data?.message || error.message });
+        }
+    }
+);
+
+
+
 export const fetchClientOutcomes = createAsyncThunk(
     'outcomes/fetchClientOutcomes',
     async (clientId, { rejectWithValue }) => {
@@ -21,20 +38,14 @@ export const createOutcome = createAsyncThunk(
     'outcomes/createOutcome',
     async ({ outcomeData }, { rejectWithValue }) => {
         try {
-            console.log("Creating the outcome redux")
-            console.log("Outcome data being sent:", outcomeData);
             const response = await axios.post(`${API_URL}/outcomes`, outcomeData, {
                 withCredentials: true,
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
-            console.log("Outcome created", response.data.data.outcome)
             return response.data.data.outcome;
         } catch (error) {
-            console.error('Error in createOutcome:', error);
-            console.error('Error response:', error.response?.data);
-            console.error('Error status:', error.response?.status);
             return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
@@ -44,10 +55,6 @@ export const updateOutcome = createAsyncThunk(
     'outcomes/updateOutcome',
     async ({ outcomeId, outcomeData }, { rejectWithValue }) => {
         try {
-            console.log('=== UPDATE OUTCOME REDUX THUNK CALLED ===');
-            console.log('Outcome ID:', outcomeId);
-            console.log('Outcome data:', outcomeData);
-            console.log('API URL:', `${API_URL}/outcomes/${outcomeId}`);
 
             const response = await axios.patch(`${API_URL}/outcomes/${outcomeId}`, outcomeData, {
                 withCredentials: true,
@@ -55,15 +62,8 @@ export const updateOutcome = createAsyncThunk(
                     'Content-Type': 'application/json',
                 },
             });
-
-            console.log('Update outcome response:', response.data);
             return response.data.data.outcome;
         } catch (error) {
-            console.error('=== ERROR IN UPDATE OUTCOME ===');
-            console.error('Error object:', error);
-            console.error('Error response:', error.response?.data);
-            console.error('Error status:', error.response?.status);
-            console.error('Error message:', error.message);
             return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
@@ -79,7 +79,6 @@ export const deleteOutcome = createAsyncThunk(
             });
             return outcomeId;
         } catch (error) {
-            console.error('Error in deleteOutcome:', error);
             return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
@@ -97,29 +96,11 @@ export const addOutcomeProgress = createAsyncThunk(
             });
             return response.data.data.outcome;
         } catch (error) {
-            console.error('Error in addOutcomeProgress:', error);
             return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
 );
 
-export const fetchOutcomeOptions = createAsyncThunk(
-    'outcomes/fetchOutcomeOptions',
-    async (_, { rejectWithValue }) => {
-        try {
-            console.log('Fetching outcome options from:', `${API_URL}/outcomes/options/all`);
-            const response = await axios.get(`${API_URL}/outcomes/options/all`, {
-                withCredentials: true
-            });
-            console.log('Outcome options response:', response.data);
-            return response.data.data;
-        } catch (error) {
-            console.error('Error in fetchOutcomeOptions:', error);
-            console.error('Error details:', error.response?.data);
-            return rejectWithValue(error.response?.data?.message || error.message);
-        }
-    }
-);
 
 export const filterOutcomesByCategory = createAsyncThunk(
     'outcomes/filterOutcomesByCategory',
@@ -130,7 +111,6 @@ export const filterOutcomesByCategory = createAsyncThunk(
             });
             return response.data.data;
         } catch (error) {
-            console.error('Error in filterOutcomesByCategory:', error);
             return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
@@ -145,7 +125,6 @@ export const filterOutcomesByStatus = createAsyncThunk(
             });
             return response.data.data;
         } catch (error) {
-            console.error('Error in filterOutcomesByStatus:', error);
             return rejectWithValue(error.response?.data?.message || error.message);
         }
     }
@@ -161,7 +140,6 @@ export const filterOutcomes = createAsyncThunk(
             });
             return response.data.data;
         } catch (error) {
-            console.error('Error in filterOutcomes:', error);
             return rejectWithValue(error.response?.data?.message || error.message);
         }
     }

@@ -12,49 +12,26 @@ import { updateClient } from "../../../components/redux/slice/clients";
 import toast from "react-hot-toast";
 import { MedicalInfoEditModal } from "./MedicalInfoEditModal";
 import { Button } from "../../../components/ui/Button";
+import { Section } from "../../../components/ui/Section";
 
 export function MedicalTab({ client, onClientUpdate }) {
   const [showMedicalEditModal, setShowMedicalEditModal] = useState(false);
   const [savingMedicalInfo, setSavingMedicalInfo] = useState(false);
-
   const dispatch = useDispatch();
-  const handleEditMedicalInfo = () => {
-    setShowMedicalEditModal(true);
-  };
+
+  const handleEditMedicalInfo = () => setShowMedicalEditModal(true);
 
   const handleSaveMedicalInfo = async (medicalData) => {
     setSavingMedicalInfo(true);
     try {
-      // Update the client's medical information
-      const updatedClient = {
-        ...client,
-        medicalInformation: medicalData,
-      };
-
+      const updatedClient = { ...client, medicalInformation: medicalData };
       const result = await dispatch(
-        updateClient({
-          clientId: client._id,
-          clientData: updatedClient,
-        })
+        updateClient({ clientId: client._id, clientData: updatedClient })
       ).unwrap();
 
-      if (result && result.data && result.data.client) {
-        toast.success("Medical information updated successfully");
-        setShowMedicalEditModal(false);
-
-        // Notify parent component about the update
-        if (onClientUpdate) {
-          onClientUpdate(result.data.client);
-        }
-      } else if (result) {
-        // Fallback if the response structure is different
-        toast.success("Medical information updated successfully");
-        setShowMedicalEditModal(false);
-
-        if (onClientUpdate) {
-          onClientUpdate(result);
-        }
-      }
+      toast.success("Medical information updated successfully");
+      setShowMedicalEditModal(false);
+      if (onClientUpdate) onClientUpdate(result?.data?.client || result);
     } catch (error) {
       console.error("Error updating medical information:", error);
       toast.error("Failed to update medical information");
@@ -79,17 +56,13 @@ export function MedicalTab({ client, onClientUpdate }) {
           Edit Medical Info
         </Button>
       </div>
-      <div className="mb-4" />
 
-      {/* Medical Conditions Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex items-center mb-6 space-x-2">
-          <Heart className="w-6 h-6 text-red-500" />
-          <h3 className="text-xl font-semibold text-gray-900">
-            Medical Conditions
-          </h3>
-        </div>
-        <div>
+      <div className="flex flex-col space-y-6">
+        {/* Medical Conditions */}
+        <Section
+          icon={<Heart className="w-6 h-6 text-red-500" />}
+          title="Medical Conditions"
+        >
           {client.medicalInformation?.conditions?.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
@@ -161,16 +134,13 @@ export function MedicalTab({ client, onClientUpdate }) {
               <p className="text-gray-500">No medical conditions recorded.</p>
             </div>
           )}
-        </div>
-      </div>
+        </Section>
 
-      {/* Allergies Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex items-center mb-4 space-x-2">
-          <AlertTriangle className="w-5 h-5 text-yellow-500" />
-          <h3 className="text-lg font-semibold text-gray-900">Allergies</h3>
-        </div>
-        <div>
+        {/* Allergies */}
+        <Section
+          icon={<AlertTriangle className="w-5 h-5 text-yellow-500" />}
+          title="Allergies"
+        >
           {client.medicalInformation?.allergies?.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
@@ -194,29 +164,29 @@ export function MedicalTab({ client, onClientUpdate }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {client.medicalInformation.allergies.map((allergy, idx) => (
+                  {client.medicalInformation.allergies.map((a, idx) => (
                     <tr key={idx} className="border-b last:border-b-0">
                       <td className="px-3 py-2 font-semibold text-gray-900">
-                        {allergy.allergen}
+                        {a.allergen}
                       </td>
-                      <td className="px-3 py-2">{allergy.reaction || "-"}</td>
+                      <td className="px-3 py-2">{a.reaction || "-"}</td>
                       <td className="px-3 py-2">
-                        {allergy.severity && (
+                        {a.severity && (
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              allergy.severity === "severe"
+                              a.severity === "severe"
                                 ? "bg-red-100 text-red-800"
-                                : allergy.severity === "moderate"
+                                : a.severity === "moderate"
                                 ? "bg-yellow-100 text-yellow-800"
                                 : "bg-green-100 text-green-800"
                             }`}
                           >
-                            {allergy.severity}
+                            {a.severity}
                           </span>
                         )}
                       </td>
-                      <td className="px-3 py-2">{allergy.treatment || "-"}</td>
-                      <td className="px-3 py-2">{allergy.notes || "-"}</td>
+                      <td className="px-3 py-2">{a.treatment || "-"}</td>
+                      <td className="px-3 py-2">{a.notes || "-"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -228,16 +198,13 @@ export function MedicalTab({ client, onClientUpdate }) {
               <p className="text-gray-500">No allergies recorded.</p>
             </div>
           )}
-        </div>
-      </div>
+        </Section>
 
-      {/* Medications Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex items-center mb-4 space-x-2">
-          <Pill className="w-5 h-5 text-purple-500" />
-          <h3 className="text-lg font-semibold text-gray-900">Medications</h3>
-        </div>
-        <div>
+        {/* Medications */}
+        <Section
+          icon={<Pill className="w-5 h-5 text-purple-500" />}
+          title="Medications"
+        >
           {client.medicalInformation?.medications?.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
@@ -267,17 +234,17 @@ export function MedicalTab({ client, onClientUpdate }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {client.medicalInformation.medications.map((med, idx) => (
+                  {client.medicalInformation.medications.map((m, idx) => (
                     <tr key={idx} className="border-b last:border-b-0">
                       <td className="px-3 py-2 font-semibold text-gray-900">
-                        {med.name}
+                        {m.name}
                       </td>
-                      <td className="px-3 py-2">{med.dosage || "-"}</td>
-                      <td className="px-3 py-2">{med.frequency || "-"}</td>
-                      <td className="px-3 py-2">{med.route || "-"}</td>
-                      <td className="px-3 py-2">{med.prescribedBy || "-"}</td>
-                      <td className="px-3 py-2">{med.startDate || "-"}</td>
-                      <td className="px-3 py-2">{med.indication || "-"}</td>
+                      <td className="px-3 py-2">{m.dosage || "-"}</td>
+                      <td className="px-3 py-2">{m.frequency || "-"}</td>
+                      <td className="px-3 py-2">{m.route || "-"}</td>
+                      <td className="px-3 py-2">{m.prescribedBy || "-"}</td>
+                      <td className="px-3 py-2">{m.startDate || "-"}</td>
+                      <td className="px-3 py-2">{m.indication || "-"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -289,71 +256,64 @@ export function MedicalTab({ client, onClientUpdate }) {
               <p className="text-gray-500">No medications recorded.</p>
             </div>
           )}
-        </div>
-      </div>
+        </Section>
 
-      {/* Mental Capacity Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex items-center mb-4 space-x-2">
-          <Brain className="w-5 h-5 text-blue-500" />
-          <h3 className="text-lg font-semibold text-gray-900">
-            Mental Capacity
-          </h3>
-        </div>
-        <div>
+        {/* Mental Capacity */}
+        <Section
+          icon={<Brain className="w-5 h-5 text-blue-500" />}
+          title="Mental Capacity"
+        >
           {client.medicalInformation?.mentalCapacity ? (
             <>
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm mb-4">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-3 py-2 text-left font-medium text-gray-700">
-                        Has Capacity
-                      </th>
-                      <th className="px-3 py-2 text-left font-medium text-gray-700">
-                        Assessment Date
-                      </th>
-                      <th className="px-3 py-2 text-left font-medium text-gray-700">
-                        Assessed By
-                      </th>
-                      <th className="px-3 py-2 text-left font-medium text-gray-700">
-                        Review Date
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b last:border-b-0">
-                      <td className="px-3 py-2">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            client.medicalInformation.mentalCapacity.hasCapacity
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {client.medicalInformation.mentalCapacity.hasCapacity
-                            ? "Yes"
-                            : "No"}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2">
-                        {client.medicalInformation.mentalCapacity
-                          .assessmentDate || "-"}
-                      </td>
-                      <td className="px-3 py-2">
-                        {client.medicalInformation.mentalCapacity.assessedBy ||
-                          "-"}
-                      </td>
-                      <td className="px-3 py-2">
-                        {client.medicalInformation.mentalCapacity.reviewDate ||
-                          "-"}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <table className="min-w-full text-sm mb-4">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="px-3 py-2 text-left font-medium text-gray-700">
+                      Has Capacity
+                    </th>
+                    <th className="px-3 py-2 text-left font-medium text-gray-700">
+                      Assessment Date
+                    </th>
+                    <th className="px-3 py-2 text-left font-medium text-gray-700">
+                      Assessed By
+                    </th>
+                    <th className="px-3 py-2 text-left font-medium text-gray-700">
+                      Review Date
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b last:border-b-0">
+                    <td className="px-3 py-2">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          client.medicalInformation.mentalCapacity.hasCapacity
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {client.medicalInformation.mentalCapacity.hasCapacity
+                          ? "Yes"
+                          : "No"}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2">
+                      {client.medicalInformation.mentalCapacity
+                        .assessmentDate || "-"}
+                    </td>
+                    <td className="px-3 py-2">
+                      {client.medicalInformation.mentalCapacity.assessedBy ||
+                        "-"}
+                    </td>
+                    <td className="px-3 py-2">
+                      {client.medicalInformation.mentalCapacity.reviewDate ||
+                        "-"}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
               {client.medicalInformation.mentalCapacity.notes && (
-                <div className="mt-2">
+                <div>
                   <span className="font-medium">Notes:</span>{" "}
                   {client.medicalInformation.mentalCapacity.notes}
                 </div>
@@ -367,20 +327,15 @@ export function MedicalTab({ client, onClientUpdate }) {
               </p>
             </div>
           )}
-        </div>
-      </div>
+        </Section>
 
-      {/* DNR Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex items-center mb-4 space-x-2">
-          <ShieldCheck className="w-5 h-5 text-gray-700" />
-          <h3 className="text-lg font-semibold text-gray-900">
-            DNR (Do Not Resuscitate)
-          </h3>
-        </div>
-        <div>
+        {/* DNR */}
+        <Section
+          icon={<ShieldCheck className="w-5 h-5 text-gray-700" />}
+          title="DNR (Do Not Resuscitate)"
+        >
           {client.medicalInformation?.dnr ? (
-            <div className="overflow-x-auto">
+            <>
               <table className="min-w-full text-sm mb-4">
                 <thead>
                   <tr className="bg-gray-50">
@@ -446,21 +401,22 @@ export function MedicalTab({ client, onClientUpdate }) {
                 </tbody>
               </table>
               {client.medicalInformation.dnr.notes && (
-                <div className="mt-2">
+                <div>
                   <span className="font-medium">Notes:</span>{" "}
                   {client.medicalInformation.dnr.notes}
                 </div>
               )}
-            </div>
+            </>
           ) : (
             <div className="flex flex-col items-center py-8">
               <ShieldCheck className="w-10 h-10 text-gray-200 mb-2" />
               <p className="text-gray-500">No DNR status recorded.</p>
             </div>
           )}
-        </div>
+        </Section>
       </div>
-      {/* Medical Information Edit Modal */}
+
+      {/* Edit Modal */}
       {showMedicalEditModal && (
         <MedicalInfoEditModal
           isOpen={showMedicalEditModal}

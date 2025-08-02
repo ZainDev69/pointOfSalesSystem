@@ -18,6 +18,7 @@ import {
   addVisit,
   updateVisit,
   deleteVisit,
+  fetchVisitOptions,
 } from "../../../components/redux/slice/visitSchedules";
 import { Button } from "../../../components/ui/Button";
 
@@ -36,6 +37,12 @@ export function VisitScheduleManager({ clientId }) {
   const dispatch = useDispatch();
   const visits = useSelector((state) => state.visitSchedules.items) || [];
   const loading = useSelector((state) => state.visitSchedules.loading);
+
+  useEffect(() => {
+    if (clientId) {
+      dispatch(fetchVisitOptions(clientId));
+    }
+  }, [clientId, dispatch]);
 
   useEffect(() => {
     if (clientId) {

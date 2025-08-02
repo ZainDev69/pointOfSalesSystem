@@ -1,9 +1,20 @@
 const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({
-    category: { type: String },
+    category: {
+        type: String, enum: ["Personal Care",
+            "Medication",
+            "Daily Living",
+            "Mobility",
+            "Nutrition",
+            "Communication",
+            "Social",
+            "Health Monitoring",
+            "Safety Check",
+            "Documentation"], required: true
+    },
     task: { type: String },
-    priority: { type: String },
+    priority: { type: String, enum: ["routine", "important", "essential"] },
     skills: [String],
     equipment: [String],
     instructions: [String],
@@ -27,4 +38,7 @@ const visitScheduleSchema = new mongoose.Schema({
     visits: [visitSchema],
 });
 
-module.exports = mongoose.model('VisitSchedule', visitScheduleSchema); 
+const VisitSchedule = mongoose.model('VisitSchedule', visitScheduleSchema);
+
+module.exports = { VisitSchedule };
+

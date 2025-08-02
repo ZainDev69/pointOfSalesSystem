@@ -4,8 +4,7 @@ const contactController = require("../controllers/contactController");
 const { contactValidation } = require("../validators/contactValidator");
 
 
-router.get('/types', contactController.getContactTypes);
-router.get('/status', contactController.getStatusOptions);
+router.get('/contactOptions', contactController.getContactOptions);
 
 router.get("/", contactController.getContacts);
 

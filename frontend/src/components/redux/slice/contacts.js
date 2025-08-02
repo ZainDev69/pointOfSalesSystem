@@ -3,6 +3,23 @@ import axios from "axios";
 
 import { API_URL } from "../../../main";
 
+
+export const fetchContactOptions = createAsyncThunk(
+    "contacts/fetchContactOptions",
+    async (_, { rejectWithValue }) => {
+        try {
+            console.log("Inside fetchContactOptions");
+            const res = await axios.get(`${API_URL}/contacts/contactOptions`);
+            console.log("Contact options fetched:", res.data);
+            return res.data.data;
+        } catch (error) {
+            console.error('Error in fetchContactTypes:', error);
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+
 // Fetch contacts for a client
 export const fetchContacts = createAsyncThunk(
     "contacts/fetchContacts",
@@ -59,64 +76,26 @@ export const deleteContact = createAsyncThunk(
     }
 );
 
-// Fetch contact types
-export const fetchContactTypes = createAsyncThunk(
-    "contacts/fetchContactTypes",
-    async (_, { rejectWithValue }) => {
-        try {
-            console.log("Contact Types loading...")
-            const res = await axios.get(`${API_URL}/contacts/types`, { withCredentials: true });
-            console.log("Contact Types fetched")
-            return res.data.data;
-        } catch (error) {
-            console.error('Error in fetchContactTypes:', error);
-            return rejectWithValue(error.message);
-        }
-    }
-);
 
-// Fetch status options
-export const fetchStatusOptions = createAsyncThunk(
-    "contacts/fetchStatusOptions",
-    async (_, { rejectWithValue }) => {
-        try {
-            const res = await axios.get(`${API_URL}/contacts/status`, { withCredentials: true });
-            return res.data.data;
-        } catch (error) {
-            console.error('Error in fetchStatusOptions:', error);
-            return rejectWithValue(error.message);
-        }
-    }
-);
+
+const initialState = {
+    items: [],
+    loading: false,
+    error: null,
+    contactOptions: {
+        status: [],
+        types: []
+    },
+    contactOptionsLoading: false,
+    contactOptionsError: null,
+};
+
 
 
 
 const contactsSlice = createSlice({
     name: "contacts",
-    initialState: {
-        items: [],
-        loading: false,
-        error: null,
-        contactTypes: [],
-        contactTypesLoading: false,
-        contactTypesError: null,
-        statusOptions: [],
-        statusOptionsLoading: false,
-        statusOptionsError: null,
-    },
-    reducers: {
-        clearContacts: (state) => {
-            state.items = [];
-            state.loading = false;
-            state.error = null;
-            state.contactTypes = [];
-            state.contactTypesLoading = false;
-            state.contactTypesError = null;
-            state.statusOptions = [];
-            state.statusOptionsLoading = false;
-            state.statusOptionsError = null;
-        },
-    },
+    initialState,
     extraReducers: (builder) => {
         builder
             .addCase(fetchContacts.pending, (state) => {
@@ -141,30 +120,19 @@ const contactsSlice = createSlice({
             .addCase(deleteContact.fulfilled, (state, action) => {
                 state.items = state.items.filter((c) => c._id !== action.payload);
             })
-            .addCase(fetchContactTypes.pending, (state) => {
-                state.contactTypesLoading = true;
-                state.contactTypesError = null;
+            .addCase(fetchContactOptions.pending, (state) => {
+                state.contactOptionsLoading = true;
+                state.contactOptionsError = null;
             })
-            .addCase(fetchContactTypes.fulfilled, (state, action) => {
-                state.contactTypesLoading = false;
-                state.contactTypes = action.payload;
+            .addCase(fetchContactOptions.fulfilled, (state, action) => {
+                state.contactOptionsLoading = false;
+                state.contactOptions = action.payload;
             })
-            .addCase(fetchContactTypes.rejected, (state, action) => {
-                state.contactTypesLoading = false;
-                state.contactTypesError = action.error.message;
+            .addCase(fetchContactOptions.rejected, (state, action) => {
+                state.contactOptionsLoading = false;
+                state.contactOptionsError = action.error.message;
             })
-            .addCase(fetchStatusOptions.pending, (state) => {
-                state.statusOptionsLoading = true;
-                state.statusOptionsError = null;
-            })
-            .addCase(fetchStatusOptions.fulfilled, (state, action) => {
-                state.statusOptionsLoading = false;
-                state.statusOptions = action.payload;
-            })
-            .addCase(fetchStatusOptions.rejected, (state, action) => {
-                state.statusOptionsLoading = false;
-                state.statusOptionsError = action.error.message;
-            });
+
     },
 });
 

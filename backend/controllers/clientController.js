@@ -1,4 +1,4 @@
-const { Client, ENUMS } = require('./../models/clientModel');
+const { Client } = require('./../models/clientModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const Contact = require('../models/contactModel');
@@ -20,17 +20,32 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// New endpoint to get enum options
-exports.getEnumOptions = catchAsync(async (req, res, next) => {
+exports.getClientOptions = catchAsync(async (req, res, next) => {
+    const options = {
+        title: Client.schema.path('personalDetails.title').enumValues,
+        gender: Client.schema.path('personalDetails.gender').enumValues,
+        relationshipStatus: Client.schema.path('personalDetails.relationshipStatus').enumValues,
+        ethnicity: Client.schema.path('personalDetails.ethnicity').enumValues,
+        status: Client.schema.path('status').enumValues,
+        preferredContactMethod: Client.schema.path('contactInformation.preferredContactMethod').enumValues,
+        conditionSeverity: Client.schema.path('medicalInformation.conditions.0.severity').enumValues,
+        conditionStatus: Client.schema.path('medicalInformation.conditions.0.status').enumValues,
+        allergySeverity: Client.schema.path('medicalInformation.allergies.0.severity').enumValues,
+        medicationRoute: Client.schema.path('medicalInformation.medications.0.route').enumValues,
+        medicationStatus: Client.schema.path('medicalInformation.medications.0.status').enumValues,
+        religiousPracticeLevel: Client.schema.path('preferences.religious.practiceLevel').enumValues,
+        dietaryAssistanceLevel: Client.schema.path('preferences.dietary.assistanceLevel').enumValues,
+    };
+
     res.status(200).json({
         status: 'Success',
-        data: ENUMS
+        data: options,
     });
 });
 
 
+
 exports.createClient = catchAsync(async (req, res, next) => {
-    console.log("📦 Incoming Client Payload:", req.body);
 
     // Set start date to current date if not provided
     const clientData = {
@@ -134,7 +149,6 @@ exports.updateClient = catchAsync(async (req, res, next) => {
     updateData.reviewDate = newReviewDate;
 
     // I removed runValidators: true because it was causing the validation errors
-    console.log("updateData", updateData)
     const client = await Client.findByIdAndUpdate(id, updateData, { new: true });
 
     if (client) {
@@ -156,7 +170,7 @@ exports.updateClient = catchAsync(async (req, res, next) => {
             }
             if (section) break;
         }
-        console.log("After 1st if else")
+      
         let actionMsg = 'Updated client';
         if (section) {
             switch (section) {
@@ -186,7 +200,7 @@ exports.updateClient = catchAsync(async (req, res, next) => {
         }
         await ActivityLog.create({ client: client._id, action: actionMsg, user: 'Admin' });
     }
-    console.log("Client updated successfully from backend message")
+    
     res.status(200).json({
         status: 'Success',
         data: {

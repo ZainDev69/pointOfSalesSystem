@@ -8,14 +8,12 @@ export const uploadCarePlanAttachment = createAsyncThunk(
     'carePlanDocuments/uploadCarePlanAttachment',
     async ({ carePlanId, file }, { rejectWithValue }) => {
         try {
-            console.log("Uploading the care plan attachment", file);
             const formData = new FormData();
             formData.append('file', file);
             const res = await axios.post(`${BACKEND_URL}/careplans/${carePlanId}/documents/attachment`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 withCredentials: true,
             });
-            console.log("Care plan attachment uploaded", res.data);
             return res.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || error.message);

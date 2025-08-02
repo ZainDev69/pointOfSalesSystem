@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowLeft, Calendar, User, AlertTriangle, Shield } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Shield } from "lucide-react";
 
 export function RiskAssessmentDetails({ assessment, onBack }) {
   const getLikelihoodDisplay = (likelihood) => {

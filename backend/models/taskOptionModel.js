@@ -23,9 +23,6 @@ const taskOptionSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Index for efficient queries
-taskOptionSchema.index({ name: 1 });
-taskOptionSchema.index({ isActive: 1 });
 
 const TaskOption = mongoose.model('TaskOption', taskOptionSchema);
 module.exports = TaskOption; 

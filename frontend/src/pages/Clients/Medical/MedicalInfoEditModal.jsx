@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from "react";
 import {
   X,
-  Plus,
   Trash2,
   Heart,
   AlertTriangle,
   Pill,
   Brain,
   ShieldCheck,
-  Save,
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
+import { Section } from "../../../components/ui/Section";
+import { Input } from "../../../components/ui/Input";
+import { Select } from "../../../components/ui/Select";
+import { TextArea } from "../../../components/ui/TextArea";
+import { Checkbox } from "../../../components/ui/Checkbox";
+import { useSelector } from "react-redux";
+import { useApp } from "../../../components/Context/AppContext";
 
 const toInputDate = (val) => {
   if (!val) return "";
@@ -50,6 +55,14 @@ export function MedicalInfoEditModal({
       },
     },
   });
+
+  const { clientOptionsLoading } = useSelector((state) => state.clients);
+  const {
+    conditionSeverityOptions,
+    conditionStatusOptions,
+    allergySeverityOptions,
+    medicationRouteOptions,
+  } = useApp();
 
   useEffect(() => {
     if (medicalInfo) {
@@ -95,7 +108,7 @@ export function MedicalInfoEditModal({
     }));
   };
 
-  // Medical Conditions
+  // -------- Conditions Logic --------
   const addCondition = () => {
     const newCondition = {
       id: Date.now().toString(),
@@ -138,7 +151,7 @@ export function MedicalInfoEditModal({
     }));
   };
 
-  // Allergies
+  // -------- Allergy Logic --------
   const addAllergy = () => {
     const newAllergy = {
       id: Date.now().toString(),
@@ -181,7 +194,7 @@ export function MedicalInfoEditModal({
     }));
   };
 
-  // Medications
+  // -------- Medications Logic --------
   const addMedication = () => {
     const newMedication = {
       id: Date.now().toString(),
@@ -208,8 +221,8 @@ export function MedicalInfoEditModal({
       ...prev,
       medicalInformation: {
         ...prev.medicalInformation,
-        medications: prev.medicalInformation.medications.map((medication, i) =>
-          i === index ? { ...medication, [field]: value } : medication
+        medications: prev.medicalInformation.medications.map((med, i) =>
+          i === index ? { ...med, [field]: value } : med
         ),
       },
     }));
@@ -253,14 +266,11 @@ export function MedicalInfoEditModal({
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Medical Conditions */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                <Heart className="w-5 h-5 text-red-500" />
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Medical Conditions
-                </h3>
-              </div>
+          <Section
+            icon={<Heart className="w-5 h-5 text-red-500" />}
+            title="Medical Conditions"
+          >
+            <div className="flex justify-end mb-4">
               <Button
                 onClick={addCondition}
                 variant="default"
@@ -271,126 +281,76 @@ export function MedicalInfoEditModal({
             </div>
 
             <div className="space-y-4">
-              {formData.medicalInformation.conditions.map(
-                (condition, index) => (
-                  <div
-                    key={condition.id}
-                    className="bg-white border border-gray-200 rounded-lg p-4"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Condition
-                        </label>
-                        <input
-                          type="text"
-                          value={condition.condition}
-                          onChange={(e) =>
-                            updateCondition(index, "condition", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
+              {formData.medicalInformation.conditions.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Input
+                      label="Condition"
+                      value={item.condition}
+                      onChange={(v) => updateCondition(index, "condition", v)}
+                    />
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Severity
-                        </label>
-                        <select
-                          value={condition.severity}
-                          onChange={(e) =>
-                            updateCondition(index, "severity", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="mild">Mild</option>
-                          <option value="moderate">Moderate</option>
-                          <option value="severe">Severe</option>
-                        </select>
-                      </div>
+                    <Select
+                      label="Severity"
+                      value={item.severity}
+                      onChange={(v) => updateCondition(index, "severity", v)}
+                      options={
+                        clientOptionsLoading
+                          ? ["Loading options..."]
+                          : conditionSeverityOptions
+                      }
+                      disabled={clientOptionsLoading}
+                    />
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Status
-                        </label>
-                        <select
-                          value={condition.status}
-                          onChange={(e) =>
-                            updateCondition(index, "status", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="active">Active</option>
-                          <option value="resolved">Resolved</option>
-                          <option value="monitoring">Monitoring</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Diagnosis Date
-                        </label>
-                        <input
-                          type="date"
-                          value={condition.diagnosisDate}
-                          onChange={(e) =>
-                            updateCondition(
-                              index,
-                              "diagnosisDate",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Notes
-                        </label>
-                        <input
-                          type="text"
-                          value={condition.notes}
-                          onChange={(e) =>
-                            updateCondition(index, "notes", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end mt-3">
-                      <button
-                        type="button"
-                        onClick={() => removeCondition(index)}
-                        className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center space-x-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        <span>Remove</span>
-                      </button>
-                    </div>
+                    <Select
+                      label="Status"
+                      value={item.status}
+                      onChange={(v) => updateCondition(index, "status", v)}
+                      options={
+                        clientOptionsLoading
+                          ? ["Loading options..."]
+                          : conditionStatusOptions
+                      }
+                      disabled={clientOptionsLoading}
+                    />
+                    <Input
+                      type="date"
+                      label="Diagnosis Date"
+                      value={item.diagnosisDate}
+                      onChange={(v) =>
+                        updateCondition(index, "diagnosisDate", v)
+                      }
+                    />
+                    <Input
+                      label="Notes"
+                      value={item.notes}
+                      onChange={(v) => updateCondition(index, "notes", v)}
+                      full
+                    />
                   </div>
-                )
-              )}
-
-              {formData.medicalInformation.conditions.length === 0 && (
-                <p className="text-gray-500 text-center py-4">
-                  No medical conditions added yet. Click "Add Condition" to get
-                  started.
-                </p>
-              )}
+                  <div className="flex justify-end mt-3">
+                    <button
+                      onClick={() => removeCondition(index)}
+                      className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center space-x-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span>Remove</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          </Section>
 
           {/* Allergies */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                <AlertTriangle className="w-5 h-5 text-yellow-500" />
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Allergies
-                </h3>
-              </div>
+          <Section
+            icon={<AlertTriangle className="w-5 h-5 text-yellow-500" />}
+            title="Allergies"
+          >
+            <div className="flex justify-end mb-4">
               <Button
                 onClick={addAllergy}
                 variant="default"
@@ -401,89 +361,48 @@ export function MedicalInfoEditModal({
             </div>
 
             <div className="space-y-4">
-              {formData.medicalInformation.allergies.map((allergy, index) => (
+              {formData.medicalInformation.allergies.map((item, index) => (
                 <div
-                  key={allergy.id}
+                  key={item.id}
                   className="bg-white border border-gray-200 rounded-lg p-4"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Allergen
-                      </label>
-                      <input
-                        type="text"
-                        value={allergy.allergen}
-                        onChange={(e) =>
-                          updateAllergy(index, "allergen", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
+                    <Input
+                      label="Allergen"
+                      value={item.allergen}
+                      onChange={(v) => updateAllergy(index, "allergen", v)}
+                    />
+                    <Input
+                      label="Reaction"
+                      value={item.reaction}
+                      onChange={(v) => updateAllergy(index, "reaction", v)}
+                    />
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Reaction
-                      </label>
-                      <input
-                        type="text"
-                        value={allergy.reaction}
-                        onChange={(e) =>
-                          updateAllergy(index, "reaction", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Severity
-                      </label>
-                      <select
-                        value={allergy.severity}
-                        onChange={(e) =>
-                          updateAllergy(index, "severity", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="mild">Mild</option>
-                        <option value="moderate">Moderate</option>
-                        <option value="severe">Severe</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Treatment
-                      </label>
-                      <input
-                        type="text"
-                        value={allergy.treatment}
-                        onChange={(e) =>
-                          updateAllergy(index, "treatment", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Notes
-                      </label>
-                      <input
-                        type="text"
-                        value={allergy.notes}
-                        onChange={(e) =>
-                          updateAllergy(index, "notes", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
+                    <Select
+                      label="Severity"
+                      value={item.severity}
+                      onChange={(v) => updateAllergy(index, "severity", v)}
+                      options={
+                        clientOptionsLoading
+                          ? ["Loading options..."]
+                          : allergySeverityOptions
+                      }
+                      disabled={clientOptionsLoading}
+                    />
+                    <Input
+                      label="Treatment"
+                      value={item.treatment}
+                      onChange={(v) => updateAllergy(index, "treatment", v)}
+                    />
+                    <Input
+                      label="Notes"
+                      value={item.notes}
+                      onChange={(v) => updateAllergy(index, "notes", v)}
+                      full
+                    />
                   </div>
-
                   <div className="flex justify-end mt-3">
                     <button
-                      type="button"
                       onClick={() => removeAllergy(index)}
                       className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center space-x-1"
                     >
@@ -493,24 +412,15 @@ export function MedicalInfoEditModal({
                   </div>
                 </div>
               ))}
-
-              {formData.medicalInformation.allergies.length === 0 && (
-                <p className="text-gray-500 text-center py-4">
-                  No allergies added yet. Click "Add Allergy" to get started.
-                </p>
-              )}
             </div>
-          </div>
+          </Section>
 
           {/* Medications */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                <Pill className="w-5 h-5 text-purple-500" />
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Current Medications
-                </h3>
-              </div>
+          <Section
+            icon={<Pill className="w-5 h-5 text-purple-500" />}
+            title="Medications"
+          >
+            <div className="flex justify-end mb-4">
               <Button
                 onClick={addMedication}
                 variant="default"
@@ -521,377 +431,178 @@ export function MedicalInfoEditModal({
             </div>
 
             <div className="space-y-4">
-              {formData.medicalInformation.medications.map(
-                (medication, index) => (
-                  <div
-                    key={medication.id}
-                    className="bg-white border border-gray-200 rounded-lg p-4"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Medication Name
-                        </label>
-                        <input
-                          type="text"
-                          value={medication.name}
-                          onChange={(e) =>
-                            updateMedication(index, "name", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
+              {formData.medicalInformation.medications.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Input
+                      label="Name"
+                      value={item.name}
+                      onChange={(v) => updateMedication(index, "name", v)}
+                    />
+                    <Input
+                      label="Dosage"
+                      value={item.dosage}
+                      onChange={(v) => updateMedication(index, "dosage", v)}
+                    />
+                    <Input
+                      label="Frequency"
+                      value={item.frequency}
+                      onChange={(v) => updateMedication(index, "frequency", v)}
+                    />
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Dosage
-                        </label>
-                        <input
-                          type="text"
-                          value={medication.dosage}
-                          onChange={(e) =>
-                            updateMedication(index, "dosage", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Frequency
-                        </label>
-                        <input
-                          type="text"
-                          value={medication.frequency}
-                          onChange={(e) =>
-                            updateMedication(index, "frequency", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Route
-                        </label>
-                        <input
-                          type="text"
-                          value={medication.route}
-                          onChange={(e) =>
-                            updateMedication(index, "route", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Prescribed By
-                        </label>
-                        <input
-                          type="text"
-                          value={medication.prescribedBy}
-                          onChange={(e) =>
-                            updateMedication(
-                              index,
-                              "prescribedBy",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Start Date
-                        </label>
-                        <input
-                          type="date"
-                          value={medication.startDate}
-                          onChange={(e) =>
-                            updateMedication(index, "startDate", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-
-                      <div className="md:col-span-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Indication
-                        </label>
-                        <input
-                          type="text"
-                          value={medication.indication}
-                          onChange={(e) =>
-                            updateMedication(
-                              index,
-                              "indication",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end mt-3">
-                      <button
-                        type="button"
-                        onClick={() => removeMedication(index)}
-                        className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center space-x-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        <span>Remove</span>
-                      </button>
-                    </div>
+                    <Select
+                      label="Route"
+                      value={item.route}
+                      onChange={(v) => updateMedication(index, "route", v)}
+                      options={
+                        clientOptionsLoading
+                          ? ["Loading options..."]
+                          : medicationRouteOptions
+                      }
+                      disabled={clientOptionsLoading}
+                    />
+                    <Input
+                      label="Prescribed By"
+                      value={item.prescribedBy}
+                      onChange={(v) =>
+                        updateMedication(index, "prescribedBy", v)
+                      }
+                    />
+                    <Input
+                      type="date"
+                      label="Start Date"
+                      value={item.startDate}
+                      onChange={(v) => updateMedication(index, "startDate", v)}
+                    />
+                    <Input
+                      label="Indication"
+                      value={item.indication}
+                      onChange={(v) => updateMedication(index, "indication", v)}
+                      full
+                    />
                   </div>
-                )
-              )}
-
-              {formData.medicalInformation.medications.length === 0 && (
-                <p className="text-gray-500 text-center py-4">
-                  No medications added yet. Click "Add Medication" to get
-                  started.
-                </p>
-              )}
+                  <div className="flex justify-end mt-3">
+                    <button
+                      onClick={() => removeMedication(index)}
+                      className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center space-x-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span>Remove</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          </Section>
 
           {/* Mental Capacity */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center space-x-2 mb-4">
-              <Brain className="w-5 h-5 text-blue-500" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                Mental Capacity
-              </h3>
-            </div>
-
+          <Section
+            icon={<Brain className="w-5 h-5 text-blue-500" />}
+            title="Mental Capacity"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Assessment Date
-                </label>
-                <input
-                  type="date"
-                  value={
-                    formData.medicalInformation.mentalCapacity.assessmentDate
-                  }
-                  onChange={(e) =>
-                    handleNestedChange(
-                      "mentalCapacity",
-                      "assessmentDate",
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Assessed By
-                </label>
-                <input
-                  type="text"
-                  value={formData.medicalInformation.mentalCapacity.assessedBy}
-                  onChange={(e) =>
-                    handleNestedChange(
-                      "mentalCapacity",
-                      "assessedBy",
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Review Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.medicalInformation.mentalCapacity.reviewDate}
-                  onChange={(e) =>
-                    handleNestedChange(
-                      "mentalCapacity",
-                      "reviewDate",
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="hasCapacity"
-                  checked={
-                    formData.medicalInformation.mentalCapacity.hasCapacity
-                  }
-                  onChange={(e) =>
-                    handleNestedChange(
-                      "mentalCapacity",
-                      "hasCapacity",
-                      e.target.checked
-                    )
-                  }
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label
-                  htmlFor="hasCapacity"
-                  className="ml-2 block text-sm text-gray-900"
-                >
-                  Client has mental capacity
-                </label>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes
-                </label>
-                <textarea
-                  value={formData.medicalInformation.mentalCapacity.notes}
-                  onChange={(e) =>
-                    handleNestedChange(
-                      "mentalCapacity",
-                      "notes",
-                      e.target.value
-                    )
-                  }
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+              <Input
+                type="date"
+                label="Assessment Date"
+                value={
+                  formData.medicalInformation.mentalCapacity.assessmentDate
+                }
+                onChange={(v) =>
+                  handleNestedChange("mentalCapacity", "assessmentDate", v)
+                }
+              />
+              <Input
+                label="Assessed By"
+                value={formData.medicalInformation.mentalCapacity.assessedBy}
+                onChange={(v) =>
+                  handleNestedChange("mentalCapacity", "assessedBy", v)
+                }
+              />
+              <Input
+                type="date"
+                label="Review Date"
+                value={formData.medicalInformation.mentalCapacity.reviewDate}
+                onChange={(v) =>
+                  handleNestedChange("mentalCapacity", "reviewDate", v)
+                }
+              />
+              <Checkbox
+                id="hasCapacity"
+                label="Client has mental capacity"
+                checked={formData.medicalInformation.mentalCapacity.hasCapacity}
+                onChange={(v) =>
+                  handleNestedChange("mentalCapacity", "hasCapacity", v)
+                }
+              />
+              <TextArea
+                label="Notes"
+                value={formData.medicalInformation.mentalCapacity.notes}
+                onChange={(v) =>
+                  handleNestedChange("mentalCapacity", "notes", v)
+                }
+                full
+              />
             </div>
-          </div>
+          </Section>
 
           {/* DNR */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center space-x-2 mb-4">
-              <ShieldCheck className="w-5 h-5 text-gray-700" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                DNR (Do Not Resuscitate)
-              </h3>
-            </div>
-
-            <div className="flex items-center mb-4">
-              <input
-                type="checkbox"
-                id="hasDNR"
-                checked={formData.medicalInformation.dnr.hasDNR}
-                onChange={(e) =>
-                  handleNestedChange("dnr", "hasDNR", e.target.checked)
-                }
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label
-                htmlFor="hasDNR"
-                className="ml-2 block text-sm text-gray-900"
-              >
-                Client has a Do Not Resuscitate order
-              </label>
-            </div>
+          <Section
+            icon={<ShieldCheck className="w-5 h-5 text-gray-700" />}
+            title="DNR (Do Not Resuscitate)"
+          >
+            <Checkbox
+              id="hasDNR"
+              label="Client has a Do Not Resuscitate order"
+              checked={formData.medicalInformation.dnr.hasDNR}
+              onChange={(v) => handleNestedChange("dnr", "hasDNR", v)}
+            />
 
             {formData.medicalInformation.dnr.hasDNR && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date Issued
-                  </label>
-                  <input
-                    type="date"
-                    value={toInputDate(
-                      formData.medicalInformation.dnr.dateIssued
-                    )}
-                    onChange={(e) =>
-                      handleNestedChange("dnr", "dateIssued", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Issued By
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.medicalInformation.dnr.issuedBy}
-                    onChange={(e) =>
-                      handleNestedChange("dnr", "issuedBy", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Review Date
-                  </label>
-                  <input
-                    type="date"
-                    value={
-                      toInputDate(formData.medicalInformation.dnr.reviewDate) ||
-                      ""
-                    }
-                    onChange={(e) =>
-                      handleNestedChange("dnr", "reviewDate", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Location
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.medicalInformation.dnr.location}
-                    onChange={(e) =>
-                      handleNestedChange("dnr", "location", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="familyAware"
-                    checked={formData.medicalInformation.dnr.familyAware}
-                    onChange={(e) =>
-                      handleNestedChange("dnr", "familyAware", e.target.checked)
-                    }
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label
-                    htmlFor="familyAware"
-                    className="ml-2 block text-sm text-gray-900"
-                  >
-                    Family is aware of DNR
-                  </label>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Notes
-                  </label>
-                  <textarea
-                    value={formData.medicalInformation.dnr.notes}
-                    onChange={(e) =>
-                      handleNestedChange("dnr", "notes", e.target.value)
-                    }
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <Input
+                  type="date"
+                  label="Date Issued"
+                  value={toInputDate(
+                    formData.medicalInformation.dnr.dateIssued
+                  )}
+                  onChange={(v) => handleNestedChange("dnr", "dateIssued", v)}
+                />
+                <Input
+                  label="Issued By"
+                  value={formData.medicalInformation.dnr.issuedBy}
+                  onChange={(v) => handleNestedChange("dnr", "issuedBy", v)}
+                />
+                <Input
+                  type="date"
+                  label="Review Date"
+                  value={toInputDate(
+                    formData.medicalInformation.dnr.reviewDate
+                  )}
+                  onChange={(v) => handleNestedChange("dnr", "reviewDate", v)}
+                />
+                <Input
+                  label="Location"
+                  value={formData.medicalInformation.dnr.location}
+                  onChange={(v) => handleNestedChange("dnr", "location", v)}
+                />
+                <Checkbox
+                  id="familyAware"
+                  label="Family is aware of DNR"
+                  checked={formData.medicalInformation.dnr.familyAware}
+                  onChange={(v) => handleNestedChange("dnr", "familyAware", v)}
+                />
+                <TextArea
+                  label="Notes"
+                  value={formData.medicalInformation.dnr.notes}
+                  onChange={(v) => handleNestedChange("dnr", "notes", v)}
+                  full
+                />
               </div>
             )}
-          </div>
+          </Section>
         </div>
 
         {/* Footer */}

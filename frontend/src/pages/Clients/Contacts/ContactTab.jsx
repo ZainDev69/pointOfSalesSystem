@@ -9,21 +9,19 @@ import {
   Clock,
   MessageSquare,
   Edit3,
-  MoreVertical,
   Trash,
   Bell,
   Home,
   User,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ContactForm } from "./ContactForm";
+import { formatOptionLabel } from "../../../utils/formatOptionLabel";
 import {
   addContact,
   editContact,
   deleteContact,
-  fetchContactTypes,
-  fetchStatusOptions,
 } from "../../../components/redux/slice/contacts";
 import toast from "react-hot-toast";
 import { Button } from "../../../components/ui/Button";
@@ -37,23 +35,10 @@ export function ContactTab({ client }) {
 
   const dispatch = useDispatch();
   const contacts = useSelector((state) => state.contacts.items) || [];
-  const contactTypes = useSelector((state) => state.contacts.contactTypes);
-  const contactTypesLoading = useSelector(
-    (state) => state.contacts.contactTypesLoading
-  );
-  const statusOptions = useSelector((state) => state.contacts.statusOptions);
-  const statusOptionsLoading = useSelector(
-    (state) => state.contacts.statusOptionsLoading
-  );
 
-  useEffect(() => {
-    if (!contactTypes || contactTypes.length === 0) {
-      dispatch(fetchContactTypes());
-    }
-    if (!statusOptions || statusOptions.length === 0) {
-      dispatch(fetchStatusOptions());
-    }
-  }, [dispatch, contactTypes, statusOptions]);
+  const { contactOptions, contactOptionsLoading } = useSelector(
+    (state) => state.contacts
+  );
 
   const contactTypeIconMap = {
     family: { icon: Heart, bg: "bg-red-100", text: "text-red-600" },
@@ -167,8 +152,6 @@ export function ContactTab({ client }) {
         contact={selectedContact}
         onBack={handleBackToContactList}
         onSave={handleSaveContact}
-        statusOptions={statusOptions}
-        statusOptionsLoading={statusOptionsLoading}
       />
     );
   }
@@ -296,19 +279,16 @@ export function ContactTab({ client }) {
               <Users className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <select
                 value={contactFilter}
-                onChange={(e) => setContactFilter(e.target.value)}
-                className="pl-9 pr-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={contactOptionsLoading}
+                onChange={setContactFilter}
+                className="w-full pl-11 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="all">All Contacts</option>
-                {contactTypesLoading ? (
-                  <option disabled>Loading...</option>
-                ) : (
-                  contactTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </option>
-                  ))
-                )}
+                <option value="">Select Filter</option>
+                {contactOptions.types?.map((t) => (
+                  <option key={t} value={t}>
+                    {formatOptionLabel(t)}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

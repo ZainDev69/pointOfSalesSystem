@@ -20,7 +20,6 @@ import { HistoryTab } from "./CareComponents/HistoryTab";
 import { CareNavTab } from "./CareComponents/CareNavTab";
 import { getStatusColor } from "./CareComponents/StatusColor";
 import { CardsTab } from "./Cards/Cards";
-import { PersonalTab } from "../Personal/PersonalTab";
 import { Button } from "../../../components/ui/Button";
 import { PersonalCareTab } from "./PersonalCare/PersonalCare";
 import { VisitTypeManager } from "./VisitTypes/VisitTypeManager";

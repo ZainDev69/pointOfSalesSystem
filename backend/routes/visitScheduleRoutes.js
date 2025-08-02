@@ -6,7 +6,8 @@ router.get('/', visitScheduleController.getVisitSchedule);
 router.post('/', visitScheduleController.addVisit);
 router.put('/:visitId', visitScheduleController.updateVisit);
 router.delete('/:visitId', visitScheduleController.deleteVisit);
-router.get('/status-types', visitScheduleController.getVisitStatusTypes);
-router.get('/priority-types', visitScheduleController.getVisitPriorityTypes);
+
+router.get('/visit-options', visitScheduleController.getVisitOptions);
+
 
 module.exports = router; 

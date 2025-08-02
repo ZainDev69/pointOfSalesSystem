@@ -3,10 +3,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { ArrowLeft, Target, X, Clock, FileText } from "lucide-react";
 import { fetchOutcomeOptions } from "../../../../components/redux/slice/outcomes";
 import { Button } from "../../../../components/ui/Button";
+import { useApp } from "../../../../components/Context/AppContext";
 
 export function OutcomeForm({ outcome, onBack, onSave }) {
   const dispatch = useDispatch();
-  const { options, optionsLoading } = useSelector((state) => state.outcomes);
+  const { optionsLoading } = useSelector((state) => state.outcomes);
+  const {
+    OutcomestatusOptions,
+    OutcomecategoryOptions,
+    OutcomepriorityOptions,
+  } = useApp();
 
   const [formData, setFormData] = useState({
     goal: "",
@@ -82,47 +88,6 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
       }));
     }
   };
-
-  // Helper function to format option labels
-  const formatOptionLabel = (value) => {
-    return value
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
-
-  // Create options from fetched data
-  const statusOptions =
-    options.status?.map((status) => ({
-      value: status,
-      label: formatOptionLabel(status),
-      icon:
-        status === "in-progress"
-          ? Clock
-          : status === "achieved"
-          ? Target
-          : status === "unachieved"
-          ? X
-          : FileText,
-    })) || [];
-
-  const priorityOptions =
-    options.priority?.map((priority) => ({
-      value: priority,
-      label: formatOptionLabel(priority),
-      color:
-        priority === "low"
-          ? "text-green-600"
-          : priority === "medium"
-          ? "text-yellow-600"
-          : "text-red-600",
-    })) || [];
-
-  const categoryOptions =
-    options.category?.map((category) => ({
-      value: category,
-      label: formatOptionLabel(category),
-    })) || [];
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200">
@@ -219,7 +184,7 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
               {optionsLoading ? (
                 <option>Loading options...</option>
               ) : (
-                priorityOptions.map((option) => (
+                OutcomepriorityOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -244,7 +209,7 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
               {optionsLoading ? (
                 <option>Loading options...</option>
               ) : (
-                categoryOptions.map((option) => (
+                OutcomecategoryOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -266,7 +231,7 @@ export function OutcomeForm({ outcome, onBack, onSave }) {
               {optionsLoading ? (
                 <option>Loading options...</option>
               ) : (
-                statusOptions.map((option) => (
+                OutcomestatusOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>

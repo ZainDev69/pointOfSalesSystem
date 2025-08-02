@@ -19,6 +19,7 @@ import { Eye, Plus, Edit3, Trash } from "lucide-react";
 import { OutcomeForm } from "./OutcomeForm";
 import { OutcomeDetails } from "./OutcomeDetails";
 import { Button } from "../../../../components/ui/Button";
+import { formatOptionLabel } from "../../../../utils/formatOptionLabel";
 
 export function OutcomesTab({ clientId }) {
   const dispatch = useDispatch();
@@ -31,18 +32,6 @@ export function OutcomesTab({ clientId }) {
     isFiltered,
     loading,
   } = useSelector((state) => state.outcomes);
-
-  // Debug logging
-  useEffect(() => {
-    console.log("Outcomes state:", {
-      options,
-      optionsLoading,
-      outcomes,
-      loading,
-    });
-    console.log("Options data:", options);
-    console.log("Options loading:", optionsLoading);
-  }, [options, optionsLoading, outcomes, loading]);
 
   const [selectedOutcome, setSelectedOutcome] = useState(null);
   const [outcomeView, setOutcomeView] = useState("list");
@@ -67,14 +56,6 @@ export function OutcomesTab({ clientId }) {
       dispatch(fetchClientOutcomes(clientId));
     }
   }, [dispatch, clientId]);
-
-  // Helper function to format option labels
-  const formatOptionLabel = (value) => {
-    return value
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
 
   const getOutcomeStatusColor = (status) => {
     switch (status) {

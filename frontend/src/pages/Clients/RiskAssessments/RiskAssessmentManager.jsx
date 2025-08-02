@@ -21,9 +21,6 @@ import {
   addRiskAssessment,
   editRiskAssessment,
   deleteRiskAssessment,
-  fetchRiskAssessmentTypes,
-  fetchLikelihoodOptions,
-  fetchSeverityOptions,
 } from "../../../components/redux/slice/riskAssessments";
 import { downloadRiskAssessmentPDF } from "../../../utils/pdfGenerator";
 import toast from "react-hot-toast";
@@ -40,21 +37,20 @@ export function RiskAssessmentManager({ clientId, clientName = "Client" }) {
   const { items: assessments, loading } = useSelector(
     (state) => state.riskAssessments
   );
-  const { likelihoodOptions } = useSelector((state) => state.riskAssessments);
-  const { severityOptions } = useSelector((state) => state.riskAssessments);
+
+  const { riskAssessmentOptions } = useSelector(
+    (state) => state.riskAssessments
+  );
+
+  const likelihoodOptions = riskAssessmentOptions.likelihood || [];
+  const severityOptions = riskAssessmentOptions.severity || [];
+  const assessmentTypes = riskAssessmentOptions.type || [];
 
   useEffect(() => {
     if (clientId) {
       dispatch(fetchRiskAssessments(clientId));
     }
   }, [clientId, dispatch]);
-
-  // Fetch options from backend
-  useEffect(() => {
-    dispatch(fetchRiskAssessmentTypes());
-    dispatch(fetchLikelihoodOptions());
-    dispatch(fetchSeverityOptions());
-  }, [dispatch]);
 
   // Close notification dropdown when clicking outside
   useEffect(() => {
@@ -131,68 +127,67 @@ export function RiskAssessmentManager({ clientId, clientName = "Client" }) {
     }
   };
 
-  const assessmentTypes = [
-    {
-      id: "environmental",
-      label: "Environmental Hazards",
-      icon: AlertTriangle,
-      color: "bg-blue-500",
-    },
-    {
-      id: "moving-handling",
-      label: "Moving & Handling",
-      icon: User,
-      color: "bg-green-500",
-    },
-    {
-      id: "falls",
-      label: "Falls Prevention",
-      icon: AlertTriangle,
-      color: "bg-yellow-500",
-    },
-    {
-      id: "medication",
-      label: "Medication Management",
-      icon: Shield,
-      color: "bg-purple-500",
-    },
-    {
-      id: "skin-integrity",
-      label: "Skin Integrity",
-      icon: Shield,
-      color: "bg-pink-500",
-    },
-    {
-      id: "nutrition-hydration",
-      label: "Nutrition & Hydration",
-      icon: Shield,
-      color: "bg-cyan-500",
-    },
-    {
-      id: "mental-capacity",
-      label: "Mental Capacity",
-      icon: Shield,
-      color: "bg-indigo-500",
-    },
-    {
-      id: "infection-control",
-      label: "Infection Control",
-      icon: Shield,
-      color: "bg-red-500",
-    },
-    {
-      id: "fire-safety",
-      label: "Fire Safety",
-      icon: Shield,
-      color: "bg-orange-500",
-    },
-    {
-      id: "personal-safety",
-      label: "Personal Safety",
-      icon: Shield,
-      color: "bg-gray-500",
-    },
-  ];
+  //   {
+  //     id: "environmental",
+  //     label: "Environmental Hazards",
+  //     icon: AlertTriangle,
+  //     color: "bg-blue-500",
+  //   },
+  //   {
+  //     id: "moving-handling",
+  //     label: "Moving & Handling",
+  //     icon: User,
+  //     color: "bg-green-500",
+  //   },
+  //   {
+  //     id: "falls",
+  //     label: "Falls Prevention",
+  //     icon: AlertTriangle,
+  //     color: "bg-yellow-500",
+  //   },
+  //   {
+  //     id: "medication",
+  //     label: "Medication Management",
+  //     icon: Shield,
+  //     color: "bg-purple-500",
+  //   },
+  //   {
+  //     id: "skin-integrity",
+  //     label: "Skin Integrity",
+  //     icon: Shield,
+  //     color: "bg-pink-500",
+  //   },
+  //   {
+  //     id: "nutrition-hydration",
+  //     label: "Nutrition & Hydration",
+  //     icon: Shield,
+  //     color: "bg-cyan-500",
+  //   },
+  //   {
+  //     id: "mental-capacity",
+  //     label: "Mental Capacity",
+  //     icon: Shield,
+  //     color: "bg-indigo-500",
+  //   },
+  //   {
+  //     id: "infection-control",
+  //     label: "Infection Control",
+  //     icon: Shield,
+  //     color: "bg-red-500",
+  //   },
+  //   {
+  //     id: "fire-safety",
+  //     label: "Fire Safety",
+  //     icon: Shield,
+  //     color: "bg-orange-500",
+  //   },
+  //   {
+  //     id: "personal-safety",
+  //     label: "Personal Safety",
+  //     icon: Shield,
+  //     color: "bg-gray-500",
+  //   },
+  // ];
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -504,8 +499,8 @@ export function RiskAssessmentManager({ clientId, clientName = "Client" }) {
           >
             <option value="all">All Types</option>
             {assessmentTypes.map((type) => (
-              <option key={type.id} value={type.id}>
-                {type.label}
+              <option key={type} value={type}>
+                {type}
               </option>
             ))}
           </select>

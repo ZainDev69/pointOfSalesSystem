@@ -20,7 +20,7 @@ const upload = multer({ storage });
 const router = express.Router();
 
 // Get enum options for form fields
-router.get('/enum-options', clientController.getEnumOptions);
+router.get('/client-options', clientController.getClientOptions);
 
 router.get('/check-id', clientController.checkClientId);
 
@@ -46,5 +46,7 @@ router
 router
     .route('/:id/photo')
     .patch(clientController.uploadClientPhoto);
+
+
 
 module.exports = router;

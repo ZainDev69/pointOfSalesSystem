@@ -2,7 +2,7 @@ import { User, Edit3 } from "lucide-react";
 import { useState } from "react";
 import { PersonalDetailsEditModal } from "./PersonalDetailsEditModal";
 import { useDispatch } from "react-redux";
-import { updateClient } from "../../../components/redux/slice/clients";
+import {  updateClient } from "../../../components/redux/slice/clients";
 import toast from "react-hot-toast";
 import { InfoBlock } from "../../../components/layout/InfoBlock";
 import { Button } from "../../../components/ui/Button";
@@ -12,6 +12,9 @@ export function PersonalTab({ client, onClientUpdate }) {
   const [savingPersonalInfo, setSavingPersonalInfo] = useState(false);
 
   const dispatch = useDispatch();
+
+
+
 
   const handleEditPersonalInfo = () => {
     setShowPersonalEditModal(true);
@@ -26,6 +29,7 @@ export function PersonalTab({ client, onClientUpdate }) {
         personalDetails: personalData.personalDetails,
         addressInformation: personalData.addressInformation,
         contactInformation: personalData.contactInformation,
+        preferences: personalData.preferences,
         consent: personalData.consent,
         startDate: personalData.startDate,
         reviewDate: personalData.reviewDate,
@@ -87,6 +91,12 @@ export function PersonalTab({ client, onClientUpdate }) {
               Personal Details
             </h3>
           </div>
+          <div className="grid grid-cols-1 mb-3">
+          <InfoBlock label="History & Background">
+                {client.personalDetails?.historyandBackground || "Not specified"}
+              </InfoBlock>
+
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="space-y-4">
               <InfoBlock label="Title">
@@ -143,31 +153,7 @@ export function PersonalTab({ client, onClientUpdate }) {
             <InfoBlock label="Access Instructions">
               {client.addressInformation?.accessInstructions || "Not specified"}
             </InfoBlock>
-            <InfoBlock label="Languages">
-              {Array.isArray(
-                client?.preferences?.cultural?.languagePreferences
-              ) ? (
-                client.preferences.cultural.languagePreferences.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {client.preferences.cultural.languagePreferences.map(
-                      (lang, idx) => (
-                        <span
-                          key={idx}
-                          className="mt-2 px-3 py-1 rounded-md border border-blue-500 bg-green-50 text-blue-500 text-sm font-medium"
-                        >
-                          {lang}
-                        </span>
-                      )
-                    )}
-                  </div>
-                ) : (
-                  "Not specified"
-                )
-              ) : (
-                client?.preferences?.cultural?.languagePreferences ||
-                "Not specified"
-              )}
-            </InfoBlock>
+           
           </div>
         </div>
 
@@ -226,6 +212,174 @@ export function PersonalTab({ client, onClientUpdate }) {
             </div>
           </div>
         </div>
+
+        {/* Cultural Preferences */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Cultural Preferences
+          </h3>
+          <div className="grid grid-cols-1 gap-3">
+          
+            <InfoBlock label="Cultural Background">
+              {client.preferences.cultural.background || "Not specified"}
+            </InfoBlock>
+            
+            <InfoBlock label="Languages">
+              {Array.isArray(
+                client?.preferences?.cultural?.languagePreferences
+              ) ? (
+                client.preferences.cultural.languagePreferences.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {client.preferences.cultural.languagePreferences.map(
+                      (lang, idx) => (
+                        <span
+                          key={idx}
+                          className="mt-2 px-3 py-1 rounded-md border border-blue-500 bg-green-50 text-blue-500 text-sm font-medium"
+                        >
+                          {lang}
+                        </span>
+                      )
+                    )}
+                  </div>
+                ) : (
+                  "Not specified"
+                )
+              ) : (
+                client?.preferences?.cultural?.languagePreferences ||
+                "Not specified"
+              )}
+            </InfoBlock>
+            <InfoBlock label="Cultural Needs">
+              {client.preferences.cultural.culturalNeeds || "Not specified"}
+            </InfoBlock>
+          </div>
+        </div>
+        {/* Religious Preferences */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Religious Preferences
+          </h3>
+          <div className="grid grid-cols-1 gap-3">
+          
+            <InfoBlock label="Religion">
+              {client.preferences.religious.religion || "Not specified"}
+            </InfoBlock>
+            
+          
+            <InfoBlock label="Denomination">
+              {client.preferences.religious.denomination || "Not specified"}
+            </InfoBlock>
+            <InfoBlock label="Practice Level">
+              {client.preferences.religious.practiceLevel || "Not specified"}
+            </InfoBlock>
+            <InfoBlock label="Prayer Requirements">
+              {client.preferences.religious.prayerRequirements|| "Not specified"}
+            </InfoBlock>
+          
+
+           <InfoBlock>
+           <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-500">
+               Requires Spiritual Support
+              </span>
+              {client?.preferences?.religious?.spiritualSupport ? (
+                <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-semibold">
+                  Yes
+                </span>
+              ) : (
+                <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-800 text-sm font-semibold">
+                  No
+                </span>
+              )}
+            </div>
+           </InfoBlock>
+          </div>
+        </div>
+        {/* Dietary Requirements*/}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Dietary Requirements
+          </h3>
+          <div className="grid grid-cols-1 gap-3">
+          
+            <InfoBlock label="Diet Type">
+              {client.preferences.dietary.dietType || "Not specified"}
+            </InfoBlock>
+            
+          
+            <InfoBlock label="Assistance Level">
+              {client.preferences.dietary.assistanceLevel || "Not specified"}
+            </InfoBlock>
+            <InfoBlock label="Food Prefrences">
+              {client.preferences.dietary.preferences || "Not specified"}
+            </InfoBlock>
+            <InfoBlock label="Food Dislikes">
+              {client.preferences.dietary.dislikes|| "Not specified"}
+            </InfoBlock>
+          
+
+           <InfoBlock>
+           <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-500">
+              Requires Texture Modification
+              </span>
+              {client?.preferences.dietary.textureModification ? (
+                <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-semibold">
+                  Yes
+                </span>
+              ) : (
+                <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-800 text-sm font-semibold">
+                  No
+                </span>
+              )}
+            </div>
+           </InfoBlock>
+           <InfoBlock>
+           <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-500">
+              Requires fluid Thickening
+              </span>
+              {client?.preferences.dietary.fluidThickening? (
+                <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-semibold">
+                  Yes
+                </span>
+              ) : (
+                <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-800 text-sm font-semibold">
+                  No
+                </span>
+              )}
+            </div>
+           </InfoBlock>
+          </div>
+        </div>
+        {/* Personal Prefrences*/}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+         Personal Prefrences
+          </h3>
+          <div className="grid grid-cols-1 gap-3">
+          
+            <InfoBlock label="Wakeup Time">
+              {client.preferences.personal.wakeUpTime || "Not specified"}
+            </InfoBlock>
+            
+          
+            <InfoBlock label="Bed Time">
+              {client.preferences.personal.bedTime || "Not specified"}
+            </InfoBlock>
+            <InfoBlock label="Hobbies & Interests">
+              {client.preferences.personal.hobbies || "Not specified"}
+            </InfoBlock>
+            <InfoBlock label="Mobility Aids">
+              {client.preferences.personal.mobilityAids || "Not specified"}
+            </InfoBlock>
+            <InfoBlock label="Likes & Dislikes">
+              {client.preferences.personal.likesAndDislikes || "Not specified"}
+            </InfoBlock>
+          
+          </div>
+        </div>
+      
       </div>
 
       {/* Personal Details Edit Modal */}
@@ -240,6 +394,7 @@ export function PersonalTab({ client, onClientUpdate }) {
           }}
           addressInformation={client.addressInformation}
           contactInformation={client.contactInformation}
+          preferences = {client.preferences}
           consent={client.consent}
           onSave={handleSavePersonalInfo}
           isLoading={savingPersonalInfo}

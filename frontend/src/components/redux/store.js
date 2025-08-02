@@ -12,7 +12,7 @@ import communicationsReducer from './slice/communications';
 import visitTypesReducer from './slice/visitTypes';
 const store = configureStore({
     reducer: {
-        client: clientReducer,
+        clients: clientReducer,
         contacts: contactReducer,
         carePlans: carePlansReducer,
         outcomes: outcomesReducer,

@@ -2,32 +2,16 @@ const RiskAssessment = require('../models/riskAssessmentModel');
 const { Client } = require('../models/clientModel');
 const ActivityLog = require('../models/activityLogModel');
 
-// Helper function to get enum values from schema
-const getEnumValues = (schema, path) => {
-    return schema.path(path).enumValues || [];
-};
 
-// Helper function to create option objects
-const createOptions = (values) => {
-    return values.map((value, index) => ({
-        value: value,
-        label: value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-        score: index + 1
-    }));
-};
+
+
 
 // Create a new risk assessment
 exports.createRiskAssessment = async (req, res) => {
     try {
-        console.log('=== CREATE RISK ASSESSMENT CONTROLLER CALLED ===');
-        console.log('Request body:', req.body);
-        console.log('Request headers:', req.headers);
 
         const assessment = await RiskAssessment.create(req.body);
 
-        console.log('Assessment created successfully:', assessment);
-
-        // Log activity
         const client = await Client.findById(assessment.clientId);
         if (client) {
             await ActivityLog.create({
@@ -38,10 +22,6 @@ exports.createRiskAssessment = async (req, res) => {
         }
         res.status(201).json({ success: true, data: assessment });
     } catch (err) {
-        console.error('=== ERROR IN CREATE RISK ASSESSMENT ===');
-        console.error('Error object:', err);
-        console.error('Error message:', err.message);
-        console.error('Error name:', err.name);
         if (err.errors) {
             console.error('Validation errors:', err.errors);
         }
@@ -83,21 +63,12 @@ exports.updateRiskAssessment = async (req, res) => {
 // Delete a risk assessment
 exports.deleteRiskAssessment = async (req, res) => {
     try {
-        const { id } = req.params;
-        console.log("=== DELETE RISK ASSESSMENT CONTROLLER CALLED ===");
-        console.log("Method:", req.method);
-        console.log("URL:", req.originalUrl);
-        console.log("Assessment ID:", id);
-        console.log("Headers:", req.headers);
 
         const assessment = await RiskAssessment.findById(id);
 
         if (!assessment) {
-            console.log("No assessment found with ID:", id);
             return res.status(404).json({ success: false, message: 'Risk assessment not found' });
         }
-
-        console.log("Assessment found:", assessment);
 
         // Log activity before deleting
         if (assessment) {
@@ -108,7 +79,6 @@ exports.deleteRiskAssessment = async (req, res) => {
                     action: `Risk Assessment deleted: ${assessment.type} ${assessment.assessmentDate}`,
                     user: 'Admin',
                 });
-                console.log("Activity logged for client:", client._id);
             }
         }
 
@@ -122,29 +92,20 @@ exports.deleteRiskAssessment = async (req, res) => {
     }
 };
 
-exports.getRiskAssessmentTypes = (req, res) => {
-    const types = getEnumValues(RiskAssessment.schema, 'type');
-    const options = createOptions(types);
-    res.status(200).json({ status: 'Success', data: options });
-};
 
-// Get likelihood options
-exports.getLikelihoodOptions = (req, res) => {
-    const likelihoodValues = getEnumValues(RiskAssessment.schema.path('risks').schema, 'likelihood');
-    const options = createOptions(likelihoodValues);
-    res.status(200).json({ status: 'Success', data: options });
-};
 
-// Get severity options
-exports.getSeverityOptions = (req, res) => {
-    const severityValues = getEnumValues(RiskAssessment.schema.path('risks').schema, 'severity');
-    const options = createOptions(severityValues);
-    res.status(200).json({ status: 'Success', data: options });
-};
+exports.getRiskAssessmentOptions = (req, res) => {
+    const options = {
+        type: RiskAssessment.schema.path('type').enumValues,
+        likelihood: RiskAssessment.schema.path('risks').schema.path('likelihood').enumValues,
+        severity: RiskAssessment.schema.path('risks').schema.path('severity').enumValues,
+        status: RiskAssessment.schema.path('status').enumValues,
+    };
 
-// Get assessment status options
-exports.getAssessmentStatusOptions = (req, res) => {
-    const statusValues = getEnumValues(RiskAssessment.schema, 'status');
-    const options = createOptions(statusValues);
-    res.status(200).json({ status: 'Success', data: options });
-}; 
+    res.status(200).json({
+        status: 'Success',
+        data: options,
+    });
+}
+
+

@@ -96,8 +96,6 @@ export const updateCarePlan = createAsyncThunk(
     'carePlans/updateCarePlan',
     async ({ carePlanId, carePlanData }, { rejectWithValue }) => {
         try {
-            console.log("Updating care plan", carePlanId, carePlanData);
-            // Add clientId to the request body as required by the backend
             const requestData = {
                 ...carePlanData,
                 clientId: carePlanData.clientId || carePlanData.client // fallback for different field names
@@ -108,7 +106,6 @@ export const updateCarePlan = createAsyncThunk(
                     'Content-Type': 'application/json',
                 },
             });
-            console.log("Care Plan updated successfully:", response.data);
             return response.data.data.carePlan;
         } catch (error) {
             console.error("Error updating care plan:", error);
