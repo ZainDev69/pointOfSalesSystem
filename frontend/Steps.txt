@@ -1,0 +1,9 @@
+If you clone a project from the Github then you should run "npm install" command to Download Node Modules
+
+"npm start" to run the project
+
+I got an error in frotend when I was submitting the product into DB, there was a minor error in the button of add Product that I forget to 
+mention the type submit on the button.
+
+My frotend env data
+VITE_API_URL=http://localhost:5500
